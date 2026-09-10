@@ -344,7 +344,8 @@ bool DefaultCamera::Update()
         // Initialize default angles (SetCameraAngle will override these for specific scenes)
         m_State.Angle[0] = 0.f;
         m_State.Angle[1] = 0.f;
-        m_State.Angle[2] = -45.f;
+        if (!(SceneFlag == LOG_IN_SCENE && CCameraMove::GetInstancePtr()->IsTourMode()))
+            m_State.Angle[2] = -45.f;
 
         SetCameraFOV();
 
@@ -592,8 +593,9 @@ void DefaultCamera::CalculateCameraPosition()
         CCameraMove::GetInstancePtr()->GetCurrentCameraPos(Position);
         m_State.ViewFar = TOUR_VIEWFAR_PER_LEVEL * CCameraMove::GetInstancePtr()->GetCurrentCameraDistanceLevel();
 
-        // Tour mode handles camera completely - set position and return
+        TransformPosition[2] -= 100.f;
         VectorAdd(Position, TransformPosition, m_State.Position);
+        m_State.Position[2] += m_State.Distance - CAMERA_DISTANCE_HEIGHT_OFFSET;
         return;
     }
 
@@ -629,12 +631,6 @@ void DefaultCamera::CalculateCameraPosition()
     else
     {
         g_shCameraLevel = 0;
-    }
-
-    if (CCameraMove::GetInstancePtr()->IsTourMode())
-    {
-        vec3_t temp = { 0.0f, 0.0f, -100.0f };
-        VectorAdd(TransformPosition, temp, TransformPosition);
     }
 
     VectorAdd(Position, TransformPosition, m_State.Position);

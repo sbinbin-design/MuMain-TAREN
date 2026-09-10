@@ -308,7 +308,7 @@ void CreateLogInScene()
     // Tour mode waypoints work well for movement, but need position offset
     // Offset is applied in CCameraMove::GetCurrentCameraPos()
     CCameraMove::GetInstancePtr()->PlayCameraWalk(Hero->Object.Position, 1000);
-    CCameraMove::GetInstancePtr()->SetTourMode(TRUE, FALSE, 0);  // Start from waypoint 0
+    CCameraMove::GetInstancePtr()->SetTourMode(TRUE, FALSE, 1);  // Start from waypoint 1
 
     MoveMainCamera();
 
@@ -379,7 +379,10 @@ bool NewRenderLogInScene(HDC hDC)
         VectorCopy(g_Camera.Position, pos);
     }
 
-    MoveMainCamera();
+    if (!CUIMng::Instance().m_CreditWin.IsShow())
+    {
+        MoveMainCamera();
+    }
 
     // Play login music (called every frame — PlayMp3 no-ops if already playing)
     ::PlayMp3(MUSIC_LOGIN_THEME);
@@ -500,6 +503,8 @@ bool NewRenderLogInScene(HDC hDC)
         g_MessageBox->Update();
         g_MessageBox->Render();
     }
+
+    RenderCursor();
 
     EndBitmap();
 

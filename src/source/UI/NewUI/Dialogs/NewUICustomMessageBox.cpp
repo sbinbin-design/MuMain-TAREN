@@ -5595,11 +5595,11 @@ void SEASON3B::CLuckyTradeMenuMsgBox::SetButtonInfo()
     x = GetPos().x + msgboxhalfwidth - btnhalfwidth;
     y = GetPos().y + 85;
     m_BtnTrade.SetInfo(CNewUIMessageBoxMng::IMAGE_MSGBOX_BTN_EMPTY, x, y, width, height, CNewUIMessageBoxButton::MSGBOX_BTN_SIZE_EMPTY);
-    m_BtnTrade.SetText(L"럭키아이템 교환");	// "GlobalText"
+    m_BtnTrade.SetText(I18N::Game::ExchangeLuckyItem);
 
     y = GetPos().y + 120;
     m_BtnRefinery.SetInfo(CNewUIMessageBoxMng::IMAGE_MSGBOX_BTN_EMPTY, x, y, width, height, CNewUIMessageBoxButton::MSGBOX_BTN_SIZE_EMPTY);
-    m_BtnRefinery.SetText(L"럭키아이템 제련");	// "GlobalText"
+    m_BtnRefinery.SetText(I18N::Game::RefineLuckyItem);
 
     width = MSGBOX_BTN_EMPTY_SMALL_WIDTH;
     btnhalfwidth = width / 2.f;

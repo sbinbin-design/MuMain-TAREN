@@ -3941,7 +3941,7 @@ void RenderTimes()
         const float progressValue = static_cast<float>(remainingMacroCooldownTime) / MacroCooldownMs * width;
 
         EnableAlphaTest();
-        g_pRenderText->RenderText(static_cast<int>(x), y, L"Macro Time");
+        g_pRenderText->RenderText(static_cast<int>(x), y, I18N::Game::MacroTime);
         RenderBar(x, y + 12, width, height, (float)progressValue);
     }
 

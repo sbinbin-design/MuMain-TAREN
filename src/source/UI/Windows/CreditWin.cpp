@@ -4,6 +4,7 @@
 
 #include "stdafx.h"
 #include "Render/Renderer/MuRenderer.h"
+#include "Camera/CameraMove.h"
 #include "UI/Windows/CreditWin.h"
 #include "Render/Textures/ZzzOpenglUtil.h"
 #include "Core/Input/Input.h"
@@ -22,6 +23,7 @@
 
 #include <algorithm>
 #include <chrono>
+#include <cmath>
 #include <cstdio>
 #include <cwchar>
 #include <memory>
@@ -33,8 +35,8 @@ namespace
 
     constexpr DurationMs kIllustFadeDuration{2000.0};
     constexpr DurationMs kIllustShowDuration{22000.0};
-    constexpr DurationMs kTextFadeDuration{1000.0};
-    constexpr DurationMs kNameShowDuration{2300.0};
+    constexpr DurationMs kTextFadeDuration{300.0};
+    constexpr DurationMs kNameShowDuration{3000.0};
     constexpr std::string_view kCreditDataPath = "Data\\Local\\credit.bmd";
 
     constexpr std::array<std::array<const wchar_t*, 2>, CRW_ILLUST_MAX> kIllustPaths = {{
@@ -47,20 +49,6 @@ namespace
         {L"Interface\\im7_1.jpg", L"Interface\\im7_2.jpg"},
         {L"Interface\\im8_1.jpg", L"Interface\\im8_2.jpg"},
     }};
-
-    template<typename T>
-    short IncreaseAlpha(short alpha, T ratio)
-    {
-        const double delta = 255.0 * std::clamp(static_cast<double>(ratio), 0.0, 1.0);
-        return static_cast<short>(std::min<double>(255.0, static_cast<double>(alpha) + delta));
-    }
-
-    template<typename T>
-    short DecreaseAlpha(short alpha, T ratio)
-    {
-        const double delta = 255.0 * std::clamp(static_cast<double>(ratio), 0.0, 1.0);
-        return static_cast<short>(std::max<double>(0.0, static_cast<double>(alpha) - delta));
-    }
 
     template<std::size_t N>
     void CopyNameToWide(const char* source, wchar_t (&destination)[N])
@@ -97,6 +85,7 @@ CCreditWin::CCreditWin()
     , m_nNameCount(0)
     , m_anTextIndex{}
     , m_aeTextState{}
+	, m_textFadeElapsed{}
     , m_textElapsed(DurationMs::zero())
 {
 }
@@ -172,6 +161,10 @@ void CCreditWin::SetPosition()
 
 void CCreditWin::Show(bool bShow)
 {
+	CCameraMove* cameraMove = CCameraMove::GetInstancePtr();
+	if (cameraMove->IsTourMode())
+		cameraMove->PauseTour(bShow ? TRUE : FALSE);
+
 	CWin::Show(bShow);
 
 	for (int i = 0; i < CRW_SPR_MAX; ++i)
@@ -296,7 +289,11 @@ void CCreditWin::Init()
 	LoadIllust();
 
 	for (int i = 0; i <= CRW_INDEX_NAME; ++i)
+	{
 		m_aeTextState[i] = FADEIN;
+		m_textFadeElapsed[i] = DurationMs::zero();
+		m_aSpr[CRW_SPR_TXT_HIDE0 + i].SetAlpha(255);
+	}
 	m_textElapsed = DurationMs::zero();
 	m_nNowIndex = 0;
 	m_nNameCount = 0;
@@ -327,24 +324,27 @@ void CCreditWin::LoadIllust()
 
 void CCreditWin::AnimationIllust(DurationMs deltaTime)
 {
-	short nAlpha;
 	switch (m_eIllustState)
 	{
 	case FADEIN:
-		nAlpha = short(m_aSpr[CRW_SPR_PIC_L].GetAlpha());
-		nAlpha = IncreaseAlpha(nAlpha, deltaTime / kIllustFadeDuration);
-		if (255 <= nAlpha)
+	{
+		m_illustElapsed += deltaTime;
+		const double fadeInProgress = std::clamp(
+			static_cast<double>(m_illustElapsed / kIllustFadeDuration), 0.0, 1.0);
+		const BYTE fadeInAlpha = static_cast<BYTE>(std::lround(255.0 * fadeInProgress));
+		m_aSpr[CRW_SPR_PIC_L].SetAlpha(fadeInAlpha);
+		m_aSpr[CRW_SPR_PIC_R].SetAlpha(fadeInAlpha);
+		if (fadeInProgress >= 1.0)
 		{
 			m_eIllustState = SHOW;
-			nAlpha = 255;
+			m_illustElapsed = DurationMs::zero();
 		}
-		m_aSpr[CRW_SPR_PIC_L].SetAlpha((BYTE)nAlpha);
-		m_aSpr[CRW_SPR_PIC_R].SetAlpha((BYTE)nAlpha);
 		break;
+	}
 
 	case SHOW:
 		m_illustElapsed += deltaTime;
-		if (m_illustElapsed > kIllustShowDuration)
+		if (m_illustElapsed >= kIllustShowDuration)
 		{
 			m_eIllustState = FADEOUT;
 			m_illustElapsed = DurationMs::zero();
@@ -352,19 +352,23 @@ void CCreditWin::AnimationIllust(DurationMs deltaTime)
 		break;
 
 	case FADEOUT:
-		nAlpha = short(m_aSpr[CRW_SPR_PIC_L].GetAlpha());
-		nAlpha = DecreaseAlpha(nAlpha, deltaTime / kIllustFadeDuration);
-		if (0 >= nAlpha)
+	{
+		m_illustElapsed += deltaTime;
+		const double fadeOutProgress = std::clamp(
+			static_cast<double>(m_illustElapsed / kIllustFadeDuration), 0.0, 1.0);
+		const BYTE fadeOutAlpha = static_cast<BYTE>(std::lround(255.0 * (1.0 - fadeOutProgress)));
+		m_aSpr[CRW_SPR_PIC_L].SetAlpha(fadeOutAlpha);
+		m_aSpr[CRW_SPR_PIC_R].SetAlpha(fadeOutAlpha);
+		if (fadeOutProgress >= 1.0)
 		{
 			m_eIllustState = FADEIN;
-			nAlpha = 0;
+			m_illustElapsed = DurationMs::zero();
 
 			m_byIllust = ++m_byIllust == CRW_ILLUST_MAX ? 0 : m_byIllust;
 			LoadIllust();
 		}
-		m_aSpr[CRW_SPR_PIC_L].SetAlpha((BYTE)nAlpha);
-		m_aSpr[CRW_SPR_PIC_R].SetAlpha((BYTE)nAlpha);
 		break;
+	}
 	}
 }
 
@@ -437,54 +441,67 @@ void CCreditWin::SetTextIndex()
 void CCreditWin::AnimationText(int nClass, DurationMs deltaTime)
 {
 	SHOW_STATE* peTextState = &m_aeTextState[nClass];
-	short nAlpha;
+	DurationMs& fadeElapsed = m_textFadeElapsed[nClass];
 
 	CSprite* psprHide = &m_aSpr[CRW_SPR_TXT_HIDE0 + nClass];
 
 	switch (*peTextState)
 	{
 	case FADEIN:
-		nAlpha = short(psprHide->GetAlpha());
-		nAlpha = DecreaseAlpha(nAlpha, deltaTime / kTextFadeDuration);
-		if (0 >= nAlpha)
+	{
+		fadeElapsed += deltaTime;
+		const double fadeInProgress = std::clamp(
+			static_cast<double>(fadeElapsed / kTextFadeDuration), 0.0, 1.0);
+		const BYTE fadeInAlpha = static_cast<BYTE>(std::lround(255.0 * (1.0 - fadeInProgress)));
+		psprHide->SetAlpha(fadeInAlpha);
+		if (fadeInProgress >= 1.0)
 		{
 			*peTextState = SHOW;
-			nAlpha = 0;
+			fadeElapsed = DurationMs::zero();
 		}
-		psprHide->SetAlpha((BYTE)nAlpha);
 		break;
+	}
 
 	case SHOW:
 		if (nClass != CRW_INDEX_NAME)
 			break;
 
 		m_textElapsed += deltaTime;
-		if (m_textElapsed > kNameShowDuration)
+		if (m_textElapsed >= kNameShowDuration)
 		{
 			m_aeTextState[CRW_INDEX_NAME] = FADEOUT;
+			m_textFadeElapsed[CRW_INDEX_NAME] = DurationMs::zero();
 			m_textElapsed = DurationMs::zero();
 
 			if (3 != m_aCredit[m_nNowIndex].byClass)
 			{
 				m_aeTextState[CRW_INDEX_TEAM] = FADEOUT;
+				m_textFadeElapsed[CRW_INDEX_TEAM] = DurationMs::zero();
 				if (2 != m_aCredit[m_nNowIndex].byClass)
+				{
 					m_aeTextState[CRW_INDEX_DEPARTMENT] = FADEOUT;
+					m_textFadeElapsed[CRW_INDEX_DEPARTMENT] = DurationMs::zero();
+				}
 			}
 		}
 		break;
 
 	case FADEOUT:
-		nAlpha = short(psprHide->GetAlpha());
-		nAlpha = IncreaseAlpha(nAlpha, deltaTime / kTextFadeDuration);
-		if (255 <= nAlpha)
+	{
+		fadeElapsed += deltaTime;
+		const double fadeOutProgress = std::clamp(
+			static_cast<double>(fadeElapsed / kTextFadeDuration), 0.0, 1.0);
+		const BYTE fadeOutAlpha = static_cast<BYTE>(std::lround(255.0 * fadeOutProgress));
+		psprHide->SetAlpha(fadeOutAlpha);
+		if (fadeOutProgress >= 1.0)
 		{
 			*peTextState = FADEIN;
-			nAlpha = 255;
+			fadeElapsed = DurationMs::zero();
 
 			if (nClass == CRW_INDEX_NAME)
 				SetTextIndex();
 		}
-		psprHide->SetAlpha((BYTE)nAlpha);
 		break;
+	}
 	}
 }

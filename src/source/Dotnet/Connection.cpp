@@ -11,6 +11,7 @@
 
 #include "Connection.h"
 #include "DotNetMessageFormat.h"
+#include "I18N/All.h"
 #include "Core/Utilities/Log/MuLogger.h"
 
 // Full definitions required: Connection.cpp allocates these types (new PacketFunctions_*()).
@@ -135,7 +136,7 @@ void ReportDotNetError(const char* detail, DotNetErrorKind kind)
     // Show user-visible dialog via MessageBoxW shim → SDL_ShowSimpleMessageBox (PlatformCompat.h)
     // ASCII-safe conversion: diagnostic messages contain only ASCII characters
     std::wstring wideMsg(msg.begin(), msg.end());
-    MessageBoxW(nullptr, wideMsg.c_str(), L"Network Error", MB_ICONERROR | MB_OK);
+    MessageBoxW(nullptr, wideMsg.c_str(), I18N::Game::NetworkError, MB_ICONERROR | MB_OK);
 }
 
 bool IsManagedLibraryAvailable()

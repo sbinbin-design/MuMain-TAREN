@@ -371,7 +371,7 @@ BOOL CreateSocket(const wchar_t* IpAddr, unsigned short Port)
             if (!connectErrorDisplayed)
             {
                 connectErrorDisplayed = true;
-                MessageBoxW(nullptr, connectError, L"Connection Error", MB_ICONERROR | MB_OK);
+                MessageBoxW(nullptr, connectError, I18N::Game::ConnectionError, MB_ICONERROR | MB_OK);
             }
         }
     }

@@ -4188,9 +4188,9 @@ void CSlideHelpMgr::OpenSlideTextFile(const wchar_t* szFileName)
         for (int j = 0; j < m_iTextNumber[i]; ++j)
         {
             auto charText = SlideHelp.SlideHelp[i].szSlideHelpText[j];
-            int iLength = MultiByteToWideChar(CP_UTF8, 0, charText, -1, 0, 0);
+            int iLength = MultiByteToWideChar(936, 0, charText, -1, 0, 0);
             auto pszText = new wchar_t[iLength + 1];
-            MultiByteToWideChar(CP_UTF8, 0, charText, -1, pszText, iLength);
+            CMultiLanguage::ConvertFromCodePage(pszText, charText, 936);
             m_SlideTextList[i].push_back(pszText);
         }
     }

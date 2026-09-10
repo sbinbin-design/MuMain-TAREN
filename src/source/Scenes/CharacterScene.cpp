@@ -428,6 +428,10 @@ bool NewRenderCharacterScene(HDC hDC)
         EndBitmap();
     }
 
+    BeginBitmap();
+    RenderCursor();
+    EndBitmap();
+
     EndOpengl();
 
     return true;

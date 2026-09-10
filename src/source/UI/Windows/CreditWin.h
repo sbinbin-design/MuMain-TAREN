@@ -64,6 +64,7 @@ protected:
 	int			m_nNameCount;
 	int			m_anTextIndex[CRW_INDEX_MAX];
 	SHOW_STATE	m_aeTextState[CRW_INDEX_NAME + 1];
+	std::array<DurationMs, CRW_INDEX_NAME + 1> m_textFadeElapsed;
 	DurationMs	m_textElapsed;
 
 public:

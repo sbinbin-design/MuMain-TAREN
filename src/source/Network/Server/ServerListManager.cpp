@@ -74,7 +74,7 @@ void CServerListManager::LoadServerListScript()
         ::fread(szDescript, sServerGroupScript.m_nDescriptLen, 1, fp);
         BuxConvert((BYTE*)szDescript, sServerGroupScript.m_nDescriptLen);
 
-        CMultiLanguage::ConvertFromUtf8(sServerGroupInfo.m_szName, sServerGroupScript.m_szName);
+        CMultiLanguage::ConvertFromCodePage(sServerGroupInfo.m_szName, sServerGroupScript.m_szName, 936);
 
         sServerGroupInfo.m_byPos = sServerGroupScript.m_byPos;
         sServerGroupInfo.m_bySequence = sServerGroupScript.m_bySequence;

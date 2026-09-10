@@ -9,11 +9,11 @@
 // See CameraMove.cpp for details.
 namespace LoginSceneCameraDefaults
 {
-    constexpr float OFFSET_X = -300.0f;
-    constexpr float OFFSET_Y =  650.0f;
-    constexpr float OFFSET_Z =  950.0f;
-    constexpr float ANGLE_PITCH = 40.0f;
-    constexpr float ANGLE_YAW   = -5.0f;
+    constexpr float OFFSET_X = 0.0f;
+    constexpr float OFFSET_Y = 0.0f;
+    constexpr float OFFSET_Z = 0.0f;
+    constexpr float ANGLE_PITCH = 0.0f;
+    constexpr float ANGLE_YAW   = 0.0f;
 
     // Default render distances for LoginScene (tour camera).
     // DevEditor exposes these as sliders; release builds use these as fixed values.
@@ -51,15 +51,20 @@ class CCameraMove
     float m_CameraStartPos[3];
     float m_fCameraStartDistanceLevel;
     double m_iDelayCount;
+    double m_fTourTickAccumulator;
 
     DWORD m_dwCameraWalkState;
     float m_CurrentCameraPos[3];
     float m_fCurrentDistanceLevel;
+    float m_prevTourCameraPos[3];
+    float m_prevTourCameraAngle;
+    float m_prevTourDistanceLevel;
 
     DWORD m_dwCurrentIndex;
     int m_iSelectedTile;
 
     void Init();
+    void UpdateTourWayPointTick(bool loginSceneFixedStep);
 
 public:
     enum
@@ -122,7 +127,7 @@ private:
 
 public:
     BOOL SetTourMode(BOOL bFlag, BOOL bRandomStart = FALSE, int _index = 0);
-    BOOL IsTourMode()
+    BOOL IsTourMode() const
     {
         return m_bTourMode;
     }
@@ -142,8 +147,6 @@ public:
     void SetFrustumAngle(float _Value);
     float GetFrustumAngle();
 
-    float GetCameraAngle()
-    {
-        return m_fTourCameraAngle;
-    }
+    float GetCameraAngle() const;
+    float GetLoginSceneTourInterpolationAlpha() const;
 };

@@ -172,19 +172,15 @@ void CUIMng::ReleaseTitleSceneUI()
 
 void CUIMng::RenderTitleSceneUI(HDC hDC, DWORD dwNow, DWORD dwTotal)
 {
-    // Each loading update gets its own frame so the progress bar is visible.
-    // When called inside the game loop, temporarily close the caller frame,
-    // present this loading update, then reopen the caller frame.
-    const bool wasFrameActive = mu::GetRenderer().IsFrameActive();
-    if (wasFrameActive)
+    // Each loading update gets its own presented frame so the progress bar is visible.
+    auto& renderer = mu::GetRenderer();
+    if (!renderer.IsFrameActive())
     {
-        mu::GetRenderer().EndFrame();
+        renderer.BeginFrame();
     }
 
-    mu::GetRenderer().BeginFrame();
-
     ::BeginOpengl();
-    mu::GetRenderer().ClearScreen();
+    renderer.ClearScreen();
     ::BeginBitmap();
 
     for (int i = 0; i < UIM_TS_MAX; ++i)
@@ -204,12 +200,7 @@ void CUIMng::RenderTitleSceneUI(HDC hDC, DWORD dwNow, DWORD dwTotal)
     g_MuEditorCore.Render();
 #endif
 
-    mu::GetRenderer().EndFrame();
-
-    if (wasFrameActive)
-    {
-        mu::GetRenderer().BeginFrame();
-    }
+    renderer.EndFrame();
 }
 
 void CUIMng::Create()

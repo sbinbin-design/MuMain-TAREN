@@ -35,7 +35,7 @@ BYTE CMultiLanguage::GetLanguage()
 }
 
 /**
- * Converts a UTF-8 byte buffer to UTF-16.
+ * Converts a multibyte byte buffer to UTF-16 using the specified Windows code page.
  *
  * Reads up to @p maxSourceLength bytes from @p source (which may or may not
  * be null-terminated) and writes the converted UTF-16 characters to @p target.
@@ -46,7 +46,8 @@ BYTE CMultiLanguage::GetLanguage()
  * by the conversion. Otherwise, the function appends one when possible.
  *
  * @param target Destination buffer for the UTF-16 output.
- * @param source UTF-8 encoded byte buffer.
+ * @param source Multibyte encoded byte buffer.
+ * @param codePage Windows code page used to decode @p source.
  * @param maxSourceLength Maximum number of bytes to read from @p source.
  *
  * @return Number of UTF-16 characters written (excluding the null terminator
@@ -55,7 +56,8 @@ BYTE CMultiLanguage::GetLanguage()
  * @note The caller must ensure @p target is large enough to hold the converted
  *       UTF-16 string plus a terminating null character.
  */
-int32_t CMultiLanguage::ConvertFromUtf8(wchar_t* target, const char* source, int maxSourceLength)
+int32_t CMultiLanguage::ConvertFromCodePage(wchar_t* target, const char* source, unsigned int codePage,
+                                            int maxSourceLength)
 {
     if (target == nullptr || source == nullptr)
     {
@@ -63,7 +65,7 @@ int32_t CMultiLanguage::ConvertFromUtf8(wchar_t* target, const char* source, int
     }
 
     // Determine how many UTF-16 characters are needed
-    const int requiredChars = MultiByteToWideChar(CP_UTF8, 0, source, maxSourceLength, nullptr, 0);
+    const int requiredChars = MultiByteToWideChar(codePage, 0, source, maxSourceLength, nullptr, 0);
     if (requiredChars <= 0)
     {
         target[0] = L'\0';
@@ -71,7 +73,7 @@ int32_t CMultiLanguage::ConvertFromUtf8(wchar_t* target, const char* source, int
     }
 
     // Perform the conversion
-    int written = MultiByteToWideChar(CP_UTF8, 0, source,
+    int written = MultiByteToWideChar(codePage, 0, source,
                                       maxSourceLength, // read at most this many bytes
                                       target,
                                       requiredChars // assume destination large enough
@@ -91,6 +93,11 @@ int32_t CMultiLanguage::ConvertFromUtf8(wchar_t* target, const char* source, int
     }
 
     return written;
+}
+
+int32_t CMultiLanguage::ConvertFromUtf8(wchar_t* target, const char* source, int maxSourceLength)
+{
+    return ConvertFromCodePage(target, source, CP_UTF8, maxSourceLength);
 }
 
 int32_t CMultiLanguage::ConvertToUtf8(char* target, const wchar_t* source, int maxSourceLength)

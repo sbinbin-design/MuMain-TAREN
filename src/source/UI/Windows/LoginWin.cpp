@@ -149,9 +149,12 @@ void CLoginWin::SetPosition(int x, int y)
 
 	if (g_iChatInputType == 1)
 	{
-		const int boxX = int((x + 115) / g_fScreenRate_x);
-		m_pUsernameInputBox->SetPosition(boxX, int((y + 112) / g_fScreenRate_y));
-		m_pPasswordInputBox->SetPosition(boxX, int((y + 137) / g_fScreenRate_y));
+		m_pUsernameInputBox->SetPosition(
+			int((m_asprInputBox[LIW_ACCOUNT].GetXPos() + 6) / g_fScreenRate_x),
+			int((m_asprInputBox[LIW_ACCOUNT].GetYPos() + 6) / g_fScreenRate_y));
+		m_pPasswordInputBox->SetPosition(
+			int((m_asprInputBox[LIW_PASSWORD].GetXPos() + 6) / g_fScreenRate_x),
+			int((m_asprInputBox[LIW_PASSWORD].GetYPos() + 6) / g_fScreenRate_y));
 	}
 
 	// "Remember Username" (row 1) and "Remember Password" (row 2) stack
@@ -342,13 +345,30 @@ void CLoginWin::RenderControls()
     const int baseX = GetXPos();
     const int baseY = GetYPos();
 
-    g_pRenderText->RenderText(int((baseX + 30) / g_fScreenRate_x), int((baseY + 113) / g_fScreenRate_y), I18N::Game::Account);
-    g_pRenderText->RenderText(int((baseX + 30) / g_fScreenRate_x), int((baseY + 139) / g_fScreenRate_y), I18N::Game::Password);
+    g_pRenderText->RenderText(int((baseX + 30) / g_fScreenRate_x), int((baseY + 113) / g_fScreenRate_y), I18N::Game::LoginAccountLabel);
+    g_pRenderText->RenderText(int((baseX + 30) / g_fScreenRate_x), int((baseY + 139) / g_fScreenRate_y), I18N::Game::LoginPasswordLabel);
 
     wchar_t szServerName[MAX_TEXT_LENGTH] = {};
-    const wchar_t* pServerStatus = g_ServerListManager->GetNonPVPInfo() ? I18N::Game::SDServer : I18N::Game::SDNonPvPServer;
+    const BYTE nonPvpInfo = g_ServerListManager->GetNonPVPInfo();
+    const wchar_t* pServerStatus = I18N::Game::SDServer;
+    switch (nonPvpInfo)
+    {
+    case 0:
+        pServerStatus = I18N::Game::LoginServerFormat;
+        break;
+    case 1:
+        pServerStatus = I18N::Game::LoginNonPvPServerFormat;
+        break;
+    case 2:
+        pServerStatus = I18N::Game::SDGoldPvPServer;
+        break;
+    case 3:
+        pServerStatus = I18N::Game::SDGoldServer;
+        break;
+    }
     mu_swprintf(szServerName, pServerStatus, g_ServerListManager->GetSelectServerName(), g_ServerListManager->GetSelectServerIndex());
-    g_pRenderText->RenderText(int((baseX + 111) / g_fScreenRate_x), int((baseY + 80) / g_fScreenRate_y), szServerName);
+    g_pRenderText->RenderText(int(baseX / g_fScreenRate_x), int((baseY + 80) / g_fScreenRate_y), szServerName,
+        int(GetWidth() / g_fScreenRate_x), 0, RT3_SORT_CENTER);
 
     g_pRenderText->RenderText(int((baseX + 130) / g_fScreenRate_x), int((baseY + 159) / g_fScreenRate_y), I18N::Game::LoginRememberUsername);
     g_pRenderText->RenderText(int((baseX + 130) / g_fScreenRate_x), int((baseY + 179) / g_fScreenRate_y), I18N::Game::LoginRememberPassword);
@@ -357,7 +377,8 @@ void CLoginWin::RenderControls()
     // fixed size, so there is no room for this long line inside it). Position is
     // eyeballed against the background and may need tuning.
     g_pRenderText->SetTextColor(255, 210, 60, 255);
-    g_pRenderText->RenderText(int((baseX + 30) / g_fScreenRate_x), int((baseY + 252) / g_fScreenRate_y), I18N::Game::LoginTrustWarning);
+    g_pRenderText->RenderText(int(baseX / g_fScreenRate_x), int((baseY + 252) / g_fScreenRate_y), I18N::Game::LoginTrustWarning,
+        int(GetWidth() / g_fScreenRate_x), 0, RT3_SORT_CENTER);
     g_pRenderText->SetTextColor(CLRDW_WHITE);
 }
 

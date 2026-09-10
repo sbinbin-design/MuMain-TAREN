@@ -162,10 +162,14 @@ void CCameraMove::Init()
     m_CameraStartPos[0] = m_CameraStartPos[1] = m_CameraStartPos[2] = 0.0f;
     m_fCameraStartDistanceLevel = kDefaultStartDistance;
     m_iDelayCount = 0;
+    m_fTourTickAccumulator = 0.0;
     m_dwCameraWalkState = CAMERAWALK_STATE_READY;
 
     m_CurrentCameraPos[0] = m_CurrentCameraPos[1] = m_CurrentCameraPos[2] = 0.0f;
     m_fCurrentDistanceLevel = 0.0f;
+    m_prevTourCameraPos[0] = m_prevTourCameraPos[1] = m_prevTourCameraPos[2] = 0.0f;
+    m_prevTourCameraAngle = 0.0f;
+    m_prevTourDistanceLevel = 0.0f;
 
     m_dwCurrentIndex = 0;
     m_iSelectedTile = -1;
@@ -462,9 +466,19 @@ void CCameraMove::GetCurrentCameraPos(float CameraPos[3])
 {
     if (IsTourMode())
     {
-        CameraPos[0] = m_vTourCameraPos[0];
-        CameraPos[1] = m_vTourCameraPos[1];
-        CameraPos[2] = m_vTourCameraPos[2];
+        const float alpha = GetLoginSceneTourInterpolationAlpha();
+        if (gMapManager.WorldActive == WD_73NEW_LOGIN_SCENE)
+        {
+            CameraPos[0] = m_prevTourCameraPos[0] * (1.0f - alpha) + m_vTourCameraPos[0] * alpha;
+            CameraPos[1] = m_prevTourCameraPos[1] * (1.0f - alpha) + m_vTourCameraPos[1] * alpha;
+            CameraPos[2] = m_prevTourCameraPos[2] * (1.0f - alpha) + m_vTourCameraPos[2] * alpha;
+        }
+        else
+        {
+            CameraPos[0] = m_vTourCameraPos[0];
+            CameraPos[1] = m_vTourCameraPos[1];
+            CameraPos[2] = m_vTourCameraPos[2];
+        }
 
         // FIX: Apply LoginScene position offset
         ApplyLoginSceneOffset(CameraPos[0], CameraPos[1], CameraPos[2]);
@@ -478,7 +492,30 @@ void CCameraMove::GetCurrentCameraPos(float CameraPos[3])
 }
 float CCameraMove::GetCurrentCameraDistanceLevel() const
 {
+    if (gMapManager.WorldActive == WD_73NEW_LOGIN_SCENE && IsTourMode())
+    {
+        const float alpha = GetLoginSceneTourInterpolationAlpha();
+        return m_prevTourDistanceLevel * (1.0f - alpha) + m_fCurrentDistanceLevel * alpha;
+    }
     return m_fCurrentDistanceLevel;
+}
+
+float CCameraMove::GetLoginSceneTourInterpolationAlpha() const
+{
+    if (gMapManager.WorldActive != WD_73NEW_LOGIN_SCENE || !IsTourMode())
+        return 0.0f;
+
+    return std::clamp(static_cast<float>(m_fTourTickAccumulator), 0.0f, 1.0f);
+}
+
+float CCameraMove::GetCameraAngle() const
+{
+    if (gMapManager.WorldActive != WD_73NEW_LOGIN_SCENE || !IsTourMode())
+        return m_fTourCameraAngle;
+
+    const float alpha = GetLoginSceneTourInterpolationAlpha();
+    const float delta = SignedAngleDelta(m_prevTourCameraAngle, m_fTourCameraAngle);
+    return NormalizeAngleDegrees(m_prevTourCameraAngle + delta * alpha);
 }
 
 void CCameraMove::PlayCameraWalk(float StartPos[3], float fStartDistanceLevel)
@@ -649,6 +686,7 @@ const CCameraMove::WAYPOINT* CCameraMove::FindWayPointByTile(int tileIndex) cons
 
 BOOL CCameraMove::SetTourMode(BOOL bFlag, BOOL bRandomStart, int index)
 {
+    m_fTourTickAccumulator = 0.0;
     const std::size_t waypointCount = m_listWayPoint.size();
     if (waypointCount <= 1)
     {
@@ -689,16 +727,15 @@ BOOL CCameraMove::SetTourMode(BOOL bFlag, BOOL bRandomStart, int index)
     m_CameraStartPos[0] = m_CurrentCameraPos[0] = m_vTourCameraPos[0] = startWaypoint->fCameraX;
     m_CameraStartPos[1] = m_CurrentCameraPos[1] = m_vTourCameraPos[1] = startWaypoint->fCameraY;
     m_CameraStartPos[2] = m_CurrentCameraPos[2] = m_vTourCameraPos[2] = startWaypoint->fCameraZ;
-
-    // FIX: Apply position offset for LoginScene waypoints during initialization
-    // Offset is also applied in GetCurrentCameraPos() for ongoing tour movement
-    ApplyLoginSceneOffset(m_CameraStartPos[0], m_CameraStartPos[1], m_CameraStartPos[2]);
-    ApplyLoginSceneOffset(m_CurrentCameraPos[0], m_CurrentCameraPos[1], m_CurrentCameraPos[2]);
-    ApplyLoginSceneOffset(m_vTourCameraPos[0], m_vTourCameraPos[1], m_vTourCameraPos[2]);
+    m_prevTourCameraPos[0] = m_vTourCameraPos[0];
+    m_prevTourCameraPos[1] = m_vTourCameraPos[1];
+    m_prevTourCameraPos[2] = m_vTourCameraPos[2];
 
     CameraVector2 toTarget{targetWaypoint->fCameraX - startWaypoint->fCameraX, targetWaypoint->fCameraY - startWaypoint->fCameraY};
     const CameraVector2 forwardDir = toTarget.Normalized();
     m_fTargetTourCameraAngle = m_fTourCameraAngle = CreateAngle(0, 0, forwardDir.x, -forwardDir.y);
+    m_prevTourCameraAngle = m_fTourCameraAngle;
+    m_prevTourDistanceLevel = m_fCurrentDistanceLevel;
 
     return TRUE;
 }
@@ -721,6 +758,33 @@ void CCameraMove::BackwardTour(float fSpeed)
 
 void CCameraMove::UpdateTourWayPoint()
 {
+    const bool loginSceneFixedStep =
+        gMapManager.WorldActive == WD_73NEW_LOGIN_SCENE && IsTourMode();
+    if (!loginSceneFixedStep)
+    {
+        UpdateTourWayPointTick(false);
+        return;
+    }
+
+    m_fTourTickAccumulator += FPS_ANIMATION_FACTOR;
+    while (m_fTourTickAccumulator >= 1.0)
+    {
+        m_fTourTickAccumulator -= 1.0;
+        UpdateTourWayPointTick(true);
+    }
+}
+
+void CCameraMove::UpdateTourWayPointTick(bool loginSceneFixedStep)
+{
+    if (loginSceneFixedStep)
+    {
+        m_prevTourCameraPos[0] = m_vTourCameraPos[0];
+        m_prevTourCameraPos[1] = m_vTourCameraPos[1];
+        m_prevTourCameraPos[2] = m_vTourCameraPos[2];
+        m_prevTourCameraAngle = m_fTourCameraAngle;
+        m_prevTourDistanceLevel = m_fCurrentDistanceLevel;
+    }
+
     const std::size_t waypointCount = m_listWayPoint.size();
     const auto WrapForward = [waypointCount](std::size_t index)
     {
@@ -751,8 +815,12 @@ void CCameraMove::UpdateTourWayPoint()
             return;
         }
 
-        float targetCameraAcc = Clamp(targetWaypoint->fCameraMoveAccel * static_cast<float>(FPS_ANIMATION_FACTOR), kMinTourAccel, kMaxTourAccel);
-        float originCameraAcc = Clamp(originWaypoint->fCameraMoveAccel * static_cast<float>(FPS_ANIMATION_FACTOR), kMinTourAccel, kMaxTourAccel);
+        const float targetCameraAcc = loginSceneFixedStep
+            ? targetWaypoint->fCameraMoveAccel
+            : Clamp(targetWaypoint->fCameraMoveAccel * static_cast<float>(FPS_ANIMATION_FACTOR), kMinTourAccel, kMaxTourAccel);
+        const float originCameraAcc = loginSceneFixedStep
+            ? originWaypoint->fCameraMoveAccel
+            : Clamp(originWaypoint->fCameraMoveAccel * static_cast<float>(FPS_ANIMATION_FACTOR), kMinTourAccel, kMaxTourAccel);
 
         if (m_iDelayCount >= targetWaypoint->iDelay)
         {
@@ -777,7 +845,9 @@ void CCameraMove::UpdateTourWayPoint()
                     {
                         const CameraVector2 nextDir = nextSegment * (1.0f / nextDistance);
                         const float blendRate = distanceToTarget / kTourBlendDistance * 0.5f + 0.5f;
-                        tourDir = BlendVectors(nextDir, forwardDir, blendRate).Normalized();
+                        tourDir = BlendVectors(nextDir, forwardDir, blendRate);
+                        if (!loginSceneFixedStep)
+                            tourDir = tourDir.Normalized();
                     }
                 }
             }
@@ -792,20 +862,16 @@ void CCameraMove::UpdateTourWayPoint()
                     {
                         const CameraVector2 prevDir = prevSegment * (1.0f / prevDistance);
                         const float blendRate = distanceToOrigin / kTourBlendDistance * 0.5f + 0.5f;
-                        tourDir = BlendVectors(prevDir, forwardDir, blendRate).Normalized();
+                        tourDir = BlendVectors(prevDir, forwardDir, blendRate);
+                        if (!loginSceneFixedStep)
+                            tourDir = tourDir.Normalized();
                     }
                 }
             }
 
-            float speedFactor = static_cast<float>(FPS_ANIMATION_FACTOR);
-            if (m_fForceSpeed > 0.0f)
-            {
-                speedFactor *= m_fForceSpeed;
-            }
-            else if (m_fForceSpeed < 0.0f)
-            {
-                speedFactor *= -m_fForceSpeed;
-            }
+            float speedFactor = loginSceneFixedStep ? 1.0f : static_cast<float>(FPS_ANIMATION_FACTOR);
+            if (m_fForceSpeed != 0.0f)
+                speedFactor *= std::abs(m_fForceSpeed);
 
             if (m_fForceSpeed >= 0.0f && distanceToTarget <= targetCameraAcc * speedFactor)
             {
@@ -814,7 +880,8 @@ void CCameraMove::UpdateTourWayPoint()
                 continue;
             }
 
-            if (m_fForceSpeed < 0.0f && distanceToOrigin <= targetCameraAcc * speedFactor)
+            const float reverseArrivalSpeed = loginSceneFixedStep ? originCameraAcc : targetCameraAcc;
+            if (m_fForceSpeed < 0.0f && distanceToOrigin <= reverseArrivalSpeed * speedFactor)
             {
                 m_dwCurrentIndex = static_cast<DWORD>(originIndex);
                 m_iDelayCount = 0;
@@ -829,6 +896,8 @@ void CCameraMove::UpdateTourWayPoint()
             const float angleDelta = SignedAngleDelta(m_fTourCameraAngle, m_fTargetTourCameraAngle);
             float rotationStep = std::abs(angleDelta) / 30.0f;
             rotationStep = Clamp(rotationStep, 0.0f, kTourMaxRotateSpeed);
+            if (loginSceneFixedStep && m_fForceSpeed != 0.0f)
+                rotationStep *= std::abs(m_fForceSpeed);
             if (std::abs(angleDelta) <= rotationStep)
             {
                 m_fTourCameraAngle = NormalizeAngleDegrees(m_fTargetTourCameraAngle);
@@ -879,7 +948,7 @@ void CCameraMove::UpdateTourWayPoint()
             }
         }
 
-        m_iDelayCount += FPS_ANIMATION_FACTOR;
+        m_iDelayCount += loginSceneFixedStep ? 1.0 : FPS_ANIMATION_FACTOR;
         return;
     }
 }
