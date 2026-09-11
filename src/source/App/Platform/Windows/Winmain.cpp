@@ -891,6 +891,24 @@ static bool SDLCALL Win32MessageHook(void* /*userdata*/, MSG* msg)
     if (msg->message == WM_CLOSE)
         return true;
 
+    if (CUITextInputBox::GetFocusedPortable() != nullptr)
+    {
+        switch (msg->message)
+        {
+        case WM_IME_STARTCOMPOSITION:
+        case WM_IME_COMPOSITION:
+        case WM_IME_ENDCOMPOSITION:
+        case WM_IME_CHAR:
+            return true;
+        case WM_CHAR:
+            if (msg->wParam != VK_RETURN)
+                return true;
+            break;
+        default:
+            break;
+        }
+    }
+
     WndProc(msg->hwnd, msg->message, msg->wParam, msg->lParam);
     return true;
 }

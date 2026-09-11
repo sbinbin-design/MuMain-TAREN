@@ -22,6 +22,7 @@
 #include "UI/NewUI/NewUISystem.h"
 #include "Engine/Object/ZzzInterface.h"
 #include "Scenes/MainScene.h"
+#include "Core/Utilities/Log/MuLogger.h"
 
 PARTICLE  Particles[MAX_PARTICLES];
 #ifdef DEVIAS_XMAS_EVENT
@@ -337,7 +338,10 @@ void CreateEffect(int Type, vec3_t Position, vec3_t Angle, vec3_t Light, int Sub
     {
         OBJECT* o = &Effects[icntEffect];
 
-        if (g_SkillEffects.IsSkillEffect(Type, Position, Angle, Light, SubType, Owner, PKKey, SkillIndex, Skill, SkillSerialNum, Scale, sTargetIndex))
+        const bool isSkillEffect = g_SkillEffects.IsSkillEffect(
+            Type, Position, Angle, Light, SubType, Owner, PKKey, SkillIndex, Skill, SkillSerialNum, Scale, sTargetIndex);
+
+        if (isSkillEffect)
         {
             o = g_SkillEffects.CreateEffect();
         }
@@ -389,7 +393,8 @@ void CreateEffect(int Type, vec3_t Position, vec3_t Angle, vec3_t Light, int Sub
             // Data-driven effects: apply their parameter table row and any
             // one-shot creation hook, then we're done. Types whose creation is
             // not registry-driven fall through to the legacy switch below.
-            if (const Render::Effects::EffectDescriptor* desc = Render::Effects::Lookup(Type); desc && (desc->create || desc->onCreate))
+            const Render::Effects::EffectDescriptor* desc = Render::Effects::Lookup(Type);
+            if (desc && (desc->create || desc->onCreate))
             {
                 if (desc->create)
                     Render::Effects::ApplyCreateParams(o, *desc->create);
@@ -6223,9 +6228,11 @@ void CreateEffect(int Type, vec3_t Position, vec3_t Angle, vec3_t Light, int Sub
             }
             break;
             }
+
             return;
         }
     }
+
 }
 
 void MoveParticle(OBJECT* o, int Turn)

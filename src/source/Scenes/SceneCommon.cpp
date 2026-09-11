@@ -43,6 +43,7 @@ bool& EnableMainRender = g_sceneInit.LegacyRefEnableMainRender();
 #include "Render/Textures/ZzzTexture.h"
 #include "Render/Textures/ZzzOpenglUtil.h"
 #include "Engine/Object/ZzzObject.h"
+#include "Data/DataHandler/SkillData/SkillDataHandler.h"
 #include "Engine/Object/ZzzInfomation.h"
 #include "Engine/Object/ZzzOpenData.h"
 #include "UI/Legacy/UIManager.h"
@@ -396,7 +397,7 @@ static void SetupGemIntegrationMessage()
 static void SetupCancelSkillMessage(int index)
 {
     wchar_t tBuf[MAX_GLOBAL_TEXT_STRING];
-    swprintf_s(tBuf, MAX_GLOBAL_TEXT_STRING, L"%ls%ls", SkillAttribute[index].Name, I18N::Game::WouldYouLikeToCancel);
+    swprintf_s(tBuf, MAX_GLOBAL_TEXT_STRING, L"%ls%ls", g_SkillDataHandler.GetSkillName(index), I18N::Game::WouldYouLikeToCancel);
     g_iNumLineMessageBoxCustom = SeparateTextIntoLines(tBuf, g_lpszMessageBoxCustom[0], 2, MAX_LENGTH_CMB);
     g_iCancelSkillTarget = index;
 }

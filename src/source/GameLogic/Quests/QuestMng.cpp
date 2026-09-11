@@ -5,6 +5,7 @@
 #include "stdafx.h"
 #include "QuestMng.h"
 #include "I18N/All.h"
+#include "GameLogic/Quests/CSQuest.h"
 
 
 
@@ -12,6 +13,8 @@
 
 #include "UI/NewUI/NewUISystem.h"
 #include "Core/Utilities/UsefulDef.h"
+#include "Data/GameConfig/GameConfig.h"
+#include "Data/DataHandler/SkillData/SkillDataHandler.h"
 
 #define	QM_NPCDIALOGUE_FILE			L"Data\\Local\\NPCDialogue.bmd"
 #define	QM_QUESTPROGRESS_FILE		L"Data\\Local\\QuestProgress.bmd"
@@ -32,9 +35,48 @@ CQuestMng::~CQuestMng()
 
 void CQuestMng::LoadQuestScript()
 {
+    const bool isChineseLocale = GameConfig::GetInstance().GetUILocale() == L"zh-CN";
+    const std::wstring officialQuestFile = L"Data\\Local\\Quest.bmd";
+    const std::wstring officialQuestWordsFile = L"Data\\Local\\QuestWords.bmd";
+    const std::wstring chineseQuestFile = L"Data\\Local\\zh-CN\\Quest_zh-CN.bmd";
+    const std::wstring chineseQuestWordsFile = L"Data\\Local\\zh-CN\\QuestWords_zh-CN.bmd";
+
+    auto fileExists = [](const std::wstring& filename)
+    {
+        FILE* file = ::_wfopen(filename.c_str(), L"rb");
+        if (file == nullptr)
+            return false;
+        ::fclose(file);
+        return true;
+    };
+
+    bool useOfficialChinese = isChineseLocale && fileExists(officialQuestFile) && fileExists(officialQuestWordsFile);
+    const std::wstring defaultQuestFile = L"Data\\Local\\" + g_strSelectedML + L"\\Quest_" + g_strSelectedML + L".bmd";
+    const std::wstring defaultQuestWordsFile =
+        L"Data\\Local\\" + g_strSelectedML + L"\\QuestWords_" + g_strSelectedML + L".bmd";
+
+    const std::wstring questFile = useOfficialChinese ? officialQuestFile
+                                                       : (isChineseLocale && fileExists(chineseQuestFile)
+                                                              ? chineseQuestFile
+                                                              : defaultQuestFile);
+    const std::wstring questWordsFile = useOfficialChinese ? officialQuestWordsFile
+                                                           : (isChineseLocale && fileExists(chineseQuestWordsFile)
+                                                                  ? chineseQuestWordsFile
+                                                                  : defaultQuestWordsFile);
+    const unsigned int sourceCodePage = useOfficialChinese ? 54936u : CP_UTF8;
+
+    if (!g_csQuest.OpenQuestScript(questFile.c_str(), sourceCodePage) ||
+        !LoadQuestWordsScript(questWordsFile, sourceCodePage))
+    {
+        if (useOfficialChinese)
+        {
+            g_csQuest.OpenQuestScript(chineseQuestFile.c_str(), CP_UTF8);
+            LoadQuestWordsScript(chineseQuestWordsFile, CP_UTF8);
+        }
+    }
+
     LoadNPCDialogueScript();
     LoadQuestProgressScript();
-    LoadQuestWordsScript();
 }
 
 void CQuestMng::LoadNPCDialogueScript()
@@ -99,17 +141,12 @@ void CQuestMng::LoadQuestProgressScript()
     ::fclose(fp);
 }
 
-void CQuestMng::LoadQuestWordsScript()
+bool CQuestMng::LoadQuestWordsScript(const std::wstring& questWordsFile, unsigned int sourceCodePage)
 {
-    FILE* fp = ::_wfopen(QM_QUESTWORDS_FILE, L"rb");
+    FILE* fp = ::_wfopen(questWordsFile.c_str(), L"rb");
     if (fp == NULL)
     {
-        wchar_t szMessage[256];
-        ::mu_swprintf(szMessage, L"%ls file not found.\r\n", QM_QUESTWORDS_FILE);
-        g_ErrorReport.Write(szMessage);
-        ::MessageBox(g_hWnd, szMessage, NULL, MB_OK);
-        ::PostMessage(g_hWnd, WM_DESTROY, 0, 0);
-        return;
+        return false;
     }
 
 #pragma pack(push, 1)
@@ -124,20 +161,33 @@ void CQuestMng::LoadQuestWordsScript()
     SQuestWordsHeader sQuestWordsHeader;
     char rawWords[1024] { };
     wchar_t szWords[1024] { };
+    QuestWordsMap loadedWords;
 
     while (0 != ::fread(&sQuestWordsHeader, nSize, 1, fp))
     {
         ::BuxConvert((BYTE*)&sQuestWordsHeader, nSize);
 
-        ::fread(rawWords, sQuestWordsHeader.m_nWordsLen, 1, fp);
+        if (sQuestWordsHeader.m_nWordsLen <= 0 || sQuestWordsHeader.m_nWordsLen >= static_cast<short>(sizeof(rawWords)) ||
+            ::fread(rawWords, sQuestWordsHeader.m_nWordsLen, 1, fp) != 1)
+        {
+            ::fclose(fp);
+            return false;
+        }
         ::BuxConvert((BYTE*)rawWords, sQuestWordsHeader.m_nWordsLen);
-        CMultiLanguage::ConvertFromUtf8(szWords, rawWords, 1024);
+        if (CMultiLanguage::ConvertFromCodePageBounded(szWords, std::size(szWords), rawWords, sourceCodePage,
+                                                       sQuestWordsHeader.m_nWordsLen) == 0)
+        {
+            ::fclose(fp);
+            return false;
+        }
 
         std::wstring strWords = szWords;
-        m_mapQuestWords.insert(std::make_pair(sQuestWordsHeader.m_nIndex, strWords));
+        loadedWords.insert(std::make_pair(sQuestWordsHeader.m_nIndex, strWords));
     }
 
     ::fclose(fp);
+    m_mapQuestWords.swap(loadedWords);
+    return true;
 }
 
 void CQuestMng::SetQuestRequestReward(const BYTE* pbyRequestRewardPacket)
@@ -546,7 +596,7 @@ bool CQuestMng::GetRequestRewardText(SRequestRewardText* aDest, int nDestCount, 
                 aDest[nLine].m_dwColor = ARGB(255, 223, 191, 103);
 
             ::mu_swprintf(aDest[nLine].m_szText, L"Skill: %ls",
-                SkillAttribute[pRequestInfo->m_wIndex].Name);
+                g_SkillDataHandler.GetSkillName(pRequestInfo->m_wIndex));
             break;
 
 #ifndef ASG_ADD_TIME_LIMIT_QUEST

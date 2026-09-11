@@ -920,7 +920,7 @@
     <comment>legacy_id=228,337,2811</comment>
   </data>
   <data name="Cancel" xml:space="preserve">
-    <value>Cancel</value>
+    <value>取消</value>
     <comment>legacy_id=229,384,3114</comment>
   </data>
   <data name="Merchant" xml:space="preserve">
@@ -1842,7 +1842,7 @@
     <comment>legacy_id=483</comment>
   </data>
   <data name="Welcome to" xml:space="preserve">
-    <value>Welcome to %s</value>
+    <value>欢迎来到%s</value>
     <comment>legacy_id=484</comment>
   </data>
   <data name="Of" xml:space="preserve">

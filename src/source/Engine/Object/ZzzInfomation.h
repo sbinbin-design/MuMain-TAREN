@@ -29,7 +29,7 @@ extern void PrintItem(wchar_t* FileName);
 
 extern MONSTER_SCRIPT MonsterScript[MAX_MONSTER];
 
-extern void OpenMonsterScript(wchar_t* FileName);
+extern bool OpenMonsterScript(const wchar_t* FileName, unsigned int sourceCodePage = CP_UTF8);
 extern void MonsterConvert(MONSTER* m, int Level);
 extern const wchar_t* getMonsterName(int type);
 

@@ -4,6 +4,7 @@
 #include "stdafx.h"
 
 #include <cstring>
+#include <utility>
 
 CMultiLanguage* CMultiLanguage::ms_Singleton = NULL;
 
@@ -98,6 +99,56 @@ int32_t CMultiLanguage::ConvertFromCodePage(wchar_t* target, const char* source,
 int32_t CMultiLanguage::ConvertFromUtf8(wchar_t* target, const char* source, int maxSourceLength)
 {
     return ConvertFromCodePage(target, source, CP_UTF8, maxSourceLength);
+}
+
+int32_t CMultiLanguage::ConvertFromCodePageBounded(wchar_t* target, std::size_t targetCapacity,
+                                                   const char* source, unsigned int codePage,
+                                                   int maxSourceLength)
+{
+    if (target == nullptr || targetCapacity == 0 || source == nullptr)
+    {
+        return 0;
+    }
+
+    const int capacity = static_cast<int>(targetCapacity - 1);
+    if (capacity <= 0)
+    {
+        target[0] = L'\0';
+        return 0;
+    }
+
+    const int written = MultiByteToWideChar(codePage, 0, source, maxSourceLength, target, capacity);
+    if (written <= 0)
+    {
+        target[0] = L'\0';
+        return 0;
+    }
+
+    target[written] = L'\0';
+    return written;
+}
+
+bool CMultiLanguage::ConvertFromCodePageToString(std::wstring& target, const char* source,
+                                                 unsigned int codePage, int sourceLength)
+{
+    target.clear();
+    if (source == nullptr || sourceLength < 0)
+        return false;
+    if (sourceLength == 0)
+        return true;
+
+    const int requiredChars = MultiByteToWideChar(codePage, MB_ERR_INVALID_CHARS, source, sourceLength, nullptr, 0);
+    if (requiredChars <= 0)
+        return false;
+
+    std::wstring converted(requiredChars, L'\0');
+    const int written = MultiByteToWideChar(codePage, MB_ERR_INVALID_CHARS, source, sourceLength, converted.data(),
+                                            requiredChars);
+    if (written != requiredChars)
+        return false;
+
+    target = std::move(converted);
+    return true;
 }
 
 int32_t CMultiLanguage::ConvertToUtf8(char* target, const wchar_t* source, int maxSourceLength)

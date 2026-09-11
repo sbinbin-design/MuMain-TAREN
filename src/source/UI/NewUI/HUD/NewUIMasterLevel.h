@@ -3,6 +3,10 @@
 
 #pragma once
 
+#include <map>
+#include <set>
+#include <utility>
+
 #include "UI/NewUI/NewUIBase.h"
 #include "UI/NewUI/Widgets/NewUIButton.h"
 
@@ -67,6 +71,17 @@ struct _MASTER_SKILL_TOOLTIP_FILE
     char Info7[64];
 };
 
+struct _LOCALIZED_MASTER_SKILL_TOOLTIP
+{
+    wchar_t Info1[64];
+    wchar_t Info2[256];
+    wchar_t Info3[32];
+    wchar_t Info4[64];
+    wchar_t Info5[64];
+    wchar_t Info6[64];
+    wchar_t Info7[64];
+};
+
 namespace SEASON3B
 {
     //size = 404
@@ -119,6 +134,9 @@ namespace SEASON3B
         DWORD ClassNameTextIndex;
 
         std::map<ActionSkillType, _MASTER_SKILL_TOOLTIP> map_masterSkillToolTip;
+        std::map<std::pair<ActionSkillType, MASTER_SKILL_TREE_CLASS>, _LOCALIZED_MASTER_SKILL_TOOLTIP>
+            map_localizedMasterSkillToolTipByClass;
+        std::map<ActionSkillType, _LOCALIZED_MASTER_SKILL_TOOLTIP> map_localizedMasterSkillToolTip;
         std::map<BYTE, _MASTER_SKILLTREE_DATA> map_masterData;
         
         CNewUIManager* m_pNewUIMng;
@@ -138,9 +156,12 @@ namespace SEASON3B
 
         void SetMasterSkillTreeData();
         void SetMasterSkillToolTipData();
+        void LoadLocalizedMasterSkillTooltip(const wchar_t* path);
+        void SetLocalizedMasterSkillToolTipData();
 
         void ClearSkillTreeData();
         void ClearSkillTooltipData();
+        void ClearLocalizedSkillTooltipData();
 
         void RenderText() const;
         void RenderIcon();

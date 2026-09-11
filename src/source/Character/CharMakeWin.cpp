@@ -62,6 +62,7 @@ namespace
     constexpr int kInputSpriteOffsetY = 317;
     constexpr int kInputTextOffsetX = 78;
     constexpr int kInputTextOffsetY = 21;
+    constexpr int kPortableInputBaselineCompensationY = -2;
     constexpr int kDescSpriteOffsetY = 355;
     constexpr int kStatSpriteOffsetY = 24;
     constexpr int kDescriptionTextOffsetX = 10;
@@ -229,7 +230,9 @@ void CCharMakeWin::SetPosition(int nXCoord, int nYCoord)
     {
         g_pSingleTextInputBox->SetPosition(
             int((m_asprBack[CMW_SPR_INPUT].GetXPos() + kInputTextOffsetX) / g_fScreenRate_x),
-            int((m_asprBack[CMW_SPR_INPUT].GetYPos() + kInputTextOffsetY) / g_fScreenRate_y));
+            int((m_asprBack[CMW_SPR_INPUT].GetYPos() + kInputTextOffsetY +
+                 kPortableInputBaselineCompensationY) /
+                g_fScreenRate_y));
     }
 
     m_asprBack[CMW_SPR_DESC].SetPosition(nXCoord, nYCoord + kDescSpriteOffsetY);
@@ -259,6 +262,14 @@ void CCharMakeWin::Show(bool bShow)
         {
             g_pSingleTextInputBox->Configure({
                 .textLimit = 10,
+                .textAlpha = 255,
+                .textR = 255,
+                .textG = 255,
+                .textB = 255,
+                .backAlpha = 0,
+                .backR = 0,
+                .backG = 0,
+                .backB = 0,
             });
             g_pSingleTextInputBox->GiveFocus();
         }

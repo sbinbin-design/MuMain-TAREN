@@ -8,6 +8,7 @@
 #include "Engine/Object/ZzzInfomation.h"
 #include "Engine/Object/ZzzInventory.h"   // PartyNumber, STRP_*
 #include "GameLogic/Skills/SkillManager.h"
+#include "Data/DataHandler/SkillData/SkillDataHandler.h"
 #include "UI/Legacy/UIJewelHarmony.h"     // StrengthenCapability
 #include "UI/Legacy/UIManager.h"          // g_pUIJewelHarmonyinfo
 
@@ -536,7 +537,7 @@ void EmitBottomBanners(Model& m, const BuildOptions& options, int skillType)
     const int SkillUseType = SkillAttribute[skillType].SkillUseType;
     if (SkillUseType == SKILL_USE_TYPE_BRAND)
     {
-        AddFormattedWide(m, 1480, LineColor::DarkRed, SkillAttribute[BrandType].Name);
+        AddFormattedWide(m, 1480, LineColor::DarkRed, g_SkillDataHandler.GetSkillName(BrandType));
         AddFormatted(m, 1481, LineColor::DarkRed, SkillAttribute[BrandType].Damage);
     }
     if (SkillUseType == SKILL_USE_TYPE_MASTER)
@@ -611,7 +612,7 @@ void BuildModel(const BuildOptions& options, Model& outModel)
 
     const int SkillType = options.skillType;
     if (SkillType < 0 || SkillType >= MAX_SKILLS) return;
-    if (SkillAttribute[SkillType].Name[0] == L'\0') return;
+    if (g_SkillDataHandler.GetSkillName(SkillType)[0] == L'\0') return;
 
     // Resolve display strings + raw fields.
     wchar_t lpszName[256];

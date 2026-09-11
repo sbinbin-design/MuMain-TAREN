@@ -17,6 +17,7 @@
 #include "Engine/Physics/PhysicsManager.h"
 #include "GameLogic/Quests/CSQuest.h"
 #include "GameLogic/Items/CSItemOption.h"
+#include "Data/GameConfig/GameConfig.h"
 #include "Network/MoveCommandData.h"
 #include "UI/Legacy/UIMng.h"
 #include "Data/DataHandler/LoadData.h"
@@ -38,6 +39,19 @@
 ///////////////////////////////////////////
 extern BOOL g_bUseChatListBox;
 ///////////////////////////////////////////
+
+namespace
+{
+bool CanOpenMonsterNameFile(const wchar_t* fileName)
+{
+    FILE* file = _wfopen(fileName, L"rb");
+    if (file == nullptr)
+        return false;
+
+    fclose(file);
+    return true;
+}
+}
 
 bool Flip = false;
 
@@ -5608,19 +5622,53 @@ void OpenBasicData(HDC hDC)
     // runtime any more.
 
     mu_swprintf(Text, L"Data\\Local\\%ls\\Item_%ls.bmd", g_strSelectedML.c_str(), g_strSelectedML.c_str());
-    g_ItemDataHandler.Load(Text);
+    const bool itemDataLoaded = g_ItemDataHandler.Load(Text);
+    g_ItemDataHandler.ClearLocalizedItemNames();
+    if (itemDataLoaded && GameConfig::GetInstance().GetUILocale() == L"zh-CN")
+    {
+        g_ItemDataHandler.LoadOfficialLocalizedItemNames(Text, L"Data\\Local\\item.bmd");
+    }
 
-    mu_swprintf(Text, L"Data\\Local\\%ls\\movereq_%ls.bmd", g_strSelectedML.c_str(), g_strSelectedML.c_str());
+    std::wstring moveReqFile = L"Data\\Local\\" + g_strSelectedML + L"\\movereq_" + g_strSelectedML + L".bmd";
+    const std::wstring chineseMoveReqFile = L"Data\\Local\\zh-CN\\movereq_zh-CN.bmd";
+    if (GameConfig::GetInstance().GetUILocale() == L"zh-CN" &&
+        CanOpenMonsterNameFile(chineseMoveReqFile.c_str()))
+    {
+        moveReqFile = chineseMoveReqFile;
+    }
+    mu_swprintf(Text, L"%ls", moveReqFile.c_str());
     SEASON3B::CMoveCommandData::OpenMoveReqScript(Text);
 
-    mu_swprintf(Text, L"Data\\Local\\%ls\\NpcName_%ls.txt", g_strSelectedML.c_str(), g_strSelectedML.c_str());
-    OpenMonsterScript(Text);
+    const std::wstring defaultNpcNameFile =
+        L"Data\\Local\\" + g_strSelectedML + L"\\NpcName_" + g_strSelectedML + L".txt";
+    const std::wstring chineseNpcNameFile = L"Data\\Local\\zh-CN\\NpcName_zh-CN.txt";
+    const std::wstring officialNpcNameFile = L"Data\\Local\\NpcName(Chs).txt";
+    const bool isChineseLocale = GameConfig::GetInstance().GetUILocale() == L"zh-CN";
 
-    mu_swprintf(Text, L"Data\\Local\\%ls\\Quest_%ls.bmd", g_strSelectedML.c_str(), g_strSelectedML.c_str());
-    g_csQuest.OpenQuestScript(Text);
+    if (isChineseLocale && CanOpenMonsterNameFile(officialNpcNameFile.c_str()))
+    {
+        if (!OpenMonsterScript(officialNpcNameFile.c_str(), 54936u))
+        {
+            if (!OpenMonsterScript(chineseNpcNameFile.c_str(), CP_UTF8))
+                OpenMonsterScript(defaultNpcNameFile.c_str(), CP_UTF8);
+        }
+    }
+    else if (isChineseLocale && CanOpenMonsterNameFile(chineseNpcNameFile.c_str()))
+    {
+        OpenMonsterScript(chineseNpcNameFile.c_str(), CP_UTF8);
+    }
+    else
+    {
+        OpenMonsterScript(defaultNpcNameFile.c_str(), CP_UTF8);
+    }
 
     mu_swprintf(Text, L"Data\\Local\\%ls\\Skill_%ls.bmd", g_strSelectedML.c_str(), g_strSelectedML.c_str());
-    g_SkillDataHandler.Load(Text);
+    const bool skillDataLoaded = g_SkillDataHandler.Load(Text);
+    g_SkillDataHandler.ClearLocalizedSkillNames();
+    if (skillDataLoaded && GameConfig::GetInstance().GetUILocale() == L"zh-CN")
+    {
+        g_SkillDataHandler.LoadOfficialLocalizedSkillNames(L"Data\\Local\\Skill.bmd");
+    }
 
     mu_swprintf(Text, L"Data\\Local\\%ls\\SocketItem_%ls.bmd", g_strSelectedML.c_str(), g_strSelectedML.c_str());
     g_SocketItemMgr.OpenSocketItemScript(Text);

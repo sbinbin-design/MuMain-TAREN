@@ -12,6 +12,11 @@
 
 using namespace SEASON3B;
 
+namespace
+{
+constexpr int kLegacyTextBaselineCompensationY = -2;
+}
+
 CNewUIHeroPositionInfo::CNewUIHeroPositionInfo()
 {
     m_pNewUIMng = NULL;
@@ -34,10 +39,14 @@ bool CNewUIHeroPositionInfo::Create(CNewUIManager* pNewUIMng, int x, int y)
     m_pNewUIMng = pNewUIMng;
     m_pNewUIMng->AddUIObj(SEASON3B::INTERFACE_HERO_POSITION_INFO, this);
 
-    WidenX = (HERO_POSITION_INFO_BASEB_WINDOW_WIDTH + (HERO_POSITION_INFO_BASEB_WINDOW_WIDTH * 0.2f));
-    if (WindowWidth > 800)
+    WidenX = HERO_POSITION_INFO_BASEB_WINDOW_WIDTH;
+    if (WindowWidth == 800)
     {
         WidenX = (HERO_POSITION_INFO_BASEB_WINDOW_WIDTH + (HERO_POSITION_INFO_BASEB_WINDOW_WIDTH * 0.4f));
+    }
+    else if (WindowWidth == 1024)
+    {
+        WidenX = (HERO_POSITION_INFO_BASEB_WINDOW_WIDTH + (HERO_POSITION_INFO_BASEB_WINDOW_WIDTH * 0.2f));
     }
 
     SetPos(x, y);
@@ -189,7 +198,13 @@ bool CNewUIHeroPositionInfo::Render()
     //--
     mu_swprintf(szText, L"%ls (%d , %d)", gMapManager.GetMapName(gMapManager.WorldActive), m_CurHeroPosition.x, m_CurHeroPosition.y);
 
-    g_pRenderText->RenderText(m_Pos.x + 10, m_Pos.y + 5, szText, WidenX + 20, 13 - 4, RT3_SORT_CENTER);
+    g_pRenderText->RenderText(
+        m_Pos.x + 10,
+        m_Pos.y + 5 + kLegacyTextBaselineCompensationY,
+        szText,
+        WidenX + 20,
+        13 - 4,
+        RT3_SORT_CENTER);
 
     DisableAlphaBlend();
     return true;

@@ -10,11 +10,183 @@
 #include "Audio/DSPlaySound.h"
 #include "UI/NewUI/Dialogs/NewUICommonMessageBox.h"
 #include "GameLogic/Skills/SkillManager.h"
+#include "Data/DataHandler/SkillData/SkillDataHandler.h"
+#include "Data/GameConfig/GameConfig.h"
+
+#include <cstddef>
+#include <cwchar>
+#include <iterator>
+#include <utility>
 
 namespace 
 {
     _MASTER_SKILLTREE_DATA m_stMasterSkillTreeData[MAX_MASTER_SKILL_DATA];
     _MASTER_SKILL_TOOLTIP m_stMasterSkillTooltip[MAX_MASTER_SKILL_DATA];
+
+    constexpr std::size_t kMasterSkillTooltipPayloadSize =
+        sizeof(_MASTER_SKILL_TOOLTIP_FILE) * MAX_MASTER_SKILL_DATA;
+    constexpr unsigned int kMasterSkillTooltipCodePage = 54936u;
+    constexpr MASTER_SKILL_TREE_CLASS kLocalizedClassBits[] =
+    {
+        MASTER_SKILL_TREE_CLASS_BLADEMASTER,
+        MASTER_SKILL_TREE_CLASS_GRANDMASTER,
+        MASTER_SKILL_TREE_CLASS_HIGHELF,
+        MASTER_SKILL_TREE_CLASS_DIMENSIONMASTER,
+        MASTER_SKILL_TREE_CLASS_DUELMASTER,
+        MASTER_SKILL_TREE_CLASS_LORDEMPEROR,
+        MASTER_SKILL_TREE_CLASS_TEMPLEKNIGHT,
+    };
+
+    struct LocalizedTooltipException
+    {
+        int skill;
+        MASTER_SKILL_TREE_CLASS activeClass;
+    };
+
+    constexpr LocalizedTooltipException kLocalizedTooltipExceptions[] =
+    {
+        { 549, MASTER_SKILL_TREE_CLASS_TEMPLEKNIGHT },
+        { 550, MASTER_SKILL_TREE_CLASS_TEMPLEKNIGHT },
+        { 551, MASTER_SKILL_TREE_CLASS_TEMPLEKNIGHT },
+        { 363, MASTER_SKILL_TREE_CLASS_BLADEMASTER },
+        { 426, MASTER_SKILL_TREE_CLASS_HIGHELF },
+        { 460, MASTER_SKILL_TREE_CLASS_DIMENSIONMASTER },
+        { 554, MASTER_SKILL_TREE_CLASS_TEMPLEKNIGHT },
+        { 555, MASTER_SKILL_TREE_CLASS_TEMPLEKNIGHT },
+        { 565, MASTER_SKILL_TREE_CLASS_TEMPLEKNIGHT },
+        { 593, MASTER_SKILL_TREE_CLASS_TEMPLEKNIGHT },
+    };
+
+    static_assert(sizeof(_MASTER_SKILL_TOOLTIP_FILE) == 616);
+    static_assert(offsetof(_MASTER_SKILL_TOOLTIP_FILE, Info1) == 6);
+    static_assert(offsetof(_MASTER_SKILL_TOOLTIP_FILE, Info2) == 70);
+    static_assert(offsetof(_MASTER_SKILL_TOOLTIP_FILE, Info3) == 326);
+    static_assert(offsetof(_MASTER_SKILL_TOOLTIP_FILE, Info4) == 358);
+    static_assert(offsetof(_MASTER_SKILL_TOOLTIP_FILE, Info5) == 422);
+    static_assert(offsetof(_MASTER_SKILL_TOOLTIP_FILE, Info6) == 486);
+    static_assert(offsetof(_MASTER_SKILL_TOOLTIP_FILE, Info7) == 550);
+
+    bool IsLocalizedTooltipException(ActionSkillType skill, MASTER_SKILL_TREE_CLASS activeClass)
+    {
+        for (const auto& exception : kLocalizedTooltipExceptions)
+        {
+            if (exception.skill == skill && exception.activeClass == activeClass)
+                return true;
+        }
+        return false;
+    }
+
+    bool IsPrintfConversion(wchar_t value)
+    {
+        return value != L'\0' && wcschr(L"diouxXfFeEgGaAcsp%", value) != nullptr;
+    }
+
+    bool GetPrintfToken(const wchar_t* format, std::size_t& position, std::wstring& token)
+    {
+        const std::size_t start = position++;
+        if (format[position] == L'%')
+        {
+            ++position;
+            token.assign(format + start, position - start);
+            return true;
+        }
+
+        while (format[position] != L'\0' && wcschr(L"-+ #0'", format[position]) != nullptr)
+            ++position;
+        while (format[position] >= L'0' && format[position] <= L'9')
+            ++position;
+        if (format[position] == L'*' || format[position] == L'$')
+            return false;
+        if (format[position] == L'.')
+        {
+            ++position;
+            if (format[position] == L'*')
+                return false;
+            while (format[position] >= L'0' && format[position] <= L'9')
+                ++position;
+        }
+        while (format[position] != L'\0' && wcschr(L"hlLzjt", format[position]) != nullptr)
+            ++position;
+        if (!IsPrintfConversion(format[position]) || format[position] == L'%')
+            return false;
+
+        ++position;
+        token.assign(format + start, position - start);
+        return true;
+    }
+
+    bool GetPrintfSignature(const wchar_t* format, std::vector<std::wstring>& signature)
+    {
+        signature.clear();
+        for (std::size_t position = 0; format[position] != L'\0';)
+        {
+            if (format[position] != L'%')
+            {
+                ++position;
+                continue;
+            }
+
+            std::wstring token;
+            if (!GetPrintfToken(format, position, token))
+                return false;
+            signature.push_back(std::move(token));
+        }
+        return true;
+    }
+
+    bool HasCompatiblePrintfSignature(const wchar_t* english, const wchar_t* localized)
+    {
+        std::vector<std::wstring> englishSignature;
+        std::vector<std::wstring> localizedSignature;
+        return GetPrintfSignature(english, englishSignature) &&
+            GetPrintfSignature(localized, localizedSignature) && englishSignature == localizedSignature;
+    }
+
+    bool DecodeLocalizedTooltipField(const char* source, std::size_t sourceCapacity,
+                                     wchar_t* target, std::size_t targetCapacity)
+    {
+        std::size_t sourceLength = 0;
+        while (sourceLength < sourceCapacity && source[sourceLength] != '\0')
+            ++sourceLength;
+        if (sourceLength == sourceCapacity)
+            return false;
+
+        std::wstring converted;
+        if (!CMultiLanguage::ConvertFromCodePageToString(
+                converted, source, kMasterSkillTooltipCodePage, static_cast<int>(sourceLength)) ||
+            converted.size() >= targetCapacity)
+        {
+            return false;
+        }
+
+        wmemcpy(target, converted.c_str(), converted.size());
+        target[converted.size()] = L'\0';
+        return true;
+    }
+
+    bool DecodeLocalizedTooltip(const _MASTER_SKILL_TOOLTIP_FILE& source,
+                                _LOCALIZED_MASTER_SKILL_TOOLTIP& target)
+    {
+        return DecodeLocalizedTooltipField(source.Info1, sizeof(source.Info1), target.Info1, std::size(target.Info1)) &&
+            DecodeLocalizedTooltipField(source.Info2, sizeof(source.Info2), target.Info2, std::size(target.Info2)) &&
+            DecodeLocalizedTooltipField(source.Info3, sizeof(source.Info3), target.Info3, std::size(target.Info3)) &&
+            DecodeLocalizedTooltipField(source.Info4, sizeof(source.Info4), target.Info4, std::size(target.Info4)) &&
+            DecodeLocalizedTooltipField(source.Info5, sizeof(source.Info5), target.Info5, std::size(target.Info5)) &&
+            DecodeLocalizedTooltipField(source.Info6, sizeof(source.Info6), target.Info6, std::size(target.Info6)) &&
+            DecodeLocalizedTooltipField(source.Info7, sizeof(source.Info7), target.Info7, std::size(target.Info7));
+    }
+
+    bool HasCompatibleLocalizedTooltip(const _MASTER_SKILL_TOOLTIP& english,
+                                       const _LOCALIZED_MASTER_SKILL_TOOLTIP& localized)
+    {
+        return HasCompatiblePrintfSignature(english.Info1, localized.Info1) &&
+            HasCompatiblePrintfSignature(english.Info2, localized.Info2) &&
+            HasCompatiblePrintfSignature(english.Info3, localized.Info3) &&
+            HasCompatiblePrintfSignature(english.Info4, localized.Info4) &&
+            HasCompatiblePrintfSignature(english.Info5, localized.Info5) &&
+            HasCompatiblePrintfSignature(english.Info6, localized.Info6) &&
+            HasCompatiblePrintfSignature(english.Info7, localized.Info7);
+    }
 }
 
 
@@ -31,6 +203,7 @@ SEASON3B::CNewUIMasterLevel::CNewUIMasterLevel()
     this->InitMasterSkillPoint();
     this->ClearSkillTreeData();
     this->ClearSkillTooltipData();
+    this->ClearLocalizedSkillTooltipData();
 }
 
 SEASON3B::CNewUIMasterLevel::~CNewUIMasterLevel()
@@ -204,6 +377,72 @@ void SEASON3B::CNewUIMasterLevel::OpenMasterSkillTooltip(const wchar_t* path)
     }
 
     delete[] file_buffer;
+
+}
+
+void SEASON3B::CNewUIMasterLevel::LoadLocalizedMasterSkillTooltip(const wchar_t* path)
+{
+    this->map_localizedMasterSkillToolTipByClass.clear();
+    this->map_localizedMasterSkillToolTip.clear();
+
+    FILE* fp = _wfopen(path, L"rb");
+    if (fp == nullptr)
+        return;
+
+    fseek(fp, 0, SEEK_END);
+    const long fileSize = ftell(fp);
+    fseek(fp, 0, SEEK_SET);
+    if (fileSize != static_cast<long>(kMasterSkillTooltipPayloadSize + sizeof(DWORD)))
+    {
+        fclose(fp);
+        return;
+    }
+
+    std::vector<BYTE> buffer(kMasterSkillTooltipPayloadSize);
+    DWORD checksum = 0;
+    const bool readPayload = fread(buffer.data(), kMasterSkillTooltipPayloadSize, 1, fp) == 1;
+    const bool readChecksum = fread(&checksum, sizeof(checksum), 1, fp) == 1;
+    fclose(fp);
+    if (!readPayload || !readChecksum ||
+        GenerateCheckSum2(buffer.data(), static_cast<DWORD>(kMasterSkillTooltipPayloadSize), 0x2BC1) != checksum)
+    {
+        return;
+    }
+
+    using LocalizedTooltipKey = std::pair<ActionSkillType, MASTER_SKILL_TREE_CLASS>;
+    std::map<LocalizedTooltipKey, _LOCALIZED_MASTER_SKILL_TOOLTIP> loaded;
+    std::set<LocalizedTooltipKey> invalidKeys;
+    for (int i = 0; i < MAX_MASTER_SKILL_DATA; ++i)
+    {
+        auto* record = buffer.data() + i * sizeof(_MASTER_SKILL_TOOLTIP_FILE);
+        BuxConvert(record, sizeof(_MASTER_SKILL_TOOLTIP_FILE));
+
+        _MASTER_SKILL_TOOLTIP_FILE source{};
+        memcpy(&source, record, sizeof(source));
+        if (source.SkillNumber == 0)
+            continue;
+
+        _LOCALIZED_MASTER_SKILL_TOOLTIP localized{};
+        if (!DecodeLocalizedTooltip(source, localized))
+            continue;
+
+        for (const auto activeClass : kLocalizedClassBits)
+        {
+            if ((source.ClassCode & activeClass) == 0)
+                continue;
+
+            const auto key = std::make_pair(static_cast<ActionSkillType>(source.SkillNumber), activeClass);
+            if (invalidKeys.find(key) != invalidKeys.end())
+                continue;
+            if (!loaded.emplace(key, localized).second)
+            {
+                loaded.erase(key);
+                invalidKeys.insert(key);
+            }
+        }
+    }
+
+    this->map_localizedMasterSkillToolTipByClass.swap(loaded);
 }
 
 void SEASON3B::CNewUIMasterLevel::InitMasterSkillPoint()
@@ -250,6 +489,12 @@ void SEASON3B::CNewUIMasterLevel::SetMasterType(CLASS_TYPE Class)
     this->SetMasterSkillTreeData();
 
     this->SetMasterSkillToolTipData();
+
+    if (GameConfig::GetInstance().GetUILocale() == L"zh-CN")
+    {
+        this->LoadLocalizedMasterSkillTooltip(L"Data\\Local\\MasterSkillTooltip.bmd");
+        this->SetLocalizedMasterSkillToolTipData();
+    }
 
     switch (Class)
     {
@@ -340,6 +585,34 @@ void SEASON3B::CNewUIMasterLevel::SetMasterSkillToolTipData()
         {
             break;
         }
+    }
+
+    this->SetLocalizedMasterSkillToolTipData();
+}
+
+void SEASON3B::CNewUIMasterLevel::SetLocalizedMasterSkillToolTipData()
+{
+    this->map_localizedMasterSkillToolTip.clear();
+    if (GameConfig::GetInstance().GetUILocale() != L"zh-CN")
+        return;
+
+    for (const auto& [skill, english] : this->map_masterSkillToolTip)
+    {
+        if (!g_SkillDataHandler.HasLocalizedSkillName(skill) ||
+            IsLocalizedTooltipException(skill, this->classCode))
+        {
+            continue;
+        }
+
+        const auto localized = this->map_localizedMasterSkillToolTipByClass.find(
+            std::make_pair(skill, this->classCode));
+        if (localized == this->map_localizedMasterSkillToolTipByClass.end() ||
+            !HasCompatibleLocalizedTooltip(english, localized->second))
+        {
+            continue;
+        }
+
+        this->map_localizedMasterSkillToolTip.emplace(skill, localized->second);
     }
 }
 
@@ -688,6 +961,25 @@ void SEASON3B::CNewUIMasterLevel::RenderToolTip()
             return;
         }
 
+        const wchar_t* info1 = mtit->second.Info1;
+        const wchar_t* info2 = mtit->second.Info2;
+        const wchar_t* info3 = mtit->second.Info3;
+        const wchar_t* info4 = mtit->second.Info4;
+        const wchar_t* info5 = mtit->second.Info5;
+        const wchar_t* info6 = mtit->second.Info6;
+        const wchar_t* info7 = mtit->second.Info7;
+        const auto localized = this->map_localizedMasterSkillToolTip.find(Skill);
+        if (localized != this->map_localizedMasterSkillToolTip.end())
+        {
+            info1 = localized->second.Info1;
+            info2 = localized->second.Info2;
+            info3 = localized->second.Info3;
+            info4 = localized->second.Info4;
+            info5 = localized->second.Info5;
+            info6 = localized->second.Info6;
+            info7 = localized->second.Info7;
+        }
+
         auto skillInfo = CharacterAttribute->MasterSkillInfo[Skill];
         const auto skillLevel = skillInfo.GetSkillLevel();
         auto skillValue = skillInfo.GetSkillValue();
@@ -707,13 +999,13 @@ void SEASON3B::CNewUIMasterLevel::RenderToolTip()
 
         int lineCount = 0;
 
-        mu_swprintf(TextList[lineCount], L"%ls", p->Name);
+        mu_swprintf(TextList[lineCount], L"%ls", g_SkillDataHandler.GetSkillName(Skill));
 
         TextBold[lineCount] = true;
 
         lineCount++;
 
-        mu_swprintf(TextList[lineCount], mtit->second.Info1, p->SkillRank, skillLevel, it->second.MaxLevel);
+        mu_swprintf(TextList[lineCount], info1, p->SkillRank, skillLevel, it->second.MaxLevel);
 
         lineCount++;
 
@@ -721,11 +1013,11 @@ void SEASON3B::CNewUIMasterLevel::RenderToolTip()
 
         if (it->second.DefValue == -1.0f)
         {
-            mu_swprintf(buffer, mtit->second.Info2);
+            mu_swprintf(buffer, info2);
         }
         else
         {
-            mu_swprintf(buffer, mtit->second.Info2, skillLevel != 0 ? skillValue : it->second.DefValue);
+            mu_swprintf(buffer, info2, skillLevel != 0 ? skillValue : it->second.DefValue);
         }
 
         lineCount = this->SetDivideString(buffer, 0, lineCount, 0, 0, true);
@@ -738,7 +1030,7 @@ void SEASON3B::CNewUIMasterLevel::RenderToolTip()
 
             TextBold[lineCount] = 1;
 
-            mu_swprintf(buffer, mtit->second.Info2, skillNextValue);
+            mu_swprintf(buffer, info2, skillNextValue);
 
             lineCount = this->SetDivideString(buffer, 0, lineCount, 0, 0, true);
         }
@@ -751,7 +1043,7 @@ void SEASON3B::CNewUIMasterLevel::RenderToolTip()
 
             TextBold[lineCount] = 1;
 
-            mu_swprintf(buffer, mtit->second.Info3, it->second.RequiredPoints);
+            mu_swprintf(buffer, info3, it->second.RequiredPoints);
 
             if (it->second.RequiredPoints <= Master_Level_Data.nMLevelUpMPoint)
             {
@@ -765,7 +1057,7 @@ void SEASON3B::CNewUIMasterLevel::RenderToolTip()
 
         int iTextColor = this->CheckBeforeSkill(Skill, skillLevel) == true ? 0 : 2;
 
-        mu_swprintf(buffer, mtit->second.Info4);
+        mu_swprintf(buffer, info4);
 
         lineCount = this->SetDivideString(buffer, 0, lineCount, iTextColor, 0, true);
 
@@ -773,7 +1065,7 @@ void SEASON3B::CNewUIMasterLevel::RenderToolTip()
         {
             iTextColor = this->CheckRankPoint(group, p->SkillRank, skillLevel) == true ? 0 : 2;
 
-            mu_swprintf(buffer, mtit->second.Info5);
+            mu_swprintf(buffer, info5);
 
             lineCount = this->SetDivideString(buffer, 0, lineCount, iTextColor, 0, true);
 
@@ -785,7 +1077,7 @@ void SEASON3B::CNewUIMasterLevel::RenderToolTip()
                 {
                     auto requiredSkill = CharacterAttribute->MasterSkillInfo[RequireSkill];
                     iTextColor = requiredSkill.GetSkillValue() < 10 ? 2 : 0;
-                    mu_swprintf(buffer, i == 0 ? mtit->second.Info6 : mtit->second.Info7);
+                    mu_swprintf(buffer, i == 0 ? info6 : info7);
                     lineCount = this->SetDivideString(buffer, 0, lineCount, iTextColor, 0, true);
                 }
             }
@@ -1058,4 +1350,10 @@ void SEASON3B::CNewUIMasterLevel::ClearSkillTooltipData()
 {
     if (!map_masterSkillToolTip.empty())
         this->map_masterSkillToolTip.clear();
+}
+
+void SEASON3B::CNewUIMasterLevel::ClearLocalizedSkillTooltipData()
+{
+    this->map_localizedMasterSkillToolTipByClass.clear();
+    this->map_localizedMasterSkillToolTip.clear();
 }

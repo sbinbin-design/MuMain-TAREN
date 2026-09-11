@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <array>
 
 #include "Data/GameData/SkillData/SkillStructs.h"
 
@@ -13,6 +14,8 @@ public:
 
     // Data Operations - delegates to specialized classes
     bool Load(wchar_t* fileName);
+    void ClearLocalizedSkillNames();
+    bool LoadOfficialLocalizedSkillNames(const wchar_t* officialSkillFileName);
 
 #ifdef _EDITOR
     bool Save(wchar_t* fileName, std::string* outChangeLog = nullptr);
@@ -24,6 +27,8 @@ public:
     SKILL_ATTRIBUTE* GetSkillAttributes();
     SKILL_ATTRIBUTE* GetSkillAttribute(int index);
     int GetSkillCount() const;
+    const wchar_t* GetSkillName(int index) const;
+    bool HasLocalizedSkillName(int index) const;
 
 private:
     CSkillDataHandler();
@@ -32,6 +37,8 @@ private:
     // Prevent copying
     CSkillDataHandler(const CSkillDataHandler&) = delete;
     CSkillDataHandler& operator=(const CSkillDataHandler&) = delete;
+
+    std::array<std::wstring, MAX_SKILLS> m_LocalizedSkillNames;
 };
 
 #define g_SkillDataHandler CSkillDataHandler::GetInstance()

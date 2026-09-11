@@ -3,6 +3,7 @@
 
 #include "stdafx.h"
 #include "SkillManager.h"
+#include "Data/DataHandler/SkillData/SkillDataHandler.h"
 #include "Character/CharacterManager.h"
 #include "World/MapInfra/MapManager.h"
 #include "Engine/Object/ZzzCharacter.h"
@@ -48,7 +49,7 @@ void CSkillManager::GetSkillInformation(int iType, int iLevel, wchar_t* lpszName
     SKILL_ATTRIBUTE* p = &SkillAttribute[iType];
     if (lpszName)
     {
-        wcscpy(lpszName, p->Name);
+        wcscpy(lpszName, g_SkillDataHandler.GetSkillName(iType));
         // int wchars_num = MultiByteToWideChar(CP_UTF8, 0, p->Name, -1, NULL, 0);
         // MultiByteToWideChar(CP_UTF8, 0, p->Name, -1, lpszName, wchars_num);
     }

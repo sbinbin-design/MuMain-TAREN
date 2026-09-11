@@ -4306,7 +4306,7 @@ void MoveObjectSetting(int& objCount)
     {
         objCount = MoveHeavenThunder();
 
-        if (0 == (rand() % 10))
+        if (rand_fps_check(10))
         {
             vec3_t Position;
             Vector(Hero->Object.Position[0] + (float)(rand() % 5000 - 2500),

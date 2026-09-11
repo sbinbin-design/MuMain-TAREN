@@ -38,7 +38,7 @@ public:
     ~CSQuest(void);
 
     //  Quest Init Functions
-    bool OpenQuestScript(const wchar_t* filename);
+    bool OpenQuestScript(const wchar_t* filename, unsigned int sourceCodePage = CP_UTF8);
     bool IsInit(void);
     void clearQuest(void);
 

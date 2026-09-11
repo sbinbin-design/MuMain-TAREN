@@ -22,6 +22,7 @@
 #include "UI/NewUI/Inventory/NewUILuckyItemWnd.h"
 #include "UI/NewUI/NewUISystem.h"
 #include "GameLogic/Skills/SkillManager.h"
+#include "Data/DataHandler/SkillData/SkillDataHandler.h"
 #include "Engine/Object/ZzzInterface.h"
 #include "I18N/All.h"
 #include "Core/Text/TextLineWrap.h"
@@ -1510,7 +1511,7 @@ bool SEASON3B::CInfinityArrowCancelMsgBoxLayout::SetLayout()
         return false;
 
     wchar_t strText[MAX_GLOBAL_TEXT_STRING];
-    mu_swprintf(strText, L"%ls%ls", SkillAttribute[AT_SKILL_INFINITY_ARROW].Name, I18N::Game::WouldYouLikeToCancel);
+    mu_swprintf(strText, L"%ls%ls", g_SkillDataHandler.GetSkillName(AT_SKILL_INFINITY_ARROW), I18N::Game::WouldYouLikeToCancel);
     g_iCancelSkillTarget = AT_SKILL_INFINITY_ARROW; // todo: is considering master skill required here?
 
     pMsgBox->AddMsg(strText, RGBA(255, 255, 0, 255), MSGBOX_FONT_BOLD);
@@ -1554,7 +1555,7 @@ bool SEASON3B::CBuffSwellOfMPCancelMsgBoxLayOut::SetLayout()
         return false;
 
     wchar_t strText[MAX_GLOBAL_TEXT_STRING];
-    mu_swprintf(strText, L"%ls%ls", SkillAttribute[AT_SKILL_EXPANSION_OF_WIZARDRY].Name, I18N::Game::WouldYouLikeToCancel);
+    mu_swprintf(strText, L"%ls%ls", g_SkillDataHandler.GetSkillName(AT_SKILL_EXPANSION_OF_WIZARDRY), I18N::Game::WouldYouLikeToCancel);
     g_iCancelSkillTarget = AT_SKILL_EXPANSION_OF_WIZARDRY;
 
     pMsgBox->AddMsg(strText, RGBA(255, 255, 0, 255), MSGBOX_FONT_BOLD);

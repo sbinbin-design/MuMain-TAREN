@@ -140,7 +140,7 @@ public:
 protected:
     void LoadNPCDialogueScript();
     void LoadQuestProgressScript();
-    void LoadQuestWordsScript();
+    bool LoadQuestWordsScript(const std::wstring& filename, unsigned int sourceCodePage);
 };
 
 extern CQuestMng g_QuestMng;

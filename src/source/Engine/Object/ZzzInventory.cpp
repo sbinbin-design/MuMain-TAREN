@@ -36,6 +36,8 @@
 #include "GameLogic/Events/Cinematic/CDirection.h"
 #include "GameLogic/Items/ChangeRingManager.h"
 #include "GameLogic/Items/MixMgr.h"
+#include "Data/DataHandler/ItemData/ItemDataHandler.h"
+#include "Data/DataHandler/SkillData/SkillDataHandler.h"
 #include "UI/NewUI/Dialogs/NewUICommonMessageBox.h"
 #include "UI/NewUI/Dialogs/NewUICustomMessageBox.h"
 #include "UI/NewUI/Inventory/NewUIInventoryCtrl.h"
@@ -1589,6 +1591,7 @@ WORD CalcMaxDurability(const ITEM* ip, ITEM_ATTRIBUTE* p, int Level)
 void GetItemName(int iType, int iLevel, wchar_t* Text)
 {
     ITEM_ATTRIBUTE* p = &ItemAttribute[iType];
+    const wchar_t* itemDisplayName = g_ItemDataHandler.GetItemName(iType);
 
     if (iType >= ITEM_SCROLL_OF_EMPEROR_RING_OF_HONOR && iType <= ITEM_SOUL_SHARD_OF_WIZARD)
     {
@@ -1596,7 +1599,7 @@ void GetItemName(int iType, int iLevel, wchar_t* Text)
         {
             switch (iLevel)
             {
-            case 0: mu_swprintf(Text, L"%ls", p->Name); break;
+            case 0: mu_swprintf(Text, L"%ls", itemDisplayName); break;
             case 1: mu_swprintf(Text, L"%ls", I18N::Game::RingOfHonor); break;
             }
         }
@@ -1604,13 +1607,13 @@ void GetItemName(int iType, int iLevel, wchar_t* Text)
         {
             switch (iLevel)
             {
-            case 0: mu_swprintf(Text, L"%ls", p->Name); break;
+            case 0: mu_swprintf(Text, L"%ls", itemDisplayName); break;
             case 1: mu_swprintf(Text, L"%ls", I18N::Game::DarkStone); break;
             }
         }
         else
         {
-            mu_swprintf(Text, L"%ls", p->Name);
+            mu_swprintf(Text, L"%ls", itemDisplayName);
         }
     }
     else if (iType == ITEM_POTION + 12)
@@ -1626,7 +1629,7 @@ void GetItemName(int iType, int iLevel, wchar_t* Text)
     {
         switch (iLevel)
         {
-        case 0: mu_swprintf(Text, L"%ls", p->Name); break;
+        case 0: mu_swprintf(Text, L"%ls", itemDisplayName); break;
         case 1: mu_swprintf(Text, L"%ls", I18N::Game::StarOfSacredBirth); break;
         case 2: mu_swprintf(Text, L"%ls", I18N::Game::Firecracker); break;
         case 3: mu_swprintf(Text, L"%ls", I18N::Game::HeartOfLove); break;
@@ -1656,18 +1659,18 @@ void GetItemName(int iType, int iLevel, wchar_t* Text)
     {
         switch (iLevel)
         {
-        case 0:mu_swprintf(Text, L"%ls %ls", I18N::Game::ENG, p->Name); break;
-        case 1:mu_swprintf(Text, L"%ls %ls", I18N::Game::STA, p->Name); break;
-        case 2:mu_swprintf(Text, L"%ls %ls", I18N::Game::AGI, p->Name); break;
-        case 3:mu_swprintf(Text, L"%ls %ls", I18N::Game::STR, p->Name); break;
-        case 4:mu_swprintf(Text, L"%ls %ls", I18N::Game::Command, p->Name); break;
+        case 0:mu_swprintf(Text, L"%ls %ls", I18N::Game::ENG, itemDisplayName); break;
+        case 1:mu_swprintf(Text, L"%ls %ls", I18N::Game::STA, itemDisplayName); break;
+        case 2:mu_swprintf(Text, L"%ls %ls", I18N::Game::AGI, itemDisplayName); break;
+        case 3:mu_swprintf(Text, L"%ls %ls", I18N::Game::STR, itemDisplayName); break;
+        case 4:mu_swprintf(Text, L"%ls %ls", I18N::Game::Command, itemDisplayName); break;
         }
     }
     else if (iType == ITEM_LOCHS_FEATHER)
     {
         switch (iLevel)
         {
-        case 0: mu_swprintf(Text, L"%ls", p->Name); break;
+        case 0: mu_swprintf(Text, L"%ls", itemDisplayName); break;
         case 1: mu_swprintf(Text, L"%ls", I18N::Game::CrestOfMonarch); break;
         }
     }
@@ -1675,15 +1678,15 @@ void GetItemName(int iType, int iLevel, wchar_t* Text)
     {
         switch (iLevel)
         {
-        case 0: mu_swprintf(Text, L"%ls %ls", I18N::Game::DarkHorse, p->Name); break;
-        case 1: mu_swprintf(Text, L"%ls %ls", I18N::Game::DarkRaven, p->Name); break;
+        case 0: mu_swprintf(Text, L"%ls %ls", I18N::Game::DarkHorse, itemDisplayName); break;
+        case 1: mu_swprintf(Text, L"%ls %ls", I18N::Game::DarkRaven, itemDisplayName); break;
         }
     }
     else if (iType == ITEM_POTION + 21)
     {
         switch (iLevel)
         {
-        case 0: mu_swprintf(Text, L"%ls", p->Name); break;
+        case 0: mu_swprintf(Text, L"%ls", itemDisplayName); break;
         case 1: mu_swprintf(Text, L"%ls", I18N::Game::Stone); break;
         case 2: mu_swprintf(Text, L"%ls", I18N::Game::StoneOfFriendship); break;
         case 3: mu_swprintf(Text, L"%ls", I18N::Game::SignOfLord); break;
@@ -1697,7 +1700,7 @@ void GetItemName(int iType, int iLevel, wchar_t* Text)
     {
         switch (iLevel)
         {
-        case 0: mu_swprintf(Text, L"%ls", p->Name); break;
+        case 0: mu_swprintf(Text, L"%ls", itemDisplayName); break;
         case 1: mu_swprintf(Text, L"%ls", I18N::Game::RingOfWarrior); break;
         case 2: mu_swprintf(Text, L"%ls", I18N::Game::RingOfWarrior); break;
         case 3: mu_swprintf(Text, L"%ls", I18N::Game::RingOfGlory); break;
@@ -1707,39 +1710,39 @@ void GetItemName(int iType, int iLevel, wchar_t* Text)
     {
         switch (iLevel)
         {
-        case 0: mu_swprintf(Text, L"%ls", p->Name); break;
+        case 0: mu_swprintf(Text, L"%ls", itemDisplayName); break;
         case 1:	mu_swprintf(Text, L"%ls", I18N::Game::OliveOfLove); break;
         }
     }
     else if (iType == ITEM_ORB_OF_SUMMONING)
     {
-        mu_swprintf(Text, L"%ls %ls", SkillAttribute[30 + iLevel].Name, I18N::Game::Jewel);
+        mu_swprintf(Text, L"%ls %ls", g_SkillDataHandler.GetSkillName(30 + iLevel), I18N::Game::Jewel);
     }
     else if (iType == ITEM_RED_RIBBON_BOX)
     {
-        mu_swprintf(Text, L"%ls", p->Name);
+        mu_swprintf(Text, L"%ls", itemDisplayName);
     }
     else if (iType == ITEM_GREEN_RIBBON_BOX)
     {
-        mu_swprintf(Text, L"%ls", p->Name);
+        mu_swprintf(Text, L"%ls", itemDisplayName);
     }
     else if (iType == ITEM_BLUE_RIBBON_BOX)
     {
-        mu_swprintf(Text, L"%ls", p->Name);
+        mu_swprintf(Text, L"%ls", itemDisplayName);
     }
     else if (iType == ITEM_SCROLL_OF_FIRE_SCREAM)
     {
-        mu_swprintf(Text, L"%ls", p->Name);
+        mu_swprintf(Text, L"%ls", itemDisplayName);
     }
     else if (iType >= ITEM_PUMPKIN_OF_LUCK && iType <= ITEM_JACK_OLANTERN_DRINK)
     {
-        mu_swprintf(Text, L"%ls", p->Name);
+        mu_swprintf(Text, L"%ls", itemDisplayName);
     }
     else if (iType == ITEM_PINK_CHOCOLATE_BOX)
     {
         switch (iLevel)
         {
-        case 0: mu_swprintf(Text, L"%ls", p->Name); break;
+        case 0: mu_swprintf(Text, L"%ls", itemDisplayName); break;
         case 1:	mu_swprintf(Text, L"%ls", I18N::Game::LilacCandyBox); break;
         }
     }
@@ -1747,7 +1750,7 @@ void GetItemName(int iType, int iLevel, wchar_t* Text)
     {
         switch (iLevel)
         {
-        case 0: mu_swprintf(Text, L"%ls", p->Name); break;
+        case 0: mu_swprintf(Text, L"%ls", itemDisplayName); break;
         case 1:	mu_swprintf(Text, L"%ls", I18N::Game::OrangeCandyBox); break;
         }
     }
@@ -1755,7 +1758,7 @@ void GetItemName(int iType, int iLevel, wchar_t* Text)
     {
         switch (iLevel)
         {
-        case 0: mu_swprintf(Text, L"%ls", p->Name); break;
+        case 0: mu_swprintf(Text, L"%ls", itemDisplayName); break;
         case 1:	mu_swprintf(Text, L"%ls", I18N::Game::NavyCandyBox); break;
         }
     }
@@ -1772,28 +1775,28 @@ void GetItemName(int iType, int iLevel, wchar_t* Text)
     else if (iType >= ITEM_WINGS_OF_SPIRITS && iType <= ITEM_WINGS_OF_DARKNESS)
     {
         if (iLevel == 0)
-            mu_swprintf(Text, L"%ls", p->Name);
+            mu_swprintf(Text, L"%ls", itemDisplayName);
         else
-            mu_swprintf(Text, L"%ls +%d", p->Name, iLevel);
+            mu_swprintf(Text, L"%ls +%d", itemDisplayName, iLevel);
     }
     else if ((iType >= ITEM_WING_OF_STORM && iType <= ITEM_CAPE_OF_EMPEROR) || (iType >= ITEM_WINGS_OF_DESPAIR && iType <= ITEM_WING_OF_DIMENSION)
         || (iType == ITEM_CAPE_OF_OVERRULE))
     {
         if (iLevel == 0)
-            mu_swprintf(Text, L"%ls", p->Name);
+            mu_swprintf(Text, L"%ls", itemDisplayName);
         else
-            mu_swprintf(Text, L"%ls +%d", p->Name, iLevel);
+            mu_swprintf(Text, L"%ls +%d", itemDisplayName, iLevel);
     }
     else if (IsDivineArchangelWeaponItem(iType))
     {
         if (iLevel == 0)
-            mu_swprintf(Text, L"%ls", p->Name);
+            mu_swprintf(Text, L"%ls", itemDisplayName);
         else
-            mu_swprintf(Text, L"%ls +%d", p->Name, iLevel);
+            mu_swprintf(Text, L"%ls +%d", itemDisplayName, iLevel);
     }
     else if (COMGEM::NOGEM != COMGEM::Check_Jewel_Com(iType))
     {
-        mu_swprintf(Text, L"%ls +%d", p->Name, iLevel + 1);
+        mu_swprintf(Text, L"%ls +%d", itemDisplayName, iLevel + 1);
     }
     else if (iType == INDEX_COMPILED_CELE)
     {
@@ -1807,7 +1810,7 @@ void GetItemName(int iType, int iLevel, wchar_t* Text)
         || (iType >= ITEM_SPHERE_MONO && iType <= ITEM_SPHERE_5)
         || (iType >= ITEM_SEED_SPHERE_FIRE_1 && iType <= ITEM_SEED_SPHERE_EARTH_5))
     {
-        mu_swprintf(Text, L"%ls", p->Name);
+        mu_swprintf(Text, L"%ls", itemDisplayName);
     }
     else if (iType == ITEM_SIEGE_POTION)
     {
@@ -1818,9 +1821,9 @@ void GetItemName(int iType, int iLevel, wchar_t* Text)
     else
     {
         if (iLevel == 0)
-            mu_swprintf(Text, L"%ls", p->Name);
+            mu_swprintf(Text, L"%ls", itemDisplayName);
         else
-            mu_swprintf(Text, L"%ls +%d", p->Name, iLevel);
+            mu_swprintf(Text, L"%ls +%d", itemDisplayName, iLevel);
     }
 }
 
@@ -2064,6 +2067,7 @@ void RenderItemInfo(int sx, int sy, ITEM* ip, bool Sell, int Inventype, bool bIt
     }
 
     ITEM_ATTRIBUTE* p = &ItemAttribute[ip->Type];
+    const wchar_t* itemDisplayName = g_ItemDataHandler.GetItemName(ip->Type);
     TextNum = 0;
     SkipNum = 0;
 
@@ -2264,7 +2268,7 @@ void RenderItemInfo(int sx, int sy, ITEM* ip, bool Sell, int Inventype, bool bIt
             Color = TEXT_COLOR_YELLOW;
             switch (Level)
             {
-            case 0: mu_swprintf(TextList[TextNum], L"%ls", p->Name); break;
+            case 0: mu_swprintf(TextList[TextNum], L"%ls", itemDisplayName); break;
             case 1: mu_swprintf(TextList[TextNum], I18N::Game::RingOfHonor); break;
             }
         }
@@ -2273,12 +2277,12 @@ void RenderItemInfo(int sx, int sy, ITEM* ip, bool Sell, int Inventype, bool bIt
             Color = TEXT_COLOR_YELLOW;
             switch (Level)
             {
-            case 0: mu_swprintf(TextList[TextNum], L"%ls", p->Name); break;
+            case 0: mu_swprintf(TextList[TextNum], L"%ls", itemDisplayName); break;
             case 1: mu_swprintf(TextList[TextNum], I18N::Game::DarkStone); break;
             }
         }
         else {
-            mu_swprintf(TextList[TextNum], L"%ls", p->Name);
+            mu_swprintf(TextList[TextNum], L"%ls", itemDisplayName);
             Color = TEXT_COLOR_YELLOW;
         }
     }
@@ -2295,7 +2299,7 @@ void RenderItemInfo(int sx, int sy, ITEM* ip, bool Sell, int Inventype, bool bIt
     {
         switch (Level)
         {
-        case 0:mu_swprintf(TextList[TextNum], L"%ls", p->Name); break;
+        case 0:mu_swprintf(TextList[TextNum], L"%ls", itemDisplayName); break;
         case 1:mu_swprintf(TextList[TextNum], I18N::Game::StarOfSacredBirth); break;
         case 2:mu_swprintf(TextList[TextNum], I18N::Game::Firecracker); break;
         case 3:mu_swprintf(TextList[TextNum], I18N::Game::HeartOfLove); break;
@@ -2334,11 +2338,11 @@ void RenderItemInfo(int sx, int sy, ITEM* ip, bool Sell, int Inventype, bool bIt
         Color = TEXT_COLOR_YELLOW;
         switch (Level)
         {
-        case 0:mu_swprintf(TextList[TextNum], L"%ls %ls", I18N::Game::ENG, p->Name); break;
-        case 1:mu_swprintf(TextList[TextNum], L"%ls %ls", I18N::Game::STA, p->Name); break;
-        case 2:mu_swprintf(TextList[TextNum], L"%ls %ls", I18N::Game::AGI, p->Name); break;
-        case 3:mu_swprintf(TextList[TextNum], L"%ls %ls", I18N::Game::STR, p->Name); break;
-        case 4:mu_swprintf(TextList[TextNum], L"%ls %ls", I18N::Game::Command, p->Name); break;
+        case 0:mu_swprintf(TextList[TextNum], L"%ls %ls", I18N::Game::ENG, itemDisplayName); break;
+        case 1:mu_swprintf(TextList[TextNum], L"%ls %ls", I18N::Game::STA, itemDisplayName); break;
+        case 2:mu_swprintf(TextList[TextNum], L"%ls %ls", I18N::Game::AGI, itemDisplayName); break;
+        case 3:mu_swprintf(TextList[TextNum], L"%ls %ls", I18N::Game::STR, itemDisplayName); break;
+        case 4:mu_swprintf(TextList[TextNum], L"%ls %ls", I18N::Game::Command, itemDisplayName); break;
         }
     }
     else if (ip->Type == ITEM_LOCHS_FEATHER)
@@ -2346,7 +2350,7 @@ void RenderItemInfo(int sx, int sy, ITEM* ip, bool Sell, int Inventype, bool bIt
         Color = TEXT_COLOR_YELLOW;
         switch (Level)
         {
-        case 0: mu_swprintf(TextList[TextNum], L"%ls", p->Name); break;
+        case 0: mu_swprintf(TextList[TextNum], L"%ls", itemDisplayName); break;
         case 1: mu_swprintf(TextList[TextNum], L"%ls", I18N::Game::CrestOfMonarch); break;
         }
     }
@@ -2355,7 +2359,7 @@ void RenderItemInfo(int sx, int sy, ITEM* ip, bool Sell, int Inventype, bool bIt
         Color = TEXT_COLOR_YELLOW;
         switch (Level)
         {
-        case 0: mu_swprintf(TextList[TextNum], L"%ls", p->Name); break;
+        case 0: mu_swprintf(TextList[TextNum], L"%ls", itemDisplayName); break;
         case 1: mu_swprintf(TextList[TextNum], I18N::Game::Stone); break;
         case 2: mu_swprintf(TextList[TextNum], I18N::Game::StoneOfFriendship); break;
         case 3: mu_swprintf(TextList[TextNum], I18N::Game::SignOfLord); break;
@@ -2376,7 +2380,7 @@ void RenderItemInfo(int sx, int sy, ITEM* ip, bool Sell, int Inventype, bool bIt
         Color = TEXT_COLOR_YELLOW;
         switch (Level)
         {
-        case 0: mu_swprintf(TextList[TextNum], p->Name); break;
+        case 0: mu_swprintf(TextList[TextNum], itemDisplayName); break;
         case 1: mu_swprintf(TextList[TextNum], I18N::Game::RingOfWarrior); break;
         case 2: mu_swprintf(TextList[TextNum], I18N::Game::RingOfWarrior); break;
         case 3: mu_swprintf(TextList[TextNum], I18N::Game::RingOfGlory); break;
@@ -2385,7 +2389,7 @@ void RenderItemInfo(int sx, int sy, ITEM* ip, bool Sell, int Inventype, bool bIt
     else if (ip->Type == ITEM_HELPER + 107)
     {
         Color = TEXT_COLOR_YELLOW;
-        mu_swprintf(TextList[TextNum], p->Name);
+        mu_swprintf(TextList[TextNum], itemDisplayName);
     }
     else if (ip->Type == ITEM_SIEGE_POTION)
     {
@@ -2415,13 +2419,13 @@ void RenderItemInfo(int sx, int sy, ITEM* ip, bool Sell, int Inventype, bool bIt
     {
         switch (Level)
         {
-        case 0:mu_swprintf(TextList[TextNum], L"%ls", p->Name); break;
+        case 0:mu_swprintf(TextList[TextNum], L"%ls", itemDisplayName); break;
         case 1:mu_swprintf(TextList[TextNum], I18N::Game::OliveOfLove); break;
         }
     }
     else if (ip->Type == ITEM_ORB_OF_SUMMONING)
     {
-        mu_swprintf(TextList[TextNum], L"%ls %ls", SkillAttribute[30 + Level].Name, I18N::Game::Jewel);
+        mu_swprintf(TextList[TextNum], L"%ls %ls", g_SkillDataHandler.GetSkillName(30 + Level), I18N::Game::Jewel);
     }
     else if (ip->Type == ITEM_TRANSFORMATION_RING)
     {
@@ -2437,32 +2441,32 @@ void RenderItemInfo(int sx, int sy, ITEM* ip, bool Sell, int Inventype, bool bIt
     else if (ip->Type >= ITEM_WINGS_OF_SPIRITS && ip->Type <= ITEM_WINGS_OF_DARKNESS)
     {
         if (Level == 0)
-            mu_swprintf(TextList[TextNum], L"%ls", p->Name);
+            mu_swprintf(TextList[TextNum], L"%ls", itemDisplayName);
         else
-            mu_swprintf(TextList[TextNum], L"%ls +%d", p->Name, Level);
+            mu_swprintf(TextList[TextNum], L"%ls +%d", itemDisplayName, Level);
     }
     else if ((ip->Type >= ITEM_WING_OF_STORM && ip->Type <= ITEM_CAPE_OF_EMPEROR) || (ip->Type >= ITEM_WINGS_OF_DESPAIR && ip->Type <= ITEM_WING_OF_DIMENSION)
         || (ip->Type >= ITEM_CAPE_OF_FIGHTER && ip->Type <= ITEM_CAPE_OF_OVERRULE))
     {
         if (Level == 0)
-            mu_swprintf(TextList[TextNum], L"%ls", p->Name);
+            mu_swprintf(TextList[TextNum], L"%ls", itemDisplayName);
         else
-            mu_swprintf(TextList[TextNum], L"%ls +%d", p->Name, Level);
+            mu_swprintf(TextList[TextNum], L"%ls +%d", itemDisplayName, Level);
     }
     else if (ip->Type == ITEM_SPIRIT)
     {
         switch (Level)
         {
-        case 0: mu_swprintf(TextList[TextNum], L"%ls of %ls", p->Name, I18N::Game::DarkHorse); break;
-        case 1: mu_swprintf(TextList[TextNum], L"%ls of %ls", p->Name, I18N::Game::DarkRaven); break;
+        case 0: mu_swprintf(TextList[TextNum], L"%ls of %ls", itemDisplayName, I18N::Game::DarkHorse); break;
+        case 1: mu_swprintf(TextList[TextNum], L"%ls of %ls", itemDisplayName, I18N::Game::DarkRaven); break;
         }
     }
     else if (ip->Type == ITEM_CAPE_OF_LORD)
     {
         if (Level == 0)
-            mu_swprintf(TextList[TextNum], L"%ls", p->Name);
+            mu_swprintf(TextList[TextNum], L"%ls", itemDisplayName);
         else
-            mu_swprintf(TextList[TextNum], L"%ls +%d", p->Name, Level);
+            mu_swprintf(TextList[TextNum], L"%ls +%d", itemDisplayName, Level);
     }
     else if (ip->Type == ITEM_SYMBOL_OF_KUNDUN)
     {
@@ -2471,34 +2475,34 @@ void RenderItemInfo(int sx, int sy, ITEM* ip, bool Sell, int Inventype, bool bIt
     else if (ip->Type == ITEM_LOST_MAP)
     {
         Color = TEXT_COLOR_YELLOW;
-        mu_swprintf(TextList[TextNum], L"%ls +%d", p->Name, Level);
+        mu_swprintf(TextList[TextNum], L"%ls +%d", itemDisplayName, Level);
     }
     else if (ip->Type == ITEM_RED_RIBBON_BOX)
     {
-        mu_swprintf(TextList[TextNum], L"%ls", p->Name);
+        mu_swprintf(TextList[TextNum], L"%ls", itemDisplayName);
     }
     else if (ip->Type == ITEM_GREEN_RIBBON_BOX)
     {
-        mu_swprintf(TextList[TextNum], L"%ls", p->Name);
+        mu_swprintf(TextList[TextNum], L"%ls", itemDisplayName);
     }
     else if (ip->Type == ITEM_BLUE_RIBBON_BOX)
     {
-        mu_swprintf(TextList[TextNum], L"%ls", p->Name);
+        mu_swprintf(TextList[TextNum], L"%ls", itemDisplayName);
     }
     else if (ip->Type == ITEM_SCROLL_OF_FIRE_SCREAM)
     {
-        mu_swprintf(TextList[TextNum], L"%ls", p->Name);
+        mu_swprintf(TextList[TextNum], L"%ls", itemDisplayName);
     }
     else if (ip->Type >= ITEM_PUMPKIN_OF_LUCK && ip->Type <= ITEM_JACK_OLANTERN_DRINK)
     {
-        mu_swprintf(TextList[TextNum], L"%ls", p->Name);
+        mu_swprintf(TextList[TextNum], L"%ls", itemDisplayName);
     }
     else if (ip->Type == ITEM_PINK_CHOCOLATE_BOX)
     {
         switch (Level)
         {
         case 0:
-            mu_swprintf(TextList[TextNum], L"%ls", p->Name); break;
+            mu_swprintf(TextList[TextNum], L"%ls", itemDisplayName); break;
         case 1:
             mu_swprintf(TextList[TextNum], L"%ls", I18N::Game::LilacCandyBox); break;
         }
@@ -2508,7 +2512,7 @@ void RenderItemInfo(int sx, int sy, ITEM* ip, bool Sell, int Inventype, bool bIt
         switch (Level)
         {
         case 0:
-            mu_swprintf(TextList[TextNum], L"%ls", p->Name); break;
+            mu_swprintf(TextList[TextNum], L"%ls", itemDisplayName); break;
         case 1:
             mu_swprintf(TextList[TextNum], L"%ls", I18N::Game::OrangeCandyBox); break;
         }
@@ -2518,7 +2522,7 @@ void RenderItemInfo(int sx, int sy, ITEM* ip, bool Sell, int Inventype, bool bIt
         switch (Level)
         {
         case 0:
-            mu_swprintf(TextList[TextNum], L"%ls", p->Name); break;
+            mu_swprintf(TextList[TextNum], L"%ls", itemDisplayName); break;
         case 1:
             mu_swprintf(TextList[TextNum], L"%ls", I18N::Game::NavyCandyBox); break;
         }
@@ -2529,26 +2533,26 @@ void RenderItemInfo(int sx, int sy, ITEM* ip, bool Sell, int Inventype, bool bIt
         {
             Color = TEXT_COLOR_BLUE;
             if ((ip->ExcellentFlags & 63) == 0x01)
-                mu_swprintf(TextList[TextNum], L"%ls %ls", p->Name, I18N::Game::Destroy);
+                mu_swprintf(TextList[TextNum], L"%ls %ls", itemDisplayName, I18N::Game::Destroy);
             else if ((ip->ExcellentFlags & 63) == 0x02)
-                mu_swprintf(TextList[TextNum], L"%ls %ls", p->Name, I18N::Game::Protect);
+                mu_swprintf(TextList[TextNum], L"%ls %ls", itemDisplayName, I18N::Game::Protect);
             else if ((ip->ExcellentFlags & 63) == 0x04)
-                mu_swprintf(TextList[TextNum], L"%ls %ls", p->Name, I18N::Game::Illusion);
+                mu_swprintf(TextList[TextNum], L"%ls %ls", itemDisplayName, I18N::Game::Illusion);
             else
-                mu_swprintf(TextList[TextNum], L"%ls", p->Name);
+                mu_swprintf(TextList[TextNum], L"%ls", itemDisplayName);
         }
         else
         {
             Color = TEXT_COLOR_WHITE;
-            mu_swprintf(TextList[TextNum], L"%ls", p->Name);
+            mu_swprintf(TextList[TextNum], L"%ls", itemDisplayName);
         }
     }
     else if (IsDivineArchangelWeaponItem(ip->Type))
     {
         if (Level == 0)
-            mu_swprintf(TextList[TextNum], L"%ls", p->Name);
+            mu_swprintf(TextList[TextNum], L"%ls", itemDisplayName);
         else
-            mu_swprintf(TextList[TextNum], L"%ls +%d", p->Name, Level);
+            mu_swprintf(TextList[TextNum], L"%ls +%d", itemDisplayName, Level);
     }
     else if (nGemType != COMGEM::NOGEM && nGemType % 2 == 1)
     {
@@ -2560,36 +2564,36 @@ void RenderItemInfo(int sx, int sy, ITEM* ip, bool Sell, int Inventype, bool bIt
         ip->Type == ITEM_MOONSTONE_PENDANT
         )
     {
-        mu_swprintf(TextList[TextNum], L"%ls", p->Name);
+        mu_swprintf(TextList[TextNum], L"%ls", itemDisplayName);
         Color = TEXT_COLOR_YELLOW;
     }
     else if ((ip->Type >= ITEM_SEED_FIRE && ip->Type <= ITEM_SEED_EARTH)
         || (ip->Type >= ITEM_SPHERE_MONO && ip->Type <= ITEM_SPHERE_5)
         || (ip->Type >= ITEM_SEED_SPHERE_FIRE_1 && ip->Type <= ITEM_SEED_SPHERE_EARTH_5))
     {
-        mu_swprintf(TextList[TextNum], L"%ls", p->Name);
+        mu_swprintf(TextList[TextNum], L"%ls", itemDisplayName);
         Color = TEXT_COLOR_VIOLET;
     }
     else if (ip->Type == ITEM_POTION + 111)
     {
         Color = TEXT_COLOR_YELLOW;
-        mu_swprintf(TextList[TextNum], L"%ls", p->Name);
+        mu_swprintf(TextList[TextNum], L"%ls", itemDisplayName);
     }
     else if (ITEM_SUSPICIOUS_SCRAP_OF_PAPER <= ip->Type && ip->Type <= ITEM_COMPLETE_SECROMICON)
     {
         Color = TEXT_COLOR_YELLOW;
-        mu_swprintf(TextList[TextNum], L"%ls", p->Name);
+        mu_swprintf(TextList[TextNum], L"%ls", itemDisplayName);
     }
     else
     {
         wchar_t TextName[64];
         if (g_csItemOption.GetSetItemName(TextName, ip->Type, ip->AncientDiscriminator))
         {
-            wcscat(TextName, p->Name);
+            wcscat(TextName, itemDisplayName);
         }
         else
         {
-            wcscpy(TextName, p->Name);
+            wcscpy(TextName, itemDisplayName);
         }
 
         if (ip->ExcellentFlags > 0)
@@ -3873,7 +3877,7 @@ void RenderItemInfo(int sx, int sy, ITEM* ip, bool Sell, int Inventype, bool bIt
     }
 
     Color = TEXT_COLOR_YELLOW;
-    mu_swprintf(TextList[TextNum], L"%ls", p->Name);
+    mu_swprintf(TextList[TextNum], L"%ls", itemDisplayName);
 
     if (ip->Type == ITEM_DEVILS_INVITATION)
     {
@@ -5711,6 +5715,7 @@ void RenderRepairInfo(int sx, int sy, ITEM* ip, bool Sell)
     }
 
     ITEM_ATTRIBUTE* p = &ItemAttribute[ip->Type];
+    const wchar_t* itemDisplayName = g_ItemDataHandler.GetItemName(ip->Type);
     TextNum = 0;
     SkipNum = 0;
     for (int i = 0; i < 30; i++)
@@ -5816,7 +5821,7 @@ void RenderRepairInfo(int sx, int sy, ITEM* ip, bool Sell)
 
     if (ip->Type == ITEM_ORB_OF_SUMMONING)
     {
-        mu_swprintf(TextList[TextNum], L"%ls %ls", SkillAttribute[30 + Level].Name, I18N::Game::Jewel);
+        mu_swprintf(TextList[TextNum], L"%ls %ls", g_SkillDataHandler.GetSkillName(30 + Level), I18N::Game::Jewel);
     }
     else if (ip->Type == ITEM_TRANSFORMATION_RING)
     {
@@ -5831,7 +5836,7 @@ void RenderRepairInfo(int sx, int sy, ITEM* ip, bool Sell)
     }
     else if ((ip->Type == ITEM_DARK_HORSE_ITEM) || (ip->Type == ITEM_DARK_RAVEN_ITEM))
     {
-        mu_swprintf(TextList[TextNum], L"%ls", p->Name);
+        mu_swprintf(TextList[TextNum], L"%ls", itemDisplayName);
     }
     else if ((ip->Type >= ITEM_WINGS_OF_SPIRITS && ip->Type <= ITEM_WINGS_OF_DARKNESS)
         || ip->Type >= ITEM_CAPE_OF_LORD
@@ -5840,25 +5845,25 @@ void RenderRepairInfo(int sx, int sy, ITEM* ip, bool Sell)
         || (ip->Type >= ITEM_CAPE_OF_FIGHTER && ip->Type <= ITEM_CAPE_OF_OVERRULE))
     {
         if (Level == 0)
-            mu_swprintf(TextList[TextNum], L"%ls", p->Name);
+            mu_swprintf(TextList[TextNum], L"%ls", itemDisplayName);
         else
-            mu_swprintf(TextList[TextNum], L"%ls +%d", p->Name, Level);
+            mu_swprintf(TextList[TextNum], L"%ls +%d", itemDisplayName, Level);
     }
     else
     {
         if (ip->ExcellentFlags > 0)
         {
             if (Level == 0)
-                mu_swprintf(TextList[TextNum], L"%ls %ls", I18N::Game::Excellent, p->Name);
+                mu_swprintf(TextList[TextNum], L"%ls %ls", I18N::Game::Excellent, itemDisplayName);
             else
-                mu_swprintf(TextList[TextNum], L"%ls %ls +%d", I18N::Game::Excellent, p->Name, Level);
+                mu_swprintf(TextList[TextNum], L"%ls %ls +%d", I18N::Game::Excellent, itemDisplayName, Level);
         }
         else
         {
             if (Level == 0)
-                mu_swprintf(TextList[TextNum], L"%ls", p->Name);
+                mu_swprintf(TextList[TextNum], L"%ls", itemDisplayName);
             else
-                mu_swprintf(TextList[TextNum], L"%ls +%d", p->Name, Level);
+                mu_swprintf(TextList[TextNum], L"%ls +%d", itemDisplayName, Level);
         }
     }
     TextListColor[TextNum] = Color; TextBold[TextNum] = true; TextNum++;
@@ -6292,15 +6297,15 @@ void BuildGroundItemLabelDescriptor(OBJECT* o, ITEM* ip, GroundItemLabelDescript
     {
         if (o->Type == MODEL_ZEN) // Zen
         {
-            FormatGroundItemLabelText(descriptor.Name, L"%ls %d", ItemAttribute[o->Type - MODEL_ITEM].Name, ItemLevel);
+            FormatGroundItemLabelText(descriptor.Name, L"%ls %d", g_ItemDataHandler.GetItemName(o->Type - MODEL_ITEM), ItemLevel);
         }
         else if (ItemLevel == 0)
         {
-            CopyGroundItemLabelText(descriptor.Name, ItemAttribute[o->Type - MODEL_ITEM].Name);
+            CopyGroundItemLabelText(descriptor.Name, g_ItemDataHandler.GetItemName(o->Type - MODEL_ITEM));
         }
         else
         {
-            FormatGroundItemLabelText(descriptor.Name, L"%ls +%d", ItemAttribute[o->Type - MODEL_ITEM].Name, ItemLevel);
+            FormatGroundItemLabelText(descriptor.Name, L"%ls +%d", g_ItemDataHandler.GetItemName(o->Type - MODEL_ITEM), ItemLevel);
         }
     }
 
@@ -6324,7 +6329,7 @@ void BuildGroundItemLabelDescriptor(OBJECT* o, ITEM* ip, GroundItemLabelDescript
     if (o->Type == MODEL_ORB_OF_SUMMONING)
     {
         SetDescriptorGrayTextColor(descriptor);
-        FormatGroundItemLabelText(descriptor.Name, L"%ls %ls", SkillAttribute[30 + ItemLevel].Name, I18N::Game::Jewel);
+        FormatGroundItemLabelText(descriptor.Name, L"%ls %ls", g_SkillDataHandler.GetSkillName(30 + ItemLevel), I18N::Game::Jewel);
     }
     else if (COMGEM::NOGEM != COMGEM::Check_Jewel_Com(o->Type, true))
     {
@@ -6335,11 +6340,13 @@ void BuildGroundItemLabelDescriptor(OBJECT* o, ITEM* ip, GroundItemLabelDescript
     }
     else if (o->Type == MODEL_COMPILED_CELE)
     {
-        CopyGroundItemLabelText(descriptor.Name, ItemAttribute[static_cast<int>(MODEL_JEWEL_OF_BLESS) - MODEL_ITEM].Name);
+        CopyGroundItemLabelText(descriptor.Name,
+                                g_ItemDataHandler.GetItemName(static_cast<int>(MODEL_JEWEL_OF_BLESS) - MODEL_ITEM));
     }
     else if (o->Type == MODEL_COMPILED_SOUL)
     {
-        CopyGroundItemLabelText(descriptor.Name, ItemAttribute[static_cast<int>(MODEL_JEWEL_OF_SOUL) - MODEL_ITEM].Name);
+        CopyGroundItemLabelText(descriptor.Name,
+                                g_ItemDataHandler.GetItemName(static_cast<int>(MODEL_JEWEL_OF_SOUL) - MODEL_ITEM));
     }
     else if (o->Type == MODEL_BOX_OF_LUCK && ItemLevel == 7)
     {
@@ -6358,19 +6365,19 @@ void BuildGroundItemLabelDescriptor(OBJECT* o, ITEM* ip, GroundItemLabelDescript
     {
         switch (ItemLevel)
         {
-        case 0: FormatGroundItemLabelText(descriptor.Name, L"%ls %ls", I18N::Game::ENG, ItemAttribute[o->Type - MODEL_ITEM].Name); break;
-        case 1: FormatGroundItemLabelText(descriptor.Name, L"%ls %ls", I18N::Game::STA, ItemAttribute[o->Type - MODEL_ITEM].Name); break;
-        case 2: FormatGroundItemLabelText(descriptor.Name, L"%ls %ls", I18N::Game::AGI, ItemAttribute[o->Type - MODEL_ITEM].Name); break;
-        case 3: FormatGroundItemLabelText(descriptor.Name, L"%ls %ls", I18N::Game::STR, ItemAttribute[o->Type - MODEL_ITEM].Name); break;
-        case 4: FormatGroundItemLabelText(descriptor.Name, L"%ls %ls", I18N::Game::Command, ItemAttribute[o->Type - MODEL_ITEM].Name); break;
+        case 0: FormatGroundItemLabelText(descriptor.Name, L"%ls %ls", I18N::Game::ENG, g_ItemDataHandler.GetItemName(o->Type - MODEL_ITEM)); break;
+        case 1: FormatGroundItemLabelText(descriptor.Name, L"%ls %ls", I18N::Game::STA, g_ItemDataHandler.GetItemName(o->Type - MODEL_ITEM)); break;
+        case 2: FormatGroundItemLabelText(descriptor.Name, L"%ls %ls", I18N::Game::AGI, g_ItemDataHandler.GetItemName(o->Type - MODEL_ITEM)); break;
+        case 3: FormatGroundItemLabelText(descriptor.Name, L"%ls %ls", I18N::Game::STR, g_ItemDataHandler.GetItemName(o->Type - MODEL_ITEM)); break;
+        case 4: FormatGroundItemLabelText(descriptor.Name, L"%ls %ls", I18N::Game::Command, g_ItemDataHandler.GetItemName(o->Type - MODEL_ITEM)); break;
         }
     }
     else if (o->Type == MODEL_SPIRIT)
     {
         switch (ItemLevel)
         {
-        case 0: FormatGroundItemLabelText(descriptor.Name, L"%ls of %ls", ItemAttribute[o->Type - MODEL_ITEM].Name, I18N::Game::DarkHorse); break;
-        case 1: FormatGroundItemLabelText(descriptor.Name, L"%ls of %ls", ItemAttribute[o->Type - MODEL_ITEM].Name, I18N::Game::DarkRaven); break;
+        case 0: FormatGroundItemLabelText(descriptor.Name, L"%ls of %ls", g_ItemDataHandler.GetItemName(o->Type - MODEL_ITEM), I18N::Game::DarkHorse); break;
+        case 1: FormatGroundItemLabelText(descriptor.Name, L"%ls of %ls", g_ItemDataHandler.GetItemName(o->Type - MODEL_ITEM), I18N::Game::DarkRaven); break;
         }
     }
     else if (o->Type == MODEL_EVENT + 16)
@@ -6569,7 +6576,7 @@ void BuildGroundItemLabelDescriptor(OBJECT* o, ITEM* ip, GroundItemLabelDescript
         || (o->Type >= MODEL_SEED_SPHERE_FIRE_1 && o->Type <= MODEL_SEED_SPHERE_EARTH_5))
     {
         SetDescriptorTextColor(descriptor, 0.7f, 0.4f, 1.0f);
-        CopyGroundItemLabelText(descriptor.Name, ItemAttribute[o->Type - MODEL_ITEM].Name);
+        CopyGroundItemLabelText(descriptor.Name, g_ItemDataHandler.GetItemName(o->Type - MODEL_ITEM));
     }
     else if (o->Type == MODEL_HELPER + 66)
     {
@@ -7623,10 +7630,8 @@ std::wstring GetItemDisplayName(ITEM* pItem)
     // There may be already another function for this (the one being used for displaying dropped items).
     // This version currently only applies to ascii names of items
 
-    ITEM_ATTRIBUTE* pAttr = &ItemAttribute[pItem->Type];
-
-    auto nNameLen = wcsnlen(pAttr->Name, MAX_ITEM_NAME);
-    std::wstring strDisplayName(pAttr->Name, nNameLen);
+    const wchar_t* itemName = g_ItemDataHandler.GetItemName(pItem->Type);
+    std::wstring strDisplayName(itemName);
     std::wstring strOptions;
 
     if (pItem->Level)

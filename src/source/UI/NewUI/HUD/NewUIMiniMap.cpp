@@ -2,6 +2,7 @@
 //////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
+#include <vector>
 #include "I18N/All.h"
 
 #include "UI/NewUI/HUD/NewUIMiniMap.h"
@@ -14,11 +15,31 @@
 #include "UI/NewUI/Widgets/NewUIButton.h"
 #include "UI/NewUI/Inventory/NewUIMyInventory.h"
 #include "GameLogic/Items/CSItemOption.h"
+#include "Data/GameConfig/GameConfig.h"
 #include "World/MapInfra/MapManager.h"
 
 extern BYTE m_OccupationState;
 
 using namespace SEASON3B;
+
+namespace
+{
+bool IsOfficialCompatibleWorld(const wchar_t* filename)
+{
+    static constexpr const wchar_t* worlds[] = {
+        L"World1",  L"World2",  L"World3",  L"World4",  L"World5",  L"World8",  L"World9",
+        L"World11", L"World32", L"World34", L"World35", L"World38", L"World39", L"World42",
+        L"World52", L"World57", L"World58", L"World64", L"World82",
+    };
+
+    for (const auto* world : worlds)
+    {
+        if (wcscmp(filename, world) == 0)
+            return true;
+    }
+    return false;
+}
+} // namespace
 
 SEASON3B::CNewUIMiniMap::CNewUIMiniMap()
 {
@@ -225,57 +246,81 @@ void SEASON3B::CNewUIMiniMap::LoadImages(const wchar_t* Filename)
         LoadBitmap(Fname, IMAGE_MINIMAP_INTERFACE, GL_LINEAR);
     }
 
-    mu_swprintf(Fname, L"Data\\Local\\%ls\\Minimap\\Minimap_%ls_%ls.bmd", g_strSelectedML.c_str(), Filename, g_strSelectedML.c_str());
-
-    for (i = 0; i < MAX_MINI_MAP_DATA; i++)
+    for (i = 0; i < MAX_MINI_MAP_DATA; ++i)
     {
         m_Mini_Map_Data[i].Kind = 0;
     }
 
-    FILE* fp = _wfopen(Fname, L"rb");
+    const bool isChineseLocale = GameConfig::GetInstance().GetUILocale() == L"zh-CN";
+    const std::wstring overrideFile =
+        L"Data\\Local\\zh-CN\\Minimap\\Minimap_" + std::wstring(Filename) + L"_zh-CN.bmd";
+    const std::wstring officialFile = L"Data\\" + std::wstring(Filename) + L"\\Minimap.bmd";
+    const std::wstring fallbackFile =
+        L"Data\\Local\\" + g_strSelectedML + L"\\Minimap\\Minimap_" + Filename + L"_" + g_strSelectedML + L".bmd";
 
-    if (fp != NULL)
+    if (isChineseLocale && IsOfficialCompatibleWorld(Filename) && LoadMiniMapData(officialFile, 54936u))
+        return;
+    if (isChineseLocale && wcscmp(Filename, L"World81") == 0 && LoadMiniMapData(overrideFile, CP_UTF8))
+        return;
+    LoadMiniMapData(fallbackFile, CP_UTF8);
+}
+
+bool SEASON3B::CNewUIMiniMap::LoadMiniMapData(const std::wstring& filename, unsigned int sourceCodePage)
+{
+    FILE* fp = _wfopen(filename.c_str(), L"rb");
+    if (fp == nullptr)
+        return false;
+
+    const int Size = sizeof(MINI_MAP_FILE);
+    const long expectedSize = static_cast<long>(Size * MAX_MINI_MAP_DATA + 45 + sizeof(DWORD));
+    fseek(fp, 0, SEEK_END);
+    const long fileSize = ftell(fp);
+    fseek(fp, 0, SEEK_SET);
+    if (fileSize != expectedSize)
     {
-        int Size = sizeof(MINI_MAP_FILE);
-        BYTE* Buffer = new BYTE[Size * MAX_MINI_MAP_DATA + 45];
-        fread(Buffer, (Size * MAX_MINI_MAP_DATA) + 45, 1, fp);
-
-        DWORD dwCheckSum;
-        fread(&dwCheckSum, sizeof(DWORD), 1, fp);
         fclose(fp);
-
-        if (dwCheckSum != GenerateCheckSum2(Buffer, (Size * MAX_MINI_MAP_DATA) + 45, 0x2BC1))
-        {
-            wchar_t Text[256];
-            mu_swprintf(Text, L"%ls - File corrupted.", Fname);
-            g_ErrorReport.Write(Text);
-            MessageBox(g_hWnd, Text, NULL, MB_OK);
-            SendMessage(g_hWnd, WM_DESTROY, 0, 0);
-        }
-        else
-        {
-            BYTE* pSeek = Buffer;
-
-            for (i = 0; i < MAX_MINI_MAP_DATA; i++)
-            {
-                BuxConvert(pSeek, Size);
-                //memcpy(&(m_Mini_Map_Data[i]), pSeek, Size);
-
-                MINI_MAP_FILE current{ };
-                auto target = &(m_Mini_Map_Data[i]);
-                memcpy(&current, pSeek, Size);
-                memcpy(target, pSeek, Size);
-
-                CMultiLanguage::ConvertFromUtf8(target->Name, current.Name);
-                /*int wchars_num = MultiByteToWideChar(CP_UTF8, 0, current.Name, -1, NULL, 0);
-                MultiByteToWideChar(CP_UTF8, 0, current.Name, -1, target->Name, wchars_num);
-                target->Name[wchars_num] = L'\0';*/
-                pSeek += Size;
-            }
-        }
-
-        delete[] Buffer;
+        return false;
     }
+
+    std::vector<BYTE> buffer(Size * MAX_MINI_MAP_DATA + 45);
+    if (fread(buffer.data(), buffer.size(), 1, fp) != 1)
+    {
+        fclose(fp);
+        return false;
+    }
+
+    DWORD checksum = 0;
+    if (fread(&checksum, sizeof(checksum), 1, fp) != 1)
+    {
+        fclose(fp);
+        return false;
+    }
+    fclose(fp);
+
+    if (checksum != GenerateCheckSum2(buffer.data(), static_cast<DWORD>(buffer.size()), 0x2BC1))
+        return false;
+
+    std::vector<MINI_MAP> loadedData(MAX_MINI_MAP_DATA);
+    BYTE* pSeek = buffer.data();
+    for (int i = 0; i < MAX_MINI_MAP_DATA; ++i)
+    {
+        BuxConvert(pSeek, Size);
+
+        MINI_MAP_FILE current{};
+        auto* target = &loadedData[i];
+        memcpy(&current, pSeek, Size);
+        memcpy(target, pSeek, Size);
+        if (CMultiLanguage::ConvertFromCodePageBounded(target->Name, MAX_MINIMAP_NAME, current.Name, sourceCodePage,
+                                                       MAX_MINIMAP_NAME) == 0 &&
+            current.Name[0] != '\0')
+        {
+            return false;
+        }
+        pSeek += Size;
+    }
+
+    memcpy(m_Mini_Map_Data, loadedData.data(), sizeof(MINI_MAP) * MAX_MINI_MAP_DATA);
+    return true;
 }
 
 void SEASON3B::CNewUIMiniMap::UnloadImages()

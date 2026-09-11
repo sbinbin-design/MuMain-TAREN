@@ -82,5 +82,6 @@ namespace SEASON3B
         void Render_Scroll();
         bool Check_Mouse(int mx, int my);
         bool Check_Btn(int mx, int my);
+        bool LoadMiniMapData(const std::wstring& filename, unsigned int sourceCodePage);
     };
 }

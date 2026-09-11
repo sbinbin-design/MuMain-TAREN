@@ -3876,8 +3876,15 @@ void CUISlideHelp::Render(BOOL bForceFadeOut)
 
     EnableAlphaTest();
 
+    const BYTE borderAlpha = static_cast<BYTE>(m_iAlphaRate > 180
+        ? m_iAlphaRate
+        : (m_iAlphaRate - 25 < 0 ? 0 : m_iAlphaRate - 25));
+    SetRenderColor(0, 0, 0, borderAlpha);
     RenderColor(0, m_iPos_y - 3, WindowWidth, 1);
     RenderColor(0, m_iPos_y + m_iFontHeight + 2, WindowWidth, 1);
+
+    const BYTE backgroundAlpha = static_cast<BYTE>(m_iAlphaRate - 25 < 0 ? 0 : m_iAlphaRate - 25);
+    SetRenderColor(0, 0, 0, backgroundAlpha);
     RenderColor(0, m_iPos_y - 2, WindowWidth, m_iFontHeight + 4);
 
     EndRenderColor();

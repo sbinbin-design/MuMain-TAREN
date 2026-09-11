@@ -4,6 +4,8 @@
 #pragma once
 
 #include <cstdint>
+#include <cstddef>
+#include <string>
 
 class CMultiLanguage
 {
@@ -30,6 +32,10 @@ public:
 
     static int32_t ConvertFromCodePage(wchar_t* target, const char* source, unsigned int codePage,
                                        int maxSourceLength = -1);
+    static int32_t ConvertFromCodePageBounded(wchar_t* target, std::size_t targetCapacity, const char* source,
+                                              unsigned int codePage, int maxSourceLength = -1);
+    static bool ConvertFromCodePageToString(std::wstring& target, const char* source, unsigned int codePage,
+                                            int sourceLength);
     static int32_t ConvertFromUtf8(wchar_t* target, const char* source, int maxSourceLength = -1);
     static int32_t ConvertToUtf8(char* target, const wchar_t* source, int maxSourceLength = -1);
 

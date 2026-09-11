@@ -6,6 +6,7 @@
 #include "UI/NewUI/NewUISystem.h"
 #include "UI/Scaling/UITransform.h"
 #include "I18N/All.h"
+#include "Data/DataHandler/ItemData/ItemDataHandler.h"
 
 #include "Character/CharacterManager.h"
 
@@ -363,7 +364,8 @@ void SEASON3B::CNewUIItemEnduranceInfo::RenderTooltip(int iX, int iY, const ITEM
     int iMaxDurability = CalcMaxDurability(pItem, pItemAtt, iLevel);
 
     wchar_t szText[256] = {};
-    mu_swprintf(szText, L"%ls (%d/%d)", pItemAtt->Name, pItem->Durability, iMaxDurability);
+    mu_swprintf(szText, L"%ls (%d/%d)", g_ItemDataHandler.GetItemName(pItem->Type), pItem->Durability,
+                iMaxDurability);
     g_pRenderText->SetBgColor(0, 0, 0, 128);
     g_pRenderText->SetFont(g_hFontBold);
     g_pRenderText->SetTextColor(dwTextColor);
@@ -399,8 +401,7 @@ bool SEASON3B::CNewUIItemEnduranceInfo::RenderEquipedHelperLife(int iX, int iY)
         break;
         case MODEL_IMP:
         {
-            ITEM_ATTRIBUTE* p = &ItemAttribute[Hero->Helper.Type - MODEL_SWORD];
-            mu_swprintf(szText, p->Name);
+            mu_swprintf(szText, g_ItemDataHandler.GetItemName(Hero->Helper.Type - MODEL_SWORD));
         }
         break;
         case MODEL_HORN_OF_UNIRIA:
@@ -425,32 +426,32 @@ bool SEASON3B::CNewUIItemEnduranceInfo::RenderEquipedHelperLife(int iX, int iY)
         break;
         case MODEL_DEMON:
         {
-            mu_swprintf(szText, ItemAttribute[ITEM_DEMON].Name);
+            mu_swprintf(szText, g_ItemDataHandler.GetItemName(ITEM_DEMON));
         }
         break;
         case MODEL_SPIRIT_OF_GUARDIAN:
         {
-            mu_swprintf(szText, ItemAttribute[ITEM_SPIRIT_OF_GUARDIAN].Name);
+            mu_swprintf(szText, g_ItemDataHandler.GetItemName(ITEM_SPIRIT_OF_GUARDIAN));
         }
         break;
         case MODEL_PET_RUDOLF:
         {
-            mu_swprintf(szText, ItemAttribute[ITEM_PET_RUDOLF].Name);
+            mu_swprintf(szText, g_ItemDataHandler.GetItemName(ITEM_PET_RUDOLF));
         }
         break;
         case MODEL_PET_PANDA:
         {
-            mu_swprintf(szText, ItemAttribute[ITEM_PET_PANDA].Name);
+            mu_swprintf(szText, g_ItemDataHandler.GetItemName(ITEM_PET_PANDA));
         }
         break;
         case MODEL_PET_UNICORN:
         {
-            mu_swprintf(szText, ItemAttribute[ITEM_PET_UNICORN].Name);
+            mu_swprintf(szText, g_ItemDataHandler.GetItemName(ITEM_PET_UNICORN));
         }
         break;
         case MODEL_PET_SKELETON:
         {
-            mu_swprintf(szText, ItemAttribute[ITEM_PET_SKELETON].Name);
+            mu_swprintf(szText, g_ItemDataHandler.GetItemName(ITEM_PET_SKELETON));
         }
         break;
         }

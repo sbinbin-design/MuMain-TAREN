@@ -150,6 +150,7 @@ add_library(MuClient STATIC ${MU_CLIENT_SOURCES})
 target_compile_features(MuClient PUBLIC cxx_std_20)
 if(MSVC)
   target_compile_options(MuClient PRIVATE /utf-8 /we4828)
+  target_compile_options(MuClient PRIVATE $<$<CONFIG:Release>:/Zi>)
 endif()
 target_compile_definitions(MuClient PUBLIC GLM_FORCE_DEPTH_ZERO_TO_ONE)
 target_link_libraries(MuClient PUBLIC SDL3::SDL3 glm::glm spdlog::spdlog)
@@ -237,6 +238,16 @@ else()
 endif()
 target_compile_features(Main PUBLIC cxx_std_20)
 target_link_libraries(Main PRIVATE MuClient::MuClient)
+
+if (MSVC)
+  target_compile_options(Main PRIVATE $<$<CONFIG:Release>:/Zi>)
+  target_link_options(Main PRIVATE
+    $<$<CONFIG:Release>:/DEBUG:FULL>
+    $<$<CONFIG:Release>:/OPT:REF>
+    $<$<CONFIG:Release>:/OPT:ICF>
+    $<$<CONFIG:Release>:/INCREMENTAL:NO>
+  )
+endif()
 
 if (NOT MSVC)
   set(MU_MAIN_MAP_FILE "${CMAKE_CURRENT_BINARY_DIR}/Main.map")

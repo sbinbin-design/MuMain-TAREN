@@ -232,7 +232,7 @@ int CSQuest::GetEventCount(std::uint8_t byType)
     return m_byEventCount[byType];
 }
 
-bool CSQuest::OpenQuestScript(const wchar_t* filename)
+bool CSQuest::OpenQuestScript(const wchar_t* filename, unsigned int sourceCodePage)
 {
     if (filename == nullptr || filename[0] == L'\0')
     {
@@ -254,9 +254,15 @@ bool CSQuest::OpenQuestScript(const wchar_t* filename)
         return false;
     }
 
-    m_Quest.fill({});
-
     const auto recordSize = sizeof(QuestAttributeFile);
+    file.seekg(0, std::ios::end);
+    if (file.tellg() != static_cast<std::streamoff>(recordSize * m_Quest.size()))
+    {
+        return false;
+    }
+    file.seekg(0, std::ios::beg);
+
+    m_Quest.fill({});
     std::vector<std::uint8_t> buffer(recordSize);
 
     for (auto& quest : m_Quest)
@@ -272,7 +278,13 @@ bool CSQuest::OpenQuestScript(const wchar_t* filename)
         quest.shQuestConditionNum = current->shQuestConditionNum;
         quest.shQuestRequestNum = current->shQuestRequestNum;
         quest.wNpcType = current->wNpcType;
-        CMultiLanguage::ConvertFromUtf8(quest.strQuestName, current->strQuestName);
+        if (CMultiLanguage::ConvertFromCodePageBounded(quest.strQuestName, std::size(quest.strQuestName),
+                                                       current->strQuestName, sourceCodePage,
+                                                       sizeof(current->strQuestName)) == 0 &&
+            current->strQuestName[0] != '\0')
+        {
+            return false;
+        }
 
         std::memcpy(quest.QuestAct, current->QuestAct, sizeof quest.QuestAct);
         std::memcpy(quest.QuestRequest, current->QuestRequest, sizeof quest.QuestRequest);

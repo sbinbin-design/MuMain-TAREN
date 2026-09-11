@@ -2354,17 +2354,14 @@ WORD ItemWalkSpeed(ITEM* Item)
 int EditMonsterNumber = 0;
 int MonsterKey = 0;
 
-void OpenMonsterScript(wchar_t* FileName)
+bool OpenMonsterScript(const wchar_t* FileName, unsigned int sourceCodePage)
 {
     if ((SMDFile = _wfopen(FileName, L"rb")) == nullptr)
     {
-        wchar_t Text[256];
-        mu_swprintf(Text, L"%ls - File not exist.", FileName);
-        g_ErrorReport.Write(Text);
-        MessageBox(g_hWnd, Text, NULL, MB_OK);
-        return;
+        return false;
     }
 
+    EditMonsterNumber = 0;
     while (true)
     {
         SMDToken token = GetToken();
@@ -2375,13 +2372,18 @@ void OpenMonsterScript(wchar_t* FileName)
         token = GetToken();
         token = GetToken();
 
-        CMultiLanguage::ConvertFromUtf8(m->Name, TokenString);
-        m->Name[MAX_MONSTER_NAME] = L'\0';
+        if (CMultiLanguage::ConvertFromCodePageBounded(m->Name, std::size(m->Name), TokenString, sourceCodePage) == 0 &&
+            TokenString[0] != '\0')
+        {
+            fclose(SMDFile);
+            return false;
+        }
         
         //Token = (*GetToken)();m->Level = (int)TokenNumber;
         //for(int i=0;i<23;i++) Token = (*GetToken)();
     }
     fclose(SMDFile);
+    return true;
 }
 
 const wchar_t* getMonsterName(int type)

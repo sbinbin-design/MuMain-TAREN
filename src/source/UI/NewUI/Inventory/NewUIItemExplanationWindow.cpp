@@ -6,6 +6,7 @@
 #include "UI/NewUI/Inventory/NewUIItemExplanationWindow.h"
 #include "UI/NewUI/NewUISystem.h"
 #include "Audio/DSPlaySound.h"
+#include "Data/DataHandler/ItemData/ItemDataHandler.h"
 #include "Engine/Object/ZzzInventory.h"
 #include "GameLogic/Items/CSItemOption.h"
 #include "I18N/All.h"
@@ -191,7 +192,7 @@ bool SEASON3B::CNewUIItemExplanationWindow::Render()
     TextBold[TextNum] = true;
     TextNum++;
 
-    mu_swprintf(TextList[TextNum], L"%ls", p->Name);
+    mu_swprintf(TextList[TextNum], L"%ls", g_ItemDataHandler.GetItemName(ItemHelp));
     TextListColor[TextNum] = TEXT_COLOR_WHITE;
     TextBold[TextNum] = true;
     TextNum++;
