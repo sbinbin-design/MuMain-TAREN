@@ -1,344 +1,232 @@
-# MU Online Client Sources
+# MuMain
 
-[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/sven-n/MuMain)
+MuMain 是一个面向 **MU Online Season 6 Episode 3** 的跨平台客户端项目，
+基于 [Luois 发布的 Season 5.2 客户端源码](https://github.com/LouisEmulator/Main5.2)
+持续演进。项目目标是保留原版游戏行为和资源兼容性，同时逐步完善渲染、网络、
+界面、本地化和开发工具。
 
-This is my special fork of the Season 5.2 client sources [uploaded by Luois](https://github.com/LouisEmulator/Main5.2).
+项目可以连接并运行于 [OpenMU](https://github.com/MUnique/OpenMU)。客户端网络层
+使用仓库内的 `ClientLibrary/`，由 .NET Native AOT 编译为平台原生共享库。
 
-The ultimate goal is to clean it up and make it compatible and feature complete
-to Season 6 Episode 3.
+## 当前状态
 
-What I have done so far:
-  * 🔥 The framerate has been increased.
-    * By default, it uses V-Sync without fps limit. If V-Sync is not
-    available, it limits to 60 fps.
-    * The options menu includes a checkbox to reduce effects to achieve higher frame rates.
-    * Chat commands:
-      * Change FPS-Limit: `$fps <value>`
-      * V-Sync: `$vsync on` / `$vsync off`
-      * Show simple FPS counter: `$fpscounter on` / `$fpscounter off`
-      * Show detailed performance overlay (FPS stats, percentiles, frame graph): `$details on` / `$details off`
-      * Show SDL GPU draw, merge, buffer, texture, and per-pass CPU statistics: `$glstats on` / `$glstats off`
-  * 🔥 Rendering uses deferred SDL GPU commands, indexed quads and strips,
-    growable per-frame buffers, and safe adjacent draw merging.
-  * 🔥 The upstream Core Profile performance series is mapped to SDL GPU (see
-    [docs/GPU Skinning/glperf](docs/GPU%20Skinning/glperf/README.md)): packed
-    3x4 bone palettes, renderer statistics, pass attribution, buffer growth,
-    and heap-free sprite geometry generation are retained without restoring the
-    retired OpenGL RHI or its hardware-specific measurements.
-  * 🔥 Added inventory and vault extensions.
-  * 🔥 The master skill tree system was upgraded to Season 6
-  * 🔥 Unicode support: The client works with UTF-16LE instead of ANSI in memory.
-    All strings and char arrays have been changed to use wide characters.
-    Strings coming from files and the network are handled as UTF-8.
-  * 🔥 Replaced the network stack with MUnique.OpenMU.Network to make it easier to
-    apply changes. This repository includes a C# .NET 10 client library which is built
-    with Native AOT.
-  * 🔥 The network protocol has been adapted for Season 6 Episode 3 - there is probably
-    still some work to do, but it connects to [OpenMU](https://github.com/MUnique/OpenMU)
-    and is playable. Additionally, the protocol has been extended so it's not standard
-    anymore.
-    * Damage, Exp etc. can exceed 16 bit now.
-    * Improved item serialization
-    * Improved appearance serialization
-    * Added monster health status bar after attack
-  * 🔥 Significant changes from Qubit have been incorporated, such as
-    * Rage Fighter class
-    * Visual bug when Dark Lord walks with Raven
-    * Item equipping with right mouse click
-    * Glow for red, blue and black fenrir
-    * Additional screen resolutions
-  * 🔥 Incorporated MU Helper UI and logic - there's some work to do but core functionality is usable
-  * 🔥 Auto-reconnect system
-  * Removed if-defs for Rage Fighter class as we are targeting Season 6, so Rage
-    Fighter should always be included.
-  * Some minor bug fixes, e.g.:
-    * Storm Crow item labels
-    * Ancient set labels
-  * The code has been refactored. A lot of magic values have been replaced by
-    enums and constants.
-  * 🔥 New Translation system (see [docs/translation-system.md](docs/translation-system.md))
+目前已经具备可游玩的 Season 6 Episode 3 客户端基础，主要能力包括：
 
-What needs to be done for Season 6:
-  * Lucky Items
+- 使用 SDL GPU 渲染：Windows 使用 D3D12，Linux 使用 Vulkan，macOS 使用 Metal。
+- 延迟提交 GPU 命令、索引四边形与条带、可增长的帧缓冲区，以及相邻绘制合并。
+- 支持 VSync、帧率限制、帧率计数器、详细性能面板和 SDL GPU 统计面板。
+- 支持 Windows x86/x64、Linux x64 和 macOS arm64 原生构建。
+- 支持 Season 6 的大师技能树、Rage Fighter、MU Helper、自动重连、仓库和背包扩展。
+- 网络协议已适配 Season 6 Episode 3，并扩展了伤害、经验、物品和外观等数据的序列化。
+- 使用 UTF-16LE 处理内存中的文本，文件和网络文本使用 UTF-8。
+- 支持运行时切换界面语言；翻译资源位于 `src/Localization/`，详见
+  [翻译系统](docs/translation-system.md)。
+- 集成可选的 MuEditor（基于 Dear ImGui），用于运行时调试和参数调整。
+- 资源、着色器、配置文件和网络库会在构建后自动复制到可运行目录。
 
-## Release downloads
+仍在完善的内容包括 Lucky Items，以及 Season 6 Episode 3 兼容性和跨平台表现的
+持续校正。具体变化请查看 [CHANGELOG.md](CHANGELOG.md)。
 
-CI validates Windows native x64 Release, Linux x64 Release, and
-macOS arm64 Release, all with the editor OFF, and uploads no-data runtime
-artifacts for all three. Semantic Release publishes all three as GitHub Release
-assets. The runtimes exclude `Data/` and `fonts/`; each release has a
-**Compatible game data** link to the exact separate data release tagged
-`data-<id>`. Follow the platform-specific assembly steps in the build guide.
+## 支持矩阵
 
-x86, Debug, editor-ON, MinGW, and other configurations remain supported where
-listed below, but are not hosted artifacts. Whoever needs one must build locally.
-See the [build guide](docs/build/README.md#hosted-releases) for checksum and
-assembly commands.
+| 平台 | 架构 | MuEditor | 网络库 | 状态 |
+| --- | --- | --- | --- | --- |
+| Windows | x86 | 支持 | `MUnique.Client.Library.dll` | 完整客户端 |
+| Windows | x64 | 支持 | `MUnique.Client.Library.dll` | 完整客户端 |
+| Linux | x64 | 支持 | `MUnique.Client.Library.so` | 完整客户端 |
+| macOS | arm64 | 当前预设关闭 | `MUnique.Client.Library.dylib` | 完整客户端 |
+| Linux | x86 | 不支持 | 无可用 .NET AOT 网络库 | 不支持 |
 
-## How to build & run
+Android 和 iOS 目录目前只是后续移植的占位内容，暂时不能构建完整客户端。
 
-### Requirements
-* **CMake** 3.25 or newer (bundled with Visual Studio and CLion)
-* **.NET SDK 10.0** or newer (for building the Client Library)
-* **Visual Studio 2022+** with C++ and C# workloads, **CLion**, or **Rider** (see IDE-specific instructions below)
-* A compatible server: [OpenMU](https://github.com/MUnique/OpenMU)
+## 开发环境
 
-### First Time Setup - Initialize Submodules
+通用要求：
 
-The project uses three git submodules under `src/ThirdParty/`:
+- CMake 3.25 或更高版本
+- 支持 C++20 的编译器
+- .NET SDK 10.0 或更高版本，用于构建 `ClientLibrary/`
+- Ninja；Windows 预设使用 Ninja Multi-Config
+- Git 子模块
 
-- `SDL` - windowing, input and audio backend (required for all builds)
-- `SDL_mixer` - audio mixer (required for all builds)
-- `imgui` - in-game editor UI (only needed when built with `-DENABLE_EDITOR=ON`, independent of Debug/Release)
+Windows 原生构建还需要 Visual Studio 2022（安装 C++ 工作负载）和 vcpkg。
+Visual Studio、CLion、Rider、VS Code 的环境配置请参考
+[构建指南](docs/build/README.md)及其中的平台专用说明。
 
-CMake initializes these automatically on first configure. If that fails for any reason, run from the repository root:
+首次获取代码后，在仓库根目录初始化子模块：
 
 ```bash
-git submodule update --init
+git submodule update --init --recursive
 ```
 
-### Build Configurations
+主要子模块位于 `src/ThirdParty/`：
 
-There are two orthogonal choices: **editor on/off** (configure-time, picked via preset) and **Debug/Release** (build-time).
+- `SDL`：窗口、输入和音频基础设施
+- `SDL_mixer`：音频混音
+- `imgui`：MuEditor 使用的调试界面；只有启用 MuEditor 时才需要
 
-#### Editor builds (`windows-x86-mueditor` / `windows-x64-mueditor`)
-- Configure preset sets `ENABLE_EDITOR=ON`
-- Includes the in-game MU Editor (ImGui-based); the `imgui` submodule must be initialized
-- Press **F12** in-game to toggle the editor
-- Start with `--editor` flag to launch with editor enabled
-- Preprocessor define: `_EDITOR`
+## 使用 CMake 构建
 
-#### Standard builds (`windows-x86` / `windows-x64`)
-- Configure preset sets `ENABLE_EDITOR=OFF`; no editor code is compiled in and the `imgui` submodule is not initialized
-- Zero editor overhead
+项目提供了统一的 `CMakePresets.json`。Windows 提供标准构建和 MuEditor 构建，
+Linux 可通过配置选项启用 MuEditor；各平台均提供 Debug、Release 两种配置。
+当前 macOS 预设为 MuEditor 关闭的标准构建。
 
-Either configuration can be built as Debug or Release via the corresponding build preset (`*-debug` or `*-release`).
+### Windows
 
-### Building with CMake and MinGW-w64 (Linux)
-
-The repository also contains a CMake setup to cross-compile the Windows client
-from Linux using a MinGW-w64 toolchain.
-
-**Prerequisites**
-
-  * A working MinGW-w64 toolchain (for example `i686-w64-mingw32-g++`).
-  * A MinGW-w64 build of libjpeg-turbo which provides a `libturbojpeg` library
-    (static or import library) on the library search path of your toolchain.
-  * Standard Windows / OpenGL libraries shipped with MinGW-w64 (e.g. `opengl32`,
-    `glu32`, `winmm`, `imm32`, `ws2_32`, etc.).
-
-**Example build commands on Linux**
-
-From the repository root:
-
-```sh
-cmake -S . -B build-mingw \
-  -DCMAKE_TOOLCHAIN_FILE=cmake/toolchains/mingw-w64-i686.cmake \
-  -DCMAKE_BUILD_TYPE=Release
-cmake --build build-mingw -j$(nproc)
-```
-
-If the linker reports `cannot find -lturbojpeg`, install a MinGW-w64 build of
-libjpeg-turbo (providing `libturbojpeg.a` / `libturbojpeg.dll.a`) or adjust the
-`target_link_libraries` entry in `src/CMakeLists.txt` to match the
-name of the library available on your system.
-
----
-
-
-
-
-
-### Building the Project
-
-The project uses **CMake** as its build system. The `.NET Client Library` is automatically built by CMake when you build the main project - no manual publishing required!
-
-#### Option 1: Visual Studio 2022+ (Recommended)
-
-1. **Open the project:**
-   - File → Open → Folder
-   - Select the root `MuMain` folder (not `src`)
-
-2. **Wait for CMake to configure** (automatically happens, check Output window)
-
-3. **Select build configuration:**
-   - Use the dropdown to select `x86-Debug` or `x86-Release`
-
-4. **Build:**
-   - Build → Build All
-   - Or press `Ctrl+Shift+B`
-
-5. **Run/Debug:**
-   - Select `Main.exe` as startup item
-   - Press `F5` to debug or `Ctrl+F5` to run
-   - Working directory is automatically set to `src/bin`
-
-**Note:** The working directory is pre-configured in `.vs/launch.vs.json`. If it's not working, ensure you opened the root `MuMain` folder, not a subfolder.
-
-#### Option 2: CLion
-
-1. **Open the project:**
-   - File → Open
-   - Select the root `MuMain` folder
-
-2. **Wait for CMake to configure** (automatically happens)
-
-3. **Configure working directory:**
-   - Run → Edit Configurations
-   - Select `Main`
-   - Set "Working directory" to the build output directory (e.g. `cmake-build-debug/src/Debug`)
-   - The post-build step copies all game assets there automatically
-
-4. **Build and Run:**
-   - Click the hammer icon to build
-   - Click the play icon to run
-
-#### Option 3: Rider (CMake via Command Line + Rider for Development)
-
-Rider doesn't have full CMake support for C++ projects, so you need to generate a Visual Studio solution first:
-
-1. **Generate the solution** (one-time setup):
-   ```bash
-   cmake -B build -G "Visual Studio 17 2022" -A Win32
-   ```
-   *(Adjust the generator version based on your installed Visual Studio)*
-
-2. **Open in Rider:**
-   - File → Open
-   - Select `build/MuMain.sln`
-
-3. **Build and Run:**
-   - Build → Build Solution
-   - Run → Run 'Main'
-
-**Important:** When you modify `CMakeLists.txt`, you must manually regenerate the solution by running the cmake command again.
-
-#### Option 4: Command Line Build (Windows)
-
-Using CMakePresets.json with Ninja (same as IDEs, much faster than MSBuild):
+在 Visual Studio Developer PowerShell 或已加载 MSVC 环境的终端中执行：
 
 ```powershell
-# Configure x86 build (first time only, or when CMakeLists.txt changes)
+# x64 标准构建
+cmake --preset windows-x64
+cmake --build --preset windows-x64-release
+
+# x86 标准构建
 cmake --preset windows-x86
-
-# Build Debug
-cmake --build --preset windows-x86-debug
-
-# Build Release
 cmake --build --preset windows-x86-release
 
-# For x64 builds, use windows-x64 presets instead
-cmake --preset windows-x64
-cmake --build --preset windows-x64-debug
+# x64 MuEditor 构建
+cmake --preset windows-x64-mueditor
+cmake --build --preset windows-x64-mueditor-debug
 ```
 
-**Note:** Ninja Multi-Config allows switching between Debug and Release without reconfiguring. Assets are automatically copied to the build output directory during compilation.
+将 `release` 改为 `debug` 即可构建 Debug 版本。MuEditor 构建可使用 `--editor`
+启动，并在游戏中按 **F12** 切换编辑器。
 
-**To start fresh (clean build):**
-```powershell
-Remove-Item -Recurse -Force out
-```
+### Linux
 
-**Run the executable:**
-```powershell
-# x86 Debug
-./out/build/windows-x86/src/Debug/Main.exe
-
-# x86 Release
-./out/build/windows-x86/src/Release/Main.exe
-```
-
-#### Option 5: Command Line Build (Linux) !Not Working Yet!
-For Linux builds, you'll need to add Linux presets to CMakePresets.json. Example workflow:
+Linux 使用原生 x64 构建：
 
 ```bash
-# Configure for Debug with Ninja (recommended)
-cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug -DENABLE_EDITOR=OFF
-
-# Build
-cmake --build build
-
-# To switch to Release, reconfigure:
-cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DENABLE_EDITOR=OFF
-cmake --build build
+cmake --preset linux-x64
+cmake --build --preset linux-x64-release
 ```
 
-**To start fresh (clean build):**
+### macOS
+
+macOS 使用 Apple Silicon arm64 构建：
+
 ```bash
-rm -rf build
+cmake --preset macos-arm64
+cmake --build --preset macos-arm64-release
 ```
 
-**Run the executable:**
+完整的平台依赖、IDE 配置、WSL/MinGW 交叉编译和常见问题请查看
+[docs/build/README.md](docs/build/README.md)。
+
+### 常用 CMake 选项
+
+| 选项 | 默认值 | 说明 |
+| --- | --- | --- |
+| `ENABLE_EDITOR` | `OFF` | 构建 MuEditor；启用后定义 `_EDITOR` |
+| `BUILD_TESTING` | `OFF`（Linux/macOS 预设为 `ON`） | 构建测试并注册 CTest |
+| `MU_COPY_RUNTIME_ASSETS` | `ON` | 将 `Data/`、`fonts/` 和配置模板复制到输出目录 |
+| `MU_ENABLE_SHADER_COMPILATION` | `OFF` | 使用 glslang、SPIRV-Cross、DXC 重新编译着色器 |
+
+默认构建使用仓库中已提交的着色器二进制文件。只有在需要重新生成着色器时，
+才应启用 `MU_ENABLE_SHADER_COMPILATION=ON`，并安装对应工具链。
+
+## 运行客户端
+
+构建完成后，请从包含 `Main`（或 `Main.exe`）、网络库、`Data/` 和 `fonts/` 的
+输出目录启动客户端。CMake 的后置步骤会自动准备该目录。
+
+连接服务器的基本格式为：
+
+```text
+Main.exe connect /u<服务器地址> /p<端口>
+```
+
+例如：
+
+```text
+Main.exe connect /u127.0.0.1 /p44406
+```
+
+默认连接地址为 `localhost:44406`。客户端当前使用版本 `2.04d` 和序列号
+`k1Pk2jcET48mxL3b`；如果服务端检查版本或序列号，请确保两端配置一致。
+
+也可以使用 [OpenMU Launcher](https://github.com/MUnique/OpenMU/releases) 启动。
+
+### 配置文件
+
+客户端从可执行文件所在目录读取 `config.ini`。首次构建时，配置会从
+`src/bin/config.ini.template` 生成。常用配置如下：
+
+| 节 | 键 | 默认值 | 说明 |
+| --- | --- | --- | --- |
+| `[UI]` | `EnableAnimationTaskPool` | `0` | 可见角色达到阈值时启用动画任务池 |
+| `[UI]` | `Locale` | `en` | 当前界面语言；选项窗口会保存运行时修改 |
+| `[Camera]` | `Zoom` | `1735` | 轨道相机距离 |
+| `[Render]` | `VSync` | `1` | 是否启用 VSync |
+
+渲染始终使用 SDL GPU；旧的 `[Render] CoreProfile` 配置项不会切换到 OpenGL。
+
+### 常用参数和聊天命令
+
+- `--enable-taskpool`：强制启用动画任务池，仍受可见角色数量阈值限制。
+- `--editor`：在 MuEditor 构建中启动时启用编辑器。
+- `$fps <数值>`：设置帧率上限。
+- `$vsync on` / `$vsync off`：开启或关闭 VSync。
+- `$fpscounter on` / `$fpscounter off`：显示或隐藏简易帧率计数器。
+- `$details on` / `$details off`：显示或隐藏详细性能面板。
+- `$glstats on` / `$glstats off`：显示或隐藏 SDL GPU 统计。
+
+更多命令请参考 [聊天命令](docs/chat-commands.md)。
+
+## 测试
+
+测试位于 `tests/`，使用 doctest 和 CTest。配置时启用测试后运行：
+
 ```bash
-./build/src/Main
+cmake -S . -B out/build/test -G Ninja \
+  -DBUILD_TESTING=ON -DENABLE_EDITOR=OFF
+cmake --build out/build/test --config Release
+ctest --test-dir out/build/test --build-config Release --output-on-failure
 ```
 
----
+不同平台的测试要求和模块说明见
+[测试参考](docs/build/reference-tests.md)。
 
-### Running the Client
+## 发布包
 
-It supports the common starting parameters `/u` and `/p`, example: `main.exe connect /u192.168.0.20 /p55902`.
-The [OpenMU launcher](https://github.com/MUnique/OpenMU/releases/download/v0.8.17/MUnique.OpenMU.ClientLauncher_0.8.17.zip)
-will work as well. By default, it connects to localhost and port `44406`.
-The client identifies itself with Version `2.04d` and serial `k1Pk2jcET48mxL3b`.
+CI 会验证以下原生 Release 构建，并生成不包含游戏数据的运行包：
 
-#### Client configuration (`config.ini`)
+- Windows x64，MuEditor 关闭
+- Linux x64，MuEditor 关闭
+- macOS arm64，MuEditor 关闭
 
-The client reads options from `config.ini` in the executable directory:
+`Data/` 和 `fonts/` 作为独立的数据发布包提供；每个客户端 Release 都会链接
+对应的兼容数据版本。下载发布包后，请按照
+[发布包组装说明](docs/build/README.md#hosted-releases)合并客户端和数据文件，
+并校验数据包的 SHA-256。
 
-| Section | Key | Default Value | Description |
-| :--- | :--- | :--- | :--- |
-| **`[UI]`** | `EnableAnimationTaskPool` | `0` | Set to `1` to process character animation through `AnimationTaskPool` when at least 20 active characters are visible. `0` keeps sequential updates. |
-| **`[UI]`** | `Locale` | `"en"` | Active generated UI locale. The Options window persists runtime language changes here. |
-| **`[Camera]`** | `Zoom` | `1735` | Persisted Orbital-camera distance. |
-| **`[Render]`** | `VSync` | `1` | `1` enables display-paced presentation; `0` keeps VSync disabled across restarts and fullscreen/resolution changes. `$vsync on` / `$vsync off` update this value. |
+Windows x86、Debug、MuEditor 开启及 MinGW 等配置需要在本地构建。
 
-Rendering always uses the SDL GPU backend. The legacy `[Render] CoreProfile`
-key is not read; values `0` and `1` have no effect and do not select an OpenGL
-context.
+## 文档
 
-#### Command-line flags and options
+- [构建指南](docs/build/README.md)
+- [SDL GPU 与 GPU Skinning](docs/GPU%20Skinning/README.md)
+- [相机系统](docs/camera-system.md)
+- [选项窗口与配置](docs/options-window.md)
+- [MuEditor](docs/dev-editor.md)
+- [聊天命令](docs/chat-commands.md)
+- [翻译系统](docs/translation-system.md)
+- [渲染跨平台一致性](docs/build/rendering-parity.md)
+- [变更记录](CHANGELOG.md)
 
-- **Connection string**: `main.exe connect /u<IP> /p<PORT>`.
-- **`--enable-taskpool`**: Enables `AnimationTaskPool` regardless of
-  `config.ini`; the 20-character threshold still applies.
-- **`--editor`**: Starts the ImGui editor enabled on `*_mueditor` builds;
-  **F12** toggles it.
+## 参与开发
 
-## Documentation
+提交代码前请阅读：
 
-- [GPU skinning and SDL GPU rendering](docs/GPU%20Skinning/README.md) - the
-  downstream mapping for upstream Core Profile, GPU skinning, and DXP work.
-- [Camera system](docs/camera-system.md) - modes, switching (F9), config,
-  frustum culling, `$details` overlay, and the gameplay behaviour changes
-  from the 3D camera rework.
-- [Chat commands window](docs/chat-commands.md) - the commands the server
-  offers (J), how their values are entered, and how favourites and
-  templates are stored.
-- [DevEditor](docs/dev-editor.md) - the in-game tuning UI (F12, debug
-  builds only).
-- [Options window and config](docs/options-window.md) - runtime
-  resolution / windowed toggle, slider rounding, and what the options
-  window stores in `config.ini`.
-- [Build guide](docs/build/README.md) - platform-specific build notes.
-- [Translation system](docs/translation-system.md) - how the .resx ->
-  generated C++ accessors pipeline works, how to add a string or a locale,
-  runtime locale switching, and observer hooks for cached UI strings.
+- [AGENTS.md](AGENTS.md)：仓库协作和构建入口说明
+- [docs/CODING_RULES.md](docs/CODING_RULES.md)：C++、C# 和通用编码规范
 
-## Contributing
+请保持修改范围聚焦，并在提交前根据改动范围执行相应的构建或测试。
 
-### Coding rules
+## 致谢
 
-All code changes - by humans and AI assistants - should follow
-[`docs/CODING_RULES.md`](docs/CODING_RULES.md). Read it before opening a PR.
-
-AI coding assistants (Claude Code, Cursor, Codex, etc.) should also read
-[`AGENTS.md`](AGENTS.md), which points at the same rules and at the build guide.
-
-## Credits
-
-  * Webzen
-  * Louis
-  * Qubit (tuservermu.com.ve)
-  * Community members of RaGEZONE and tuservermu.com.ve for posting fixes
-  * [Nitoy](https://github.com/nitoygo) for the MU Helper
+- Webzen
+- [Louis](https://github.com/LouisEmulator)
+- Qubit（tuservermu.com.ve）
+- RaGEZONE、tuservermu.com.ve 等社区贡献者
+- [Nitoy](https://github.com/nitoygo) 提供的 MU Helper
