@@ -735,7 +735,7 @@ static std::wstring BuildPortableCommandLine(const PSTR commandLine)
 wchar_t m_Username[11];
 wchar_t m_Password[21];
 wchar_t m_Version[11];
-wchar_t m_ExeVersion[11];
+wchar_t m_ExeVersion[11] = L"2.04d-CN";
 int m_SoundOnOff;
 int m_MusicOnOff;
 int m_Resolution;

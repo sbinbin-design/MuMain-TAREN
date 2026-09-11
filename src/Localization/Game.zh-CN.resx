@@ -1404,7 +1404,7 @@
     <comment>legacy_id=383</comment>
   </data>
   <data name="Option385" xml:space="preserve">
-    <value>Option</value>
+    <value>选项</value>
     <comment>legacy_id=385,2343</comment>
   </data>
   <data name="Automatic Attack" xml:space="preserve">
@@ -1416,25 +1416,25 @@
     <comment>legacy_id=387</comment>
   </data>
   <data name="Sound volume" xml:space="preserve">
-    <value>Sound volume</value>
+    <value>音效音量</value>
   </data>
   <data name="Music volume" xml:space="preserve">
-    <value>Music volume</value>
+    <value>音乐音量</value>
   </data>
   <data name="Render full effects" xml:space="preserve">
-    <value>Render full effects</value>
+    <value>完整特效</value>
   </data>
   <data name="Resolution" xml:space="preserve">
-    <value>Resolution</value>
+    <value>分辨率</value>
   </data>
   <data name="Language" xml:space="preserve">
-    <value>Language</value>
+    <value>语言</value>
   </data>
   <data name="Windowed mode" xml:space="preserve">
-    <value>Windowed mode</value>
+    <value>窗口模式</value>
   </data>
   <data name="Close388" xml:space="preserve">
-    <value>Close</value>
+    <value>关闭</value>
     <comment>legacy_id=388,1002</comment>
   </data>
   <data name="Volume" xml:space="preserve">
@@ -1710,11 +1710,11 @@
     <comment>Login screen: warning under the remember-password checkbox.</comment>
   </data>
   <data name="LoginSavePasswordWarningTitle" xml:space="preserve">
-    <value>WARNING!!!</value>
+    <value>警告！</value>
     <comment>Remember-password confirmation dialog: header.</comment>
   </data>
   <data name="LoginSavePasswordWarningBody" xml:space="preserve">
-    <value>Saving the password lets anyone using this computer log into your account. Only do this on a PC you trust. Save the password?</value>
+    <value>保存密码后，使用此电脑的任何人都可以登录你的账号。请仅在信任的电脑上保存密码。是否保存密码？</value>
     <comment>Remember-password confirmation dialog: body.</comment>
   </data>
   <data name="Connect" xml:space="preserve">
@@ -1734,7 +1734,7 @@
     <comment>legacy_id=455</comment>
   </data>
   <data name="Ver %s" xml:space="preserve">
-    <value>ver %s</value>
+    <value>版本 %s</value>
     <comment>legacy_id=456</comment>
   </data>
   <data name="Operation" xml:space="preserve">
@@ -1794,7 +1794,7 @@
     <comment>legacy_id=470</comment>
   </data>
   <data name="Please wait" xml:space="preserve">
-    <value>Please wait</value>
+    <value>请稍候</value>
     <comment>legacy_id=471,473</comment>
   </data>
   <data name="Verifying your account" xml:space="preserve">
@@ -12948,10 +12948,10 @@
     <value>Retrying in %d seconds...</value>
   </data>
   <data name="Font" xml:space="preserve">
-    <value>Font</value>
+    <value>字体</value>
   </data>
   <data name="DefaultFont" xml:space="preserve">
-    <value>Default</value>
+    <value>默认</value>
   </data>
   <data name="ChatCommandsTitle" xml:space="preserve">
     <value>Commands</value>
