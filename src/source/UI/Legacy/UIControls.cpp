@@ -2580,6 +2580,7 @@ void CUIRenderText::SetFont(HFONT hFont)
         m_pRenderText->SetFont(hFont);
 }
 
+
 SIZE CUIRenderText::MeasureText(const wchar_t* pszText, int iLength) const
 {
     return m_pRenderText ? m_pRenderText->MeasureText(pszText, iLength) : SIZE{0, 0};

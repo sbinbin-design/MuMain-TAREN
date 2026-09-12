@@ -29,10 +29,11 @@ constexpr int kNormalFontPointSize = 11;
 constexpr int kMaximumNormalFontPointSize = 16;
 constexpr int kBigFontPointSize = 22;
 constexpr int kMaximumBigFontPointSize = 32;
-constexpr int kFixedFontPointSize = 9;
+constexpr int kFixedFontPointSize = 12;
 constexpr int kMaximumFixedFontPointSize = 18;
 // ponytail: one gameplay window; move scale into a window context if multi-window rendering is added.
 float g_windowContentScale = 1.0f;
+UI::Scaling::FontScalePolicy g_fontScalePolicy = UI::Scaling::FontScalePolicy::ModernDpiAware;
 
 struct FontPointRange
 {
@@ -108,8 +109,8 @@ UI::Scaling::Viewport UI::Scaling::FullReferenceViewport()
 UI::Scaling::Transform UI::Scaling::LegacyUiTransform(int windowWidth, int windowHeight)
 {
     Transform transform = ScreenOverlayTransform(windowWidth, windowHeight);
-    transform.typographyScale = std::clamp(static_cast<float>(windowHeight) / 768.0f, 1.0f,
-                                           kMaximumTypographyScale);
+    transform.typographyScale = 1.0f;
+    transform.fontScalePolicy = FontScalePolicy::LegacyPhysical;
     return transform;
 }
 
@@ -338,16 +339,24 @@ int UI::Scaling::FontPointSize(FontRole role, const Transform& transform)
 float UI::Scaling::FontScaleForBounds(FontRole role, const Transform& transform, float measuredWidth,
                                       float measuredHeight, float boxWidth, float boxHeight)
 {
-    const float maximum = static_cast<float>(MaximumFontPointSize(role));
-    const float minimumScale = static_cast<float>(MinimumFontPointSize(role)) / maximum;
-    float scale = static_cast<float>(FontPointSize(role, transform)) / maximum;
+    const int minimumFontPointSize = MinimumFontPointSize(role);
+    const int maximumFontPointSize = MaximumFontPointSize(role);
+    const float denominator = static_cast<float>(maximumFontPointSize);
+    const int targetFontPointSize = FontPointSize(role, transform);
+    const float minimumScale = static_cast<float>(minimumFontPointSize) / denominator;
+    const float baseScaleBeforeBounds = static_cast<float>(targetFontPointSize) / denominator;
+    float scale = std::clamp(baseScaleBeforeBounds, minimumScale, 1.0f);
 
-    if (boxWidth > 0.0f && measuredWidth > 0.0f)
-        scale = std::min(scale, boxWidth / measuredWidth);
-    if (boxHeight > 0.0f && measuredHeight > 0.0f)
-        scale = std::min(scale, boxHeight / measuredHeight);
+    const float widthBoundsScale = boxWidth > 0.0f && measuredWidth > 0.0f ? boxWidth / measuredWidth : 0.0f;
+    const float heightBoundsScale = boxHeight > 0.0f && measuredHeight > 0.0f ? boxHeight / measuredHeight : 0.0f;
 
-    return std::clamp(scale, minimumScale, 1.0f);
+    if (widthBoundsScale > 0.0f)
+        scale = std::min(scale, widthBoundsScale);
+    if (heightBoundsScale > 0.0f)
+        scale = std::min(scale, heightBoundsScale);
+
+    const float finalScale = std::clamp(scale, 0.0f, 1.0f);
+    return finalScale;
 }
 
 float UI::Scaling::ContentScaleFromMetrics(float displayScale, float pixelDensity)
@@ -369,7 +378,8 @@ void UI::Scaling::SetWindowContentScale(float contentScale)
 
 UI::Scaling::Transform UI::Scaling::GetActiveTransform()
 {
-    return {g_fScreenRate_x, g_fScreenRate_y, g_fScreenOffset_x, g_fScreenOffset_y, g_fTypographyScale};
+    return {g_fScreenRate_x, g_fScreenRate_y, g_fScreenOffset_x, g_fScreenOffset_y, g_fTypographyScale,
+            g_fontScalePolicy};
 }
 
 void UI::Scaling::SetActiveTransform(const Transform& transform)
@@ -379,6 +389,7 @@ void UI::Scaling::SetActiveTransform(const Transform& transform)
     g_fScreenOffset_x = transform.offsetX;
     g_fScreenOffset_y = transform.offsetY;
     g_fTypographyScale = transform.typographyScale;
+    g_fontScalePolicy = transform.fontScalePolicy;
 }
 
 UI::Scaling::ScopedActiveTransform::ScopedActiveTransform(const Transform& transform, bool transformMouse)

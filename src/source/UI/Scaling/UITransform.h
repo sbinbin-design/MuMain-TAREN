@@ -4,6 +4,12 @@ namespace UI::Scaling
 {
     inline constexpr int DockLogicalBottom = 432;
 
+    enum class FontScalePolicy
+    {
+        ModernDpiAware,
+        LegacyPhysical,
+    };
+
     struct Transform
     {
         float scaleX;
@@ -11,6 +17,7 @@ namespace UI::Scaling
         float offsetX;
         float offsetY;
         float typographyScale;
+        FontScalePolicy fontScalePolicy = FontScalePolicy::ModernDpiAware;
     };
 
     struct Viewport

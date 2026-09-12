@@ -814,7 +814,8 @@ void CUIMng::Render()
         return;
 
     const auto previousTransform = UI::Scaling::GetActiveTransform();
-    UI::Scaling::SetActiveTransform(UI::Scaling::LegacyUiTransform(WindowWidth, WindowHeight));
+    const auto legacyTransform = UI::Scaling::LegacyUiTransform(WindowWidth, WindowHeight);
+    UI::Scaling::SetActiveTransform(legacyTransform);
 
     m_CharInfoBalloonMng.Render();
 

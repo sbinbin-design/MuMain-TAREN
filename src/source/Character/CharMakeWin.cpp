@@ -5,7 +5,6 @@
 #include "stdafx.h"
 #include "CharMakeWin.h"
 #include "Core/Input/Input.h"
-#include "Core/Utilities/Log/MuLogger.h"
 #include "UI/Legacy/UIMng.h"
 #include "Render/Models/ZzzBMD.h"
 #include "Engine/Object/ZzzObject.h"
@@ -25,7 +24,6 @@
 #include <algorithm>
 #include <array>
 #include <cstdint>
-#include <cwchar>
 #include <iterator>
 #include <string>
 
@@ -48,7 +46,7 @@ namespace
     constexpr int kStatLineSpacing = 17;
     constexpr int kStatYOffset = 10;
     constexpr int kStatValueOffset = 54;
-    constexpr int kStatLabelSafetyGap = 4;
+    constexpr int kStatLabelSafetyGap = 8;
     constexpr int kStatTextOffsetX = 22;
     constexpr int kDarkLordStatHeight = 96;
     constexpr int kDefaultStatHeight = 80;
