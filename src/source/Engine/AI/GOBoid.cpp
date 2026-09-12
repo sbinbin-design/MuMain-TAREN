@@ -925,7 +925,7 @@ int CreateAtlanseFish(OBJECT* o)
 void MoveBat(OBJECT* o)
 {
     o->Position[2] = RequestTerrainHeight(o->Position[0], o->Position[1]);
-    o->Position[2] += ( - absf(sinf(o->Timer)) * 150.f + 350.f) * FPS_ANIMATION_FACTOR;
+    o->Position[2] += -absf(sinf(o->Timer)) * 150.f + 350.f;
     o->Timer += 0.2f * FPS_ANIMATION_FACTOR;
 }
 
@@ -1038,7 +1038,7 @@ void MoveEagle(OBJECT* o)
         o->SubType = 1;
         o->AnimationFrame = 0;
     }
-    else if (o->SubType == 1 && o->AnimationFrame == 24)
+    else if (o->SubType == 1 && o->AnimationFrame >= 24.0f)
     {
         o->SubType = 2;
     }

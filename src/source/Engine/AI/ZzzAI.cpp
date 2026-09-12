@@ -234,8 +234,16 @@ void MoveBoid(OBJECT* o, int i, OBJECT* Boids, int MAX)
         TargetX = o->Position[0] + TargetX / NumBirds;
         TargetY = o->Position[1] + TargetY / NumBirds;
 
-        o->Angle[2] = (float)TurnAngle((int)o->Angle[2], CalcAngle(o->Position[0], o->Position[1], TargetX, TargetY),
-                                       (int)o->Gravity);
+        const float targetAngle = static_cast<float>(CalcAngle(o->Position[0], o->Position[1], TargetX, TargetY));
+        if (FPS_ANIMATION_FACTOR >= 1.f)
+        {
+            o->Angle[2] = static_cast<float>(TurnAngle(static_cast<int>(o->Angle[2]), static_cast<int>(targetAngle),
+                                                        static_cast<int>(o->Gravity)));
+        }
+        else
+        {
+            o->Angle[2] = TurnAngle2(o->Angle[2], targetAngle, o->Gravity * FPS_ANIMATION_FACTOR);
+        }
     }
 }
 
