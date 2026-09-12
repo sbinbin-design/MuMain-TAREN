@@ -253,6 +253,7 @@ void SEASON3B::CNewUIMasterLevel::Release()
 {
     this->ClearSkillTreeData();
     this->ClearSkillTooltipData();
+    this->ClearLocalizedSkillTooltipData();
     if (m_pNewUIMng)
     {
         m_pNewUIMng->RemoveUIObj(this);
@@ -587,7 +588,6 @@ void SEASON3B::CNewUIMasterLevel::SetMasterSkillToolTipData()
         }
     }
 
-    this->SetLocalizedMasterSkillToolTipData();
 }
 
 void SEASON3B::CNewUIMasterLevel::SetLocalizedMasterSkillToolTipData()
