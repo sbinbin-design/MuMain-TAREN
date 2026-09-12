@@ -1632,8 +1632,6 @@ bool RegisterBundledFonts()
         if (!registerPath(font.regular) || !registerPath(font.bold))
             return false;
     }
-    if (!registerPath(kBundledFixedFont.regular))
-        return false;
 #endif
     return true;
 }
@@ -1647,7 +1645,6 @@ void UnregisterBundledFonts()
         RemoveFontResourceExW(BundledFontFullPath(font.regular).c_str(), FR_PRIVATE, nullptr);
         RemoveFontResourceExW(BundledFontFullPath(font.bold).c_str(), FR_PRIVATE, nullptr);
     }
-    RemoveFontResourceExW(BundledFontFullPath(kBundledFixedFont.regular).c_str(), FR_PRIVATE, nullptr);
 #endif
 }
 
@@ -1670,7 +1667,7 @@ bool CreateNewFonts(FontSizes sizes)
     HFONT normal = CreateUIFont(sizes.normal, FW_NORMAL);
     HFONT bold = CreateUIFont(sizes.normal, FW_SEMIBOLD);
     HFONT big = CreateUIFont(sizes.big, FW_SEMIBOLD);
-    HFONT fixed = CreateFontForFamily(sizes.fixed, FW_NORMAL, kBundledFixedFont.family);
+    HFONT fixed = CreateUIFont(sizes.fixed, FW_NORMAL);
     if (!normal || !bold || !big || !fixed)
     {
         if (normal)

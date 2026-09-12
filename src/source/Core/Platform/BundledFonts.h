@@ -22,6 +22,8 @@ inline constexpr BundledFont kBundledFonts[] = {
 };
 
 inline constexpr std::string_view kDefaultBundledFontFamily = "DejaVu Sans";
+// Retained as standalone packaged-font metadata; FontRole::Fixed resolves through
+// the configured UI family and does not use this monospace face.
 inline constexpr BundledFont kBundledFixedFont{
     "Cousine", "fonts/Cousine-Regular.ttf", "fonts/Cousine-Regular.ttf"};
 // ponytail: one Hangul face; SDL_ttf synthesizes bold, bundle NanumGothic-Bold if metric parity requires it.

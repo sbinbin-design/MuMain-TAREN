@@ -118,7 +118,7 @@ extern bool& EnableMainRender;
 // Utility functions
 bool CheckAbuseFilter(wchar_t* Text, bool bCheckSlash);
 bool CheckAbuseNameFilter(wchar_t* Text);
-bool CheckName();
+bool CheckName(wchar_t* text);
 BOOL CheckOptionMouseClick(int iOptionPos_y, BOOL bPlayClickSound = TRUE);
 int SeparateTextIntoLines(const wchar_t* lpszText, wchar_t* lpszSeparated, int iMaxLine, int iLineSize);
 void SetEffectVolumeLevel(int level);

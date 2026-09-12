@@ -29,7 +29,7 @@ constexpr int kNormalFontPointSize = 11;
 constexpr int kMaximumNormalFontPointSize = 16;
 constexpr int kBigFontPointSize = 22;
 constexpr int kMaximumBigFontPointSize = 32;
-constexpr int kFixedFontPointSize = 13;
+constexpr int kFixedFontPointSize = 9;
 constexpr int kMaximumFixedFontPointSize = 18;
 // ponytail: one gameplay window; move scale into a window context if multi-window rendering is added.
 float g_windowContentScale = 1.0f;
@@ -108,7 +108,8 @@ UI::Scaling::Viewport UI::Scaling::FullReferenceViewport()
 UI::Scaling::Transform UI::Scaling::LegacyUiTransform(int windowWidth, int windowHeight)
 {
     Transform transform = ScreenOverlayTransform(windowWidth, windowHeight);
-    transform.typographyScale = 1.0f;
+    transform.typographyScale = std::clamp(static_cast<float>(windowHeight) / 768.0f, 1.0f,
+                                           kMaximumTypographyScale);
     return transform;
 }
 

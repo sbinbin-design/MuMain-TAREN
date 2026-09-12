@@ -779,8 +779,6 @@ void ReceiveCharacterCard_New(const BYTE* ReceiveBuffer)
 void ReceiveCreateCharacter(const BYTE* ReceiveBuffer)
 {
     auto Data = (LPPRECEIVE_CREATE_CHARACTER)ReceiveBuffer;
-    mu::log::Get("network")->info("[CreateCharacter] response result={} index={} classRaw={} level={}", Data->Result,
-                                  Data->Index, static_cast<int>(Data->Class), Data->Level);
     if (Data->Result == 1)
     {
         float fPos[2] = {0.0f, 0.0f}, fAngle = 0.0f;
@@ -813,7 +811,6 @@ void ReceiveCreateCharacter(const BYTE* ReceiveBuffer)
             fAngle = 35.0f;
             break;
         }
-
         INT iCharacterKey;
         iCharacterKey = Data->Index;
         DeleteCharacter(iCharacterKey);
@@ -822,8 +819,6 @@ void ReceiveCreateCharacter(const BYTE* ReceiveBuffer)
         CharactersClient[Data->Index].Level = Data->Level;
         auto serverClass = (SERVER_CLASS_TYPE)(Data->Class >> 3);
         auto iClass = gCharacterManager.ChangeServerClassTypeToClientClassType(serverClass);
-        mu::log::Get("network")->info("[CreateCharacter] success serverClass={} clientClass={}",
-                                      static_cast<int>(serverClass), static_cast<int>(iClass));
 
         CharactersClient[Data->Index].Class = iClass;
         CharactersClient[Data->Index].SkinIndex = gCharacterManager.GetSkinModelIndex(iClass);
@@ -836,9 +831,13 @@ void ReceiveCreateCharacter(const BYTE* ReceiveBuffer)
         rUIMng.m_CharInfoBalloonMng.UpdateDisplay();
     }
     else if (Data->Result == 0)
+    {
         CUIMng::Instance().PopUpMsgWin(RECEIVE_CREATE_CHARACTER_FAIL);
+    }
     else if (Data->Result == 2)
+    {
         CUIMng::Instance().PopUpMsgWin(RECEIVE_CREATE_CHARACTER_FAIL2);
+    }
 
     g_ConsoleDebug->Write(MCD_RECEIVE, L"0x01 [ReceiveCreateCharacter]");
 }
@@ -1837,38 +1836,34 @@ void ReceiveChat(const BYTE* ReceiveBuffer)
         ID[MAX_USERNAME_SIZE] = L'\0';
 
         const auto messageSize = Data->Header.Size - MAX_USERNAME_SIZE - sizeof(PBMSG_HEADER);
+        const int safeMessageSize = CMultiLanguage::GetUtf8SafePrefixLength(Data->ChatText, std::min(static_cast<int>(messageSize), MAX_CHAT_SIZE));
         wchar_t Text[MAX_CHAT_SIZE + 1]{};
-        CMultiLanguage::ConvertFromUtf8(Text, Data->ChatText);
-        Text[MAX_CHAT_SIZE] = L'\0';
+        const int textLength = CMultiLanguage::ConvertFromUtf8(Text, Data->ChatText, safeMessageSize);
+        Text[std::min(textLength, MAX_CHAT_SIZE)] = L'\0';
 
         if (Text[0] == L'~')
         {
-            for (int i = 0; i < messageSize - 1; i++)
-                Text[i] = Text[i + 1];
+            wmemmove(Text, Text + 1, wcslen(Text));
             g_pChatListBox->AddText(ID, Text, SEASON3B::TYPE_PARTY_MESSAGE);
         }
         else if (Text[0] == L'@' && Text[1] == L'@')
         {
-            for (int i = 0; i < messageSize - 2; i++)
-                Text[i] = Text[i + 2];
+            wmemmove(Text, Text + 2, wcslen(Text) - 1);
             g_pChatListBox->AddText(ID, Text, SEASON3B::TYPE_UNION_MESSAGE);
         }
         else if (Text[0] == L'@')
         {
-            for (int i = 0; i < messageSize - 1; i++)
-                Text[i] = Text[i + 1];
+            wmemmove(Text, Text + 1, wcslen(Text));
             g_pChatListBox->AddText(ID, Text, SEASON3B::TYPE_GUILD_MESSAGE);
         }
         else if (Text[0] == L'$')
         {
-            for (int i = 0; i < messageSize - 1; i++)
-                Text[i] = Text[i + 2];
+            wmemmove(Text, Text + 1, wcslen(Text));
             g_pChatListBox->AddText(ID, Text, SEASON3B::TYPE_GENS_MESSAGE);
         }
         else if (Text[0] == L'#')
         {
-            for (int i = 0; i < messageSize - 1; i++)
-                Text[i] = Text[i + 1];
+            wmemmove(Text, Text + 1, wcslen(Text));
 
             CHARACTER* pFindGm = nullptr;
 
@@ -1942,9 +1937,10 @@ void ReceiveChatWhisper(const BYTE* ReceiveBuffer)
     ID[MAX_USERNAME_SIZE] = L'\0';
 
     const auto messageSize = Data->Header.Size - MAX_USERNAME_SIZE - sizeof(PBMSG_HEADER);
+    const int safeMessageSize = CMultiLanguage::GetUtf8SafePrefixLength(Data->ChatText, std::min(static_cast<int>(messageSize), MAX_CHAT_SIZE));
     wchar_t Text[MAX_CHAT_SIZE + 1]{};
-    CMultiLanguage::ConvertFromUtf8(Text, Data->ChatText, messageSize);
-    Text[messageSize] = L'\0';
+    const int textLength = CMultiLanguage::ConvertFromUtf8(Text, Data->ChatText, safeMessageSize);
+    Text[std::min(textLength, MAX_CHAT_SIZE)] = L'\0';
 
     UI::Chat::Whisper::Register(10, ID);
 
@@ -1990,8 +1986,10 @@ void ReceiveChatKey(const BYTE* ReceiveBuffer)
         return;
     }
 
+    const int safeMessageLength = CMultiLanguage::GetUtf8SafePrefixLength(Data->ChatText, sizeof Data->ChatText);
     wchar_t ChatText[sizeof Data->ChatText + 1]{};
-    CMultiLanguage::ConvertFromUtf8(ChatText, Data->ChatText, sizeof Data->ChatText);
+    const int textLength = CMultiLanguage::ConvertFromUtf8(ChatText, Data->ChatText, safeMessageLength);
+    ChatText[std::min(textLength, static_cast<int>(std::size(ChatText) - 1))] = L'\0';
     UI::Chat::CreateChat(CharactersClient[Index].ID, ChatText, &CharactersClient[Index]);
 }
 

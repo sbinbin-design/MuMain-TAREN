@@ -7,6 +7,7 @@
 #include "UI/NewUI/NewUISystem.h"
 #include "UI/NewUI/Dialogs/NewUICustomMessageBox.h"
 #include "GameLogic/Items/PersonalShopTitleImp.h"
+#include "Engine/Object/ZzzInventory.h"
 #include "I18N/All.h"
 
 const int iMAX_SHOPTITLE_MULTI = 26;
@@ -431,6 +432,11 @@ bool SEASON3B::CNewUIMyShopInventory::UpdateMouseEvent()
                 g_pMyShopInventory->GetTitle(shopTitle);
                 if (IsExistUndecidedPrice() == false && wcslen(shopTitle) > 0)
                 {
+                    if (!IsCorrectShopTitle(shopTitle))
+                    {
+                        g_pSystemLogBox->AddText(I18N::Game::WrongStoreName, SEASON3B::TYPE_ERROR_MESSAGE);
+                        return false;
+                    }
                     if (m_EnablePersonalShop == false)
                     {
                         SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CPersonalshopCreateMsgBoxLayout));

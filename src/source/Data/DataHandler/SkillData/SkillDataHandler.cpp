@@ -25,17 +25,32 @@ namespace
 {
 using LegacySkillRecord = std::array<BYTE, sizeof(SKILL_ATTRIBUTE_FILE_LEGACY)>;
 
-constexpr int kFirstMasterSkillSlot = 300;
-constexpr int kLastLocalizedMasterSkillSlot = 608;
+constexpr int kFirstMasterSkillSlot = AT_SKILL_MASTER_BEGIN;
+constexpr int kLastLocalizedMasterSkillSlot = AT_SKILL_MASTER_END;
 // These slots were statically audited as the same Skills with version-balance
 // differences only; their business data remains the MuMain source of truth.
 constexpr std::array<int, 9> kLocalizedNameExceptionSlots = {17, 30, 31, 32, 33, 34, 35, 36, 239};
+constexpr std::array<int, 29> kMasterSkillNameDenylist = {
+    365, 376, 396, 408, 444, 464, 474, 477, 498, 499,
+    500, 501, 502, 503, 525, 537, 540, 541, 542, 543,
+    544, 545, 546, 547, 553, 570, 575, 576, 577,
+};
 
 bool IsLocalizedNameExceptionSlot(int skillIndex)
 {
     for (const int exceptionSlot : kLocalizedNameExceptionSlots)
     {
         if (exceptionSlot == skillIndex)
+            return true;
+    }
+    return false;
+}
+
+bool IsMasterSkillNameDenied(int skillIndex)
+{
+    for (const int deniedSkill : kMasterSkillNameDenylist)
+    {
+        if (deniedSkill == skillIndex)
             return true;
     }
     return false;
@@ -109,29 +124,6 @@ bool SameSkillBusinessFields(const LegacySkillRecord& officialRecord, const SKIL
     return true;
 }
 
-bool SameMasterSkillIdentityFields(const LegacySkillRecord& officialRecord, const SKILL_ATTRIBUTE& currentSkill)
-{
-    SKILL_ATTRIBUTE_FILE_LEGACY official{};
-    memcpy(&official, officialRecord.data(), sizeof(official));
-
-    if (official.MasteryType != currentSkill.MasteryType ||
-        official.SkillUseType != currentSkill.SkillUseType ||
-        official.SkillBrand != currentSkill.SkillBrand ||
-        official.KillCount != currentSkill.KillCount ||
-        memcmp(official.RequireDutyClass, currentSkill.RequireDutyClass, sizeof(official.RequireDutyClass)) != 0 ||
-        memcmp(official.RequireClass, currentSkill.RequireClass, sizeof(official.RequireClass)) != 0 ||
-        official.SkillRank != currentSkill.SkillRank ||
-        official.Magic_Icon != currentSkill.Magic_Icon ||
-        official.TypeSkill != currentSkill.TypeSkill ||
-        official.ItemSkill != currentSkill.ItemSkill ||
-        official.IsDamage != currentSkill.IsDamage ||
-        official.Effect != currentSkill.Effect)
-    {
-        return false;
-    }
-
-    return true;
-}
 } // namespace
 
 CSkillDataHandler::CSkillDataHandler()
@@ -196,18 +188,22 @@ bool CSkillDataHandler::LoadOfficialLocalizedSkillNames(const wchar_t* officialS
     for (int i = 0; i <= kLastLocalizedMasterSkillSlot; ++i)
     {
         const LegacySkillRecord& officialRecord = officialRecords[i];
-        if (SkillAttribute[i].Name[0] == L'\0' || SkillNameLength(officialRecord) == 0)
+        const int nameLength = SkillNameLength(officialRecord);
+        if (SkillAttribute[i].Name[0] == L'\0' || nameLength == 0 ||
+            nameLength >= static_cast<int>(sizeof(((SKILL_ATTRIBUTE_FILE_LEGACY*)nullptr)->Name)))
             continue;
 
-        const bool sameIdentity = i < kFirstMasterSkillSlot
-            ? SameSkillBusinessFields(officialRecord, SkillAttribute[i]) || IsLocalizedNameExceptionSlot(i)
-            : SameMasterSkillIdentityFields(officialRecord, SkillAttribute[i]);
-        if (!sameIdentity)
+        if (i >= kFirstMasterSkillSlot)
+        {
+            if (IsMasterSkillNameDenied(i))
+                continue;
+        }
+        else if (!SameSkillBusinessFields(officialRecord, SkillAttribute[i]) &&
+                 !IsLocalizedNameExceptionSlot(i))
         {
             continue;
         }
 
-        const int nameLength = SkillNameLength(officialRecord);
         if (!CMultiLanguage::ConvertFromCodePageToString(
                 loadedNames[i], reinterpret_cast<const char*>(officialRecord.data()), 54936u, nameLength))
         {

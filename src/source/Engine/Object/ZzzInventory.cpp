@@ -25,6 +25,7 @@
 #include "GameLogic/Quests/CSQuest.h"
 #include "App/Platform/Windows/Local.h"
 #include "GameLogic/Items/PersonalShopTitleImp.h"
+#include "Data/Translation/MultiLanguage.h"
 #include "Engine/AI/GOBoid.h"
 #include "GameLogic/Items/CSItemOption.h"
 #include "GameLogic/Events/CSChaosCastle.h"
@@ -10569,6 +10570,11 @@ void MovePersonalShop()
             {
                 if (g_bEnablePersonalShop)
                 {
+                    if (!IsCorrectShopTitle(g_szPersonalShopTitle))
+                    {
+                        g_pSystemLogBox->AddText(I18N::Game::WrongStoreName, SEASON3B::TYPE_ERROR_MESSAGE);
+                        return;
+                    }
                     SocketClient->ToGameServer()->SendPlayerShopOpen(MU_C16(g_szPersonalShopTitle));
                     g_pUIManager->Close(INTERFACE_INVENTORY);
                 }
@@ -10683,6 +10689,11 @@ void OpenPersonalShopMsgWnd(int iMsgType)
 }
 bool IsCorrectShopTitle(const wchar_t* szShopTitle)
 {
+    constexpr std::size_t StoreNameUtf8Capacity = 26;
+    if (!CMultiLanguage::IsValidUtf16(szShopTitle)
+        || CMultiLanguage::GetUtf8ByteLength(szShopTitle) > StoreNameUtf8Capacity)
+        return false;
+
     int j = 0;
     wchar_t TmpText[2048];
     for (int i = 0; i < (int)wcslen(szShopTitle); ++i)

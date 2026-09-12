@@ -431,6 +431,15 @@ void CMsgWin::PopUp(int nMsgCode, wchar_t* pszMsg)
     case MESSAGE_SPECIAL_NAME:
         lpszMsg = I18N::Game::CannotUseSymbols;
         break;
+    case MESSAGE_CHARACTER_NAME_TOO_SHORT:
+        lpszMsg = I18N::Game::CharacterNameTooShort;
+        break;
+    case MESSAGE_CHARACTER_NAME_INVALID:
+        lpszMsg = I18N::Game::CharacterNameInvalid;
+        break;
+    case MESSAGE_CHARACTER_NAME_TOO_LONG:
+        lpszMsg = I18N::Game::CharacterNameTooLong;
+        break;
     case RECEIVE_CREATE_CHARACTER_FAIL:
         rUIMng.ShowWin(&rUIMng.m_CharMakeWin);
         lpszMsg = I18N::Game::IncorrectCharacterNameWasEnteredOrSameCharacterNameExists;

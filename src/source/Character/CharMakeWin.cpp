@@ -5,6 +5,7 @@
 #include "stdafx.h"
 #include "CharMakeWin.h"
 #include "Core/Input/Input.h"
+#include "Core/Utilities/Log/MuLogger.h"
 #include "UI/Legacy/UIMng.h"
 #include "Render/Models/ZzzBMD.h"
 #include "Engine/Object/ZzzObject.h"
@@ -19,6 +20,7 @@
 
 #include "App/Platform/Windows/Local.h"
 #include "CharacterManager.h"
+#include "Core/Text/NameValidation.h"
 
 #include <algorithm>
 #include <array>
@@ -38,8 +40,6 @@ namespace
         20, 21, 22, 23, 24, 1687, 3150
     };
 
-    constexpr std::size_t kMinCharacterNameLength = 4;
-
     constexpr int kSummonerDescriptionTextId = 1690;
     constexpr int kRageFighterDescriptionTextId = 3152;
     constexpr int kDefaultDescriptionBase = 1705;
@@ -48,6 +48,7 @@ namespace
     constexpr int kStatLineSpacing = 17;
     constexpr int kStatYOffset = 10;
     constexpr int kStatValueOffset = 54;
+    constexpr int kStatLabelSafetyGap = 4;
     constexpr int kStatTextOffsetX = 22;
     constexpr int kDarkLordStatHeight = 96;
     constexpr int kDefaultStatHeight = 80;
@@ -379,12 +380,15 @@ void CCharMakeWin::RequestCreateCharacter()
     const std::wstring characterName = InputText[0];
 
     // todo: check with regex from server
-    if (characterName.length() < kMinCharacterNameLength)
-        rUIMng.PopUpMsgWin(MESSAGE_MIN_LENGTH);
+    const auto nameValidation = Core::Text::ValidateCharacterName(characterName);
+    if (nameValidation == Core::Text::NameValidationResult::TooShort)
+        rUIMng.PopUpMsgWin(MESSAGE_CHARACTER_NAME_TOO_SHORT);
     else if (::CheckName())
         rUIMng.PopUpMsgWin(MESSAGE_ID_SPACE_ERROR);
-    else if (CheckSpecialText(InputText[0]))
-        rUIMng.PopUpMsgWin(MESSAGE_SPECIAL_NAME);
+    else if (nameValidation == Core::Text::NameValidationResult::TooLong)
+        rUIMng.PopUpMsgWin(MESSAGE_CHARACTER_NAME_TOO_LONG);
+    else if (nameValidation != Core::Text::NameValidationResult::Valid)
+        rUIMng.PopUpMsgWin(MESSAGE_CHARACTER_NAME_INVALID);
     else
     {
         const auto classByte = static_cast<CharacterClassNumber>((CharacterView.Class << 2) + CharacterView.Skin);
@@ -413,6 +417,7 @@ void CCharMakeWin::RenderControls()
 
     const auto& stats = kClassStatTable[static_cast<std::size_t>(m_nSelJob)];
     const int statBaseX = m_asprBack[CMW_SPR_STAT].GetXPos() + kStatTextOffsetX;
+    const int statLabelBoxWidth = int((kStatValueOffset - kStatLabelSafetyGap) / g_fScreenRate_x);
     for (std::size_t statIndex = 0; statIndex < stats.values.size(); ++statIndex)
     {
         const int statScreenY = int(
@@ -429,7 +434,8 @@ void CCharMakeWin::RenderControls()
         g_pRenderText->RenderText(
             int(statBaseX / g_fScreenRate_x),
             statScreenY,
-            I18N::Game::Lookup(kStatLabelBaseId + static_cast<int>(statIndex)));
+            I18N::Game::Lookup(kStatLabelBaseId + static_cast<int>(statIndex)),
+            statLabelBoxWidth);
     }
 
     if (m_nSelJob == CLASS_DARK_LORD)
@@ -446,7 +452,8 @@ void CCharMakeWin::RenderControls()
         g_pRenderText->RenderText(
             int(statBaseX / g_fScreenRate_x),
             leadershipY,
-            I18N::Game::Lookup(kDarkLordLeadershipTextId));
+            I18N::Game::Lookup(kDarkLordLeadershipTextId),
+            statLabelBoxWidth);
     }
 
     for (int lineIndex = 0; lineIndex < m_nDescLine; ++lineIndex)

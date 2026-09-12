@@ -146,13 +146,15 @@ bool CheckAbuseNameFilter(wchar_t* Text)
     return false;
 }
 
-bool CheckName()
+bool CheckName(wchar_t* text)
 {
-    if (CheckAbuseNameFilter(InputText[0]) || CheckAbuseFilter(InputText[0]) ||
-        FindText(InputText[0], L" ") || FindText(InputText[0], L"　") ||
-        FindText(InputText[0], L".") || FindText(InputText[0], L"·") || FindText(InputText[0], L"∼") ||
-        FindText(InputText[0], L"Webzen") || FindText(InputText[0], L"WebZen") || FindText(InputText[0], L"webzen") || FindText(InputText[0], L"WEBZEN") ||
-        FindText(InputText[0], I18N::Game::Operation) || FindText(InputText[0], I18N::Game::WEBZEN))
+    const wchar_t* name = text != nullptr ? text : InputText[0];
+    if (CheckAbuseNameFilter(text != nullptr ? text : InputText[0])
+        || CheckAbuseFilter(text != nullptr ? text : InputText[0]) ||
+        FindText(name, L" ") || FindText(name, L"　") ||
+        FindText(name, L".") || FindText(name, L"·") || FindText(name, L"∼") ||
+        FindText(name, L"Webzen") || FindText(name, L"WebZen") || FindText(name, L"webzen") || FindText(name, L"WEBZEN") ||
+        FindText(name, I18N::Game::Operation) || FindText(name, I18N::Game::WEBZEN))
         return true;
     return false;
 }

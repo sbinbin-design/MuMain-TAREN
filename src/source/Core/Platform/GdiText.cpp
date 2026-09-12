@@ -128,8 +128,6 @@ namespace
     // options UI lists and what config stores.
     std::string BundledFontPath(const std::string& family, bool bold)
     {
-        if (family == kBundledFixedFont.family)
-            return ResolveBundledFontPath(bold ? kBundledFixedFont.bold : kBundledFixedFont.regular).string();
         for (const auto& e : kBundledFonts)
             if (family == e.family)
                 return ResolveBundledFontPath(bold ? e.bold : e.regular).string();

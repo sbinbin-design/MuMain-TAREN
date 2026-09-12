@@ -999,8 +999,7 @@ static void WarmTtfFonts()
     TTF_Font* normal = OpenTtfFontRole(family.family, "normal", family.regular, normalPointSize);
     TTF_Font* bold = OpenTtfFontRole(family.family, "bold", family.bold, normalPointSize);
     TTF_Font* big = OpenTtfFontRole(family.family, "big-bold", family.bold, bigPointSize);
-    TTF_Font* fixed =
-        OpenTtfFontRole(kBundledFixedFont.family, "fixed", kBundledFixedFont.regular, fixedPointSize);
+    TTF_Font* fixed = OpenTtfFontRole(family.family, "fixed", family.regular, fixedPointSize);
     TTF_Font* fallback = OpenTtfFallbackRole("normal", normalPointSize);
     TTF_Font* fallbackBold = OpenTtfFallbackRole("bold", normalPointSize);
     TTF_Font* fallbackBig = OpenTtfFallbackRole("big-bold", bigPointSize);

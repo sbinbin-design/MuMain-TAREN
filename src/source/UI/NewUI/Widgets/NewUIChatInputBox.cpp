@@ -10,6 +10,8 @@
 #include "Engine/Object/ZzzOpenData.h"
 #include "World/MapInfra/MapManager.h"
 #include "Engine/Object/ZzzInterface.h"
+#include "Data/Translation/MultiLanguage.h"
+#include "Core/Text/NameValidation.h"
 
 #ifdef _EDITOR
 #include "imgui.h"
@@ -526,6 +528,13 @@ bool SEASON3B::CNewUIChatInputBox::UpdateKeyEvent()
             }
         }
         wstrText.append(szChatText);
+
+        if (!Core::Text::IsChatMessageWithinUtf8Limit(wstrText.c_str(), MAX_CHAT_SIZE))
+        {
+            m_pChatInputBox->SetText(L"");
+            m_iCurChatHistory = m_iCurWhisperIDHistory = 0;
+            return false;
+        }
 
         if (wcslen(szChatText) != 0)
         {

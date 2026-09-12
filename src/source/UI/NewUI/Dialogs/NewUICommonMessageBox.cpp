@@ -9,6 +9,7 @@
 #include "UI/Legacy/UIControls.h"
 #include "Render/Models/ZzzBMD.h"
 #include "Engine/Object/ZzzCharacter.h"
+#include "Engine/Object/ZzzInventory.h"
 #include "Guild/UIGuildInfo.h"
 #include "UI/Legacy/UIManager.h"
 #include "GameLogic/Items/PersonalShopTitleImp.h"
@@ -1417,6 +1418,11 @@ CALLBACK_RESULT SEASON3B::CPersonalshopCreateMsgBoxLayout::OkBtnDown(class CNewU
 {
     wchar_t shopTitle[MAX_SHOPTITLE]{};
     g_pMyShopInventory->GetTitle(shopTitle);
+    if (!IsCorrectShopTitle(shopTitle))
+    {
+        g_pSystemLogBox->AddText(I18N::Game::WrongStoreName, SEASON3B::TYPE_ERROR_MESSAGE);
+        return CALLBACK_BREAK;
+    }
     wcscpy(g_szPersonalShopTitle, shopTitle);
     SocketClient->ToGameServer()->SendPlayerShopOpen(MU_C16(shopTitle));
 

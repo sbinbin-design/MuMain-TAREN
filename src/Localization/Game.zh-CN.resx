@@ -1461,6 +1461,15 @@
     <value>角色的名称输入错误</value>
     <comment>legacy_id=394</comment>
   </data>
+  <data name="CharacterNameTooLong" xml:space="preserve">
+    <value>角色名过长，请缩短后重试。</value>
+  </data>
+  <data name="CharacterNameTooShort" xml:space="preserve">
+    <value>角色名过短，请输入至少4个字母或数字，或至少2个包含中文的字符。</value>
+  </data>
+  <data name="CharacterNameInvalid" xml:space="preserve">
+    <value>角色名只能包含中文、英文字母和数字。</value>
+  </data>
   <data name="or name supplied already exists." xml:space="preserve">
     <value>这个角色名称已经被别人使用了</value>
     <comment>legacy_id=395</comment>
@@ -1968,6 +1977,15 @@
   <data name="Guild name must be at least 4 characters" xml:space="preserve">
     <value>战盟名称最少需要 2个以上汉字或4个以上字母</value>
     <comment>legacy_id=517</comment>
+  </data>
+  <data name="GuildNameTooLong" xml:space="preserve">
+    <value>战盟名过长，请缩短后重试。</value>
+  </data>
+  <data name="GuildNameTooShort" xml:space="preserve">
+    <value>战盟名过短，请输入至少4个字母或数字，或至少2个包含中文的字符。</value>
+  </data>
+  <data name="GuildNameInvalid" xml:space="preserve">
+    <value>战盟名只能包含中文、英文字母和数字。</value>
   </data>
   <data name="YouAreAlreadyInAGuild518" xml:space="preserve">
     <value>已经加入战盟了</value>

@@ -3247,7 +3247,10 @@ public unsafe partial class ConnectionManager
             {
                 var length = CreateCharacterRef.Length;
                 var packet = new CreateCharacterRef(pipeWriter.GetSpan(length)[..length]);
-                packet.Name = NativeInterop.PtrToWideString(@name);
+                var convertedName = NativeInterop.PtrToWideString(@name);
+
+                packet.Name = convertedName;
+
                 packet.Class = @class_;
 
                 return length;

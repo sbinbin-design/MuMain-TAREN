@@ -25,7 +25,7 @@ extern void WaitForNextActivity(bool usePreciseSleep);
 extern void UpdateSceneState();
 extern void LoadingScene(HDC hDC);
 extern void RenderScene(HDC Hdc);
-extern bool CheckName();
+extern bool CheckName(wchar_t* text = nullptr);
 void    StartGame();
 void SetTargetFps(double targetFps);
 double GetTargetFps();

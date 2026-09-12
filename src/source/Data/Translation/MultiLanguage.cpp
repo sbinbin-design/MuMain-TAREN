@@ -151,6 +151,58 @@ bool CMultiLanguage::ConvertFromCodePageToString(std::wstring& target, const cha
     return true;
 }
 
+std::size_t CMultiLanguage::GetUtf8ByteLength(const wchar_t* source)
+{
+    if (source == nullptr || source[0] == L'\0')
+        return 0;
+
+    const int byteLength = WideCharToMultiByte(CP_UTF8, WC_ERR_INVALID_CHARS, source, -1, nullptr, 0, nullptr, nullptr);
+    return byteLength > 0 ? static_cast<std::size_t>(byteLength - 1) : 0;
+}
+
+bool CMultiLanguage::IsValidUtf16(const wchar_t* source)
+{
+    if (source == nullptr || source[0] == L'\0')
+        return source != nullptr;
+
+    return WideCharToMultiByte(CP_UTF8, WC_ERR_INVALID_CHARS, source, -1, nullptr, 0, nullptr, nullptr) > 0;
+}
+
+int CMultiLanguage::GetUtf8SafePrefixLength(const char* source, const int maxLength)
+{
+    if (source == nullptr || maxLength <= 0)
+        return 0;
+
+    int offset = 0;
+    while (offset < maxLength && source[offset] != '\0')
+    {
+        const unsigned char lead = static_cast<unsigned char>(source[offset]);
+        int sequenceLength = 1;
+        if (lead >= 0xC2 && lead <= 0xDF)
+            sequenceLength = 2;
+        else if (lead >= 0xE0 && lead <= 0xEF)
+            sequenceLength = 3;
+        else if (lead >= 0xF0 && lead <= 0xF4)
+            sequenceLength = 4;
+        else if (lead >= 0x80)
+            break;
+
+        if (offset + sequenceLength > maxLength)
+            break;
+        for (int index = 1; index < sequenceLength; ++index)
+        {
+            if ((static_cast<unsigned char>(source[offset + index]) & 0xC0) != 0x80)
+                return offset;
+        }
+        const unsigned char second = sequenceLength > 1 ? static_cast<unsigned char>(source[offset + 1]) : 0;
+        if ((sequenceLength == 3 && ((lead == 0xE0 && second < 0xA0) || (lead == 0xED && second > 0x9F)))
+            || (sequenceLength == 4 && ((lead == 0xF0 && second < 0x90) || (lead == 0xF4 && second > 0x8F))))
+            return offset;
+        offset += sequenceLength;
+    }
+    return offset;
+}
+
 int32_t CMultiLanguage::ConvertToUtf8(char* target, const wchar_t* source, int maxSourceLength)
 {
     if (target == nullptr || source == nullptr)

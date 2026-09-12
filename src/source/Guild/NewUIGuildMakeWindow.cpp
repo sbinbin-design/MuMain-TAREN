@@ -12,20 +12,13 @@
 #include "Engine/Object/ZzzInventory.h"
 #include "App/Platform/Windows/Local.h"
 #include "UI/NewUI/NewUISystem.h"
+#include "Core/Text/NameValidation.h"
 
 extern MARK_t		GuildMark[MAX_MARKS];
 extern int			SelectMarkColor;
 
 namespace
 {
-    BOOL IsGuildName(const wchar_t* szName)
-    {
-        if (wcslen(szName) >= 4)
-            return TRUE;
-        else
-            return FALSE;
-    }
-
     BOOL IsGuildMark()
     {
         BOOL bDraw = FALSE;
@@ -361,13 +354,22 @@ bool CNewUIGuildMakeWindow::UpdateGMMark()
 
         m_EditBox->GetText(tempText, GuildConstants::MakeWindow::TEMP_TEXT_BUFFER_SIZE);
 
-        if (CheckSpecialText(tempText) == true)
+        const auto guildNameValidation = Core::Text::ValidateGuildName(tempText);
+        if (::CheckName(tempText))
         {
-            SEASON3B::CreateOkMessageBox(I18N::Game::CannotUseSymbols);
+            CreateOkMessageBox(I18N::Game::GuildNameInvalid);
         }
-        else if (IsGuildName(tempText) == FALSE)
+        else if (guildNameValidation == Core::Text::NameValidationResult::TooShort)
         {
-            CreateOkMessageBox(I18N::Game::TypeMoreThan4Letters);
+            CreateOkMessageBox(I18N::Game::GuildNameTooShort);
+        }
+        else if (guildNameValidation == Core::Text::NameValidationResult::TooLong)
+        {
+            SEASON3B::CreateOkMessageBox(I18N::Game::GuildNameTooLong);
+        }
+        else if (guildNameValidation != Core::Text::NameValidationResult::Valid)
+        {
+            SEASON3B::CreateOkMessageBox(I18N::Game::GuildNameInvalid);
         }
         else if (IsGuildMark() == FALSE)
         {

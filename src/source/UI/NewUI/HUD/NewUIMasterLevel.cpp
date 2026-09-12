@@ -45,9 +45,6 @@ namespace
 
     constexpr LocalizedTooltipException kLocalizedTooltipExceptions[] =
     {
-        { 549, MASTER_SKILL_TREE_CLASS_TEMPLEKNIGHT },
-        { 550, MASTER_SKILL_TREE_CLASS_TEMPLEKNIGHT },
-        { 551, MASTER_SKILL_TREE_CLASS_TEMPLEKNIGHT },
         { 363, MASTER_SKILL_TREE_CLASS_BLADEMASTER },
         { 426, MASTER_SKILL_TREE_CLASS_HIGHELF },
         { 460, MASTER_SKILL_TREE_CLASS_DIMENSIONMASTER },
@@ -142,18 +139,15 @@ namespace
             GetPrintfSignature(localized, localizedSignature) && englishSignature == localizedSignature;
     }
 
-    bool DecodeLocalizedTooltipField(const char* source, std::size_t sourceCapacity,
-                                     wchar_t* target, std::size_t targetCapacity)
+    bool DecodeFixedCodePageField(const char* source, std::size_t sourceCapacity,
+                                  wchar_t* target, std::size_t targetCapacity, unsigned int codePage)
     {
         std::size_t sourceLength = 0;
         while (sourceLength < sourceCapacity && source[sourceLength] != '\0')
             ++sourceLength;
-        if (sourceLength == sourceCapacity)
-            return false;
-
         std::wstring converted;
         if (!CMultiLanguage::ConvertFromCodePageToString(
-                converted, source, kMasterSkillTooltipCodePage, static_cast<int>(sourceLength)) ||
+                converted, source, codePage, static_cast<int>(sourceLength)) ||
             converted.size() >= targetCapacity)
         {
             return false;
@@ -167,13 +161,20 @@ namespace
     bool DecodeLocalizedTooltip(const _MASTER_SKILL_TOOLTIP_FILE& source,
                                 _LOCALIZED_MASTER_SKILL_TOOLTIP& target)
     {
-        return DecodeLocalizedTooltipField(source.Info1, sizeof(source.Info1), target.Info1, std::size(target.Info1)) &&
-            DecodeLocalizedTooltipField(source.Info2, sizeof(source.Info2), target.Info2, std::size(target.Info2)) &&
-            DecodeLocalizedTooltipField(source.Info3, sizeof(source.Info3), target.Info3, std::size(target.Info3)) &&
-            DecodeLocalizedTooltipField(source.Info4, sizeof(source.Info4), target.Info4, std::size(target.Info4)) &&
-            DecodeLocalizedTooltipField(source.Info5, sizeof(source.Info5), target.Info5, std::size(target.Info5)) &&
-            DecodeLocalizedTooltipField(source.Info6, sizeof(source.Info6), target.Info6, std::size(target.Info6)) &&
-            DecodeLocalizedTooltipField(source.Info7, sizeof(source.Info7), target.Info7, std::size(target.Info7));
+        return DecodeFixedCodePageField(source.Info1, sizeof(source.Info1), target.Info1, std::size(target.Info1),
+                                        kMasterSkillTooltipCodePage) &&
+            DecodeFixedCodePageField(source.Info2, sizeof(source.Info2), target.Info2, std::size(target.Info2),
+                                     kMasterSkillTooltipCodePage) &&
+            DecodeFixedCodePageField(source.Info3, sizeof(source.Info3), target.Info3, std::size(target.Info3),
+                                     kMasterSkillTooltipCodePage) &&
+            DecodeFixedCodePageField(source.Info4, sizeof(source.Info4), target.Info4, std::size(target.Info4),
+                                     kMasterSkillTooltipCodePage) &&
+            DecodeFixedCodePageField(source.Info5, sizeof(source.Info5), target.Info5, std::size(target.Info5),
+                                     kMasterSkillTooltipCodePage) &&
+            DecodeFixedCodePageField(source.Info6, sizeof(source.Info6), target.Info6, std::size(target.Info6),
+                                     kMasterSkillTooltipCodePage) &&
+            DecodeFixedCodePageField(source.Info7, sizeof(source.Info7), target.Info7, std::size(target.Info7),
+                                     kMasterSkillTooltipCodePage);
     }
 
     bool HasCompatibleLocalizedTooltip(const _MASTER_SKILL_TOOLTIP& english,
@@ -361,13 +362,13 @@ void SEASON3B::CNewUIMasterLevel::OpenMasterSkillTooltip(const wchar_t* path)
         const auto target = &m_stMasterSkillTooltip[i];
         target->SkillNumber = static_cast<ActionSkillType>(current.SkillNumber);
         target->ClassCode = static_cast<MASTER_SKILL_TREE_CLASS>(current.ClassCode);
-        CMultiLanguage::ConvertFromUtf8(target->Info1, current.Info1);
-        CMultiLanguage::ConvertFromUtf8(target->Info2, current.Info2);
-        CMultiLanguage::ConvertFromUtf8(target->Info3, current.Info3);
-        CMultiLanguage::ConvertFromUtf8(target->Info4, current.Info4);
-        CMultiLanguage::ConvertFromUtf8(target->Info5, current.Info5);
-        CMultiLanguage::ConvertFromUtf8(target->Info6, current.Info6);
-        CMultiLanguage::ConvertFromUtf8(target->Info7, current.Info7);
+        DecodeFixedCodePageField(current.Info1, sizeof(current.Info1), target->Info1, std::size(target->Info1), CP_UTF8);
+        DecodeFixedCodePageField(current.Info2, sizeof(current.Info2), target->Info2, std::size(target->Info2), CP_UTF8);
+        DecodeFixedCodePageField(current.Info3, sizeof(current.Info3), target->Info3, std::size(target->Info3), CP_UTF8);
+        DecodeFixedCodePageField(current.Info4, sizeof(current.Info4), target->Info4, std::size(target->Info4), CP_UTF8);
+        DecodeFixedCodePageField(current.Info5, sizeof(current.Info5), target->Info5, std::size(target->Info5), CP_UTF8);
+        DecodeFixedCodePageField(current.Info6, sizeof(current.Info6), target->Info6, std::size(target->Info6), CP_UTF8);
+        DecodeFixedCodePageField(current.Info7, sizeof(current.Info7), target->Info7, std::size(target->Info7), CP_UTF8);
 
         pSeek += record_size;
 
@@ -411,6 +412,22 @@ void SEASON3B::CNewUIMasterLevel::LoadLocalizedMasterSkillTooltip(const wchar_t*
     }
 
     using LocalizedTooltipKey = std::pair<ActionSkillType, MASTER_SKILL_TREE_CLASS>;
+    std::set<LocalizedTooltipKey> muMainKeys;
+    for (const auto& masterSkillTooltip : m_stMasterSkillTooltip)
+    {
+        if (masterSkillTooltip.SkillNumber < AT_SKILL_MASTER_BEGIN ||
+            masterSkillTooltip.SkillNumber > AT_SKILL_MASTER_END)
+        {
+            continue;
+        }
+
+        for (const auto activeClass : kLocalizedClassBits)
+        {
+            if ((masterSkillTooltip.ClassCode & activeClass) != 0)
+                muMainKeys.emplace(masterSkillTooltip.SkillNumber, activeClass);
+        }
+    }
+
     std::map<LocalizedTooltipKey, _LOCALIZED_MASTER_SKILL_TOOLTIP> loaded;
     std::set<LocalizedTooltipKey> invalidKeys;
     for (int i = 0; i < MAX_MASTER_SKILL_DATA; ++i)
@@ -420,7 +437,21 @@ void SEASON3B::CNewUIMasterLevel::LoadLocalizedMasterSkillTooltip(const wchar_t*
 
         _MASTER_SKILL_TOOLTIP_FILE source{};
         memcpy(&source, record, sizeof(source));
-        if (source.SkillNumber == 0)
+        if (source.SkillNumber < AT_SKILL_MASTER_BEGIN || source.SkillNumber > AT_SKILL_MASTER_END)
+            continue;
+
+        bool hasEligibleKey = false;
+        for (const auto activeClass : kLocalizedClassBits)
+        {
+            const auto key = std::make_pair(static_cast<ActionSkillType>(source.SkillNumber), activeClass);
+            if ((source.ClassCode & activeClass) != 0 && muMainKeys.contains(key) &&
+                !IsLocalizedTooltipException(static_cast<ActionSkillType>(source.SkillNumber), activeClass))
+            {
+                hasEligibleKey = true;
+                break;
+            }
+        }
+        if (!hasEligibleKey)
             continue;
 
         _LOCALIZED_MASTER_SKILL_TOOLTIP localized{};
@@ -433,6 +464,11 @@ void SEASON3B::CNewUIMasterLevel::LoadLocalizedMasterSkillTooltip(const wchar_t*
                 continue;
 
             const auto key = std::make_pair(static_cast<ActionSkillType>(source.SkillNumber), activeClass);
+            if (muMainKeys.find(key) == muMainKeys.end() || IsLocalizedTooltipException(
+                    static_cast<ActionSkillType>(source.SkillNumber), activeClass))
+            {
+                continue;
+            }
             if (invalidKeys.find(key) != invalidKeys.end())
                 continue;
             if (!loaded.emplace(key, localized).second)
@@ -598,12 +634,6 @@ void SEASON3B::CNewUIMasterLevel::SetLocalizedMasterSkillToolTipData()
 
     for (const auto& [skill, english] : this->map_masterSkillToolTip)
     {
-        if (!g_SkillDataHandler.HasLocalizedSkillName(skill) ||
-            IsLocalizedTooltipException(skill, this->classCode))
-        {
-            continue;
-        }
-
         const auto localized = this->map_localizedMasterSkillToolTipByClass.find(
             std::make_pair(skill, this->classCode));
         if (localized == this->map_localizedMasterSkillToolTipByClass.end() ||

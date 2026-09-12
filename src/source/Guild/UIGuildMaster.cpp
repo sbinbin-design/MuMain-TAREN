@@ -16,6 +16,7 @@
 #include "App/Platform/Windows/Local.h"
 #include "UI/NewUI/NewUISystem.h"
 #include "Engine/Object/ZzzInterface.h"
+#include "Core/Text/NameValidation.h"
 
 extern int				g_iChatInputType;
 
@@ -164,10 +165,8 @@ CUIGuildMaster::~CUIGuildMaster()
 
 BOOL CUIGuildMaster::IsValidGuildName(const wchar_t* szName)
 {
-    if (wcslen(szName) >= 4)
-        return TRUE;
-    else
-        return FALSE;
+    return Core::Text::ValidateGuildName(szName == nullptr ? L"" : szName)
+        == Core::Text::NameValidationResult::Valid;
 }
 
 BOOL CUIGuildMaster::IsValidGuildMark()
@@ -257,9 +256,13 @@ void CUIGuildMaster::DoCreateGuildAction()
         {
             SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CCanNotUseWordMsgBoxLayout));
         }
-        else if (CheckSpecialText(InputText[0]))
+        else if (Core::Text::ValidateGuildName(InputText[0]) == Core::Text::NameValidationResult::IllegalCharacter)
         {
-            SEASON3B::CreateOkMessageBox(I18N::Game::CannotUseSymbols);
+            SEASON3B::CreateOkMessageBox(I18N::Game::GuildNameInvalid);
+        }
+        else if (Core::Text::ValidateGuildName(InputText[0]) == Core::Text::NameValidationResult::TooLong)
+        {
+            SEASON3B::CreateOkMessageBox(I18N::Game::GuildNameTooLong);
         }
         else
         {
@@ -285,7 +288,7 @@ void CUIGuildMaster::DoCreateGuildAction()
             }
             else
             {
-                SEASON3B::CreateOkMessageBox(I18N::Game::TypeMoreThan4Letters);
+            SEASON3B::CreateOkMessageBox(I18N::Game::GuildNameTooShort);
             }
         }
         if (g_iChatInputType == 1)

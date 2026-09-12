@@ -1461,6 +1461,15 @@
     <value>Invalid character name</value>
     <comment>legacy_id=394</comment>
   </data>
+  <data name="CharacterNameTooLong" xml:space="preserve">
+    <value>Character name is too long. Please shorten it and try again.</value>
+  </data>
+  <data name="CharacterNameTooShort" xml:space="preserve">
+    <value>Character name is too short. Enter at least 4 letters or digits, or at least 2 characters including Chinese.</value>
+  </data>
+  <data name="CharacterNameInvalid" xml:space="preserve">
+    <value>Character name may contain only Chinese characters, English letters, and digits.</value>
+  </data>
   <data name="or name supplied already exists." xml:space="preserve">
     <value>or name supplied already exists.</value>
     <comment>legacy_id=395</comment>
@@ -4300,6 +4309,15 @@
   <data name="Quest" xml:space="preserve">
     <value>Quest</value>
     <comment>legacy_id=1140,3427</comment>
+  </data>
+  <data name="GuildNameTooLong" xml:space="preserve">
+    <value>Guild name is too long. Please shorten it and try again.</value>
+  </data>
+  <data name="GuildNameTooShort" xml:space="preserve">
+    <value>Guild name is too short. Enter at least 4 letters or digits, or at least 2 characters including Chinese.</value>
+  </data>
+  <data name="GuildNameInvalid" xml:space="preserve">
+    <value>Guild name may contain only Chinese characters, English letters, and digits.</value>
   </data>
   <data name="Macro Time" xml:space="preserve">
     <value>Macro Time</value>
