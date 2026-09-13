@@ -11,6 +11,7 @@
 * 修复高帧率下 Legacy Blur 残影的采样批次、生命周期和尾段排空速度问题。
 * 修复旧版界面字体、角色创建界面和 HUD 缩放适配问题。
 * 修复部分 Season 6 资源兼容性及客户端界面显示问题。
+* 记录角色选择后停留在“请稍候”的排查结论：选角流程等待 `ReceiveJoinMapServer` 成功推进，当前 CharacterName 生成包已统一使用 `MuChineseLegacy`，后续需结合客户端与服务端日志确认运行时包版本或进入世界响应问题。
 
 ## [1.2.5](https://github.com/yesid-bocanegra/MuMain/compare/v1.2.4...v1.2.5) (2026-09-02)
 
