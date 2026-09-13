@@ -33,6 +33,7 @@ FrameTimingState g_frameTiming;
 #include "Render/Renderer/MuRenderer.h"
 #include "Render/Renderer/RenderUtils.h"
 #include "Render/Textures/ZzzOpenglUtil.h"
+#include "Render/Effects/ZzzEffect.h"
 #include "Engine/Physics/PhysicsManager.h"
 #include "Core/Time/Timer.h"
 #include "Core/Input/Input.h"
@@ -324,6 +325,8 @@ static void HandleScreenshotCapture()
  */
 static void UpdateActiveScene()
 {
+    BeginLegacyBlurUpdate();
+
     switch (SceneFlag)
     {
     case LOG_IN_SCENE:

@@ -31,6 +31,9 @@ constexpr int MAX_OBJECT_BLURS = 1000;
 constexpr int MAX_OBJECT_BLUR_TAILS = 600;
 constexpr int MAX_OBJECT_BLUR_LIFETIME = 30;
 
+double g_legacyBlurAccumulator = 0.0;
+bool g_legacyBlurReferenceTick = false;
+
 constexpr int FLAG_WIDTH = 7;
 constexpr int FLAG_HEIGHT = 10;
 constexpr float FLAG_SCALE = 10.f;
@@ -140,6 +143,16 @@ void RenderFlagFace(OBJECT* object, const vec3_t light, int texture, const float
 
 } // namespace
 
+void BeginLegacyBlurUpdate()
+{
+    g_legacyBlurAccumulator += static_cast<double>(FPS_ANIMATION_FACTOR);
+    g_legacyBlurReferenceTick = g_legacyBlurAccumulator >= 1.0;
+    if (g_legacyBlurReferenceTick)
+    {
+        g_legacyBlurAccumulator -= 1.0;
+    }
+}
+
 void AddBlur(Blur* b, vec3_t p1, vec3_t p2, vec3_t Light, int Type)
 {
     b->Type = Type;
@@ -156,6 +169,11 @@ void AddBlur(Blur* b, vec3_t p1, vec3_t p2, vec3_t Light, int Type)
 
 void CreateBlur(CHARACTER* Owner, vec3_t p1, vec3_t p2, vec3_t Light, int Type, bool Short, int SubType)
 {
+    if (!g_legacyBlurReferenceTick)
+    {
+        return;
+    }
+
     Blur* freeBlur = nullptr;
     for (auto& blur : g_blurs)
     {
@@ -190,31 +208,35 @@ void CreateBlur(CHARACTER* Owner, vec3_t p1, vec3_t p2, vec3_t Light, int Type, 
 
 void MoveBlurs()
 {
-    for (auto& blur : g_blurs)
+    if (g_legacyBlurReferenceTick)
     {
-        if (!blur.Live)
+        for (auto& blur : g_blurs)
         {
-            continue;
-        }
-
-        blur.LifeTime--;
-        blur.Number = std::max<int>(blur.Number - 1, 0);
-
-        for (int i = blur.Number - 1; i >= 0; --i)
-        {
-            VectorCopy(blur.P1[i], blur.P1[i + 1]);
-            VectorCopy(blur.P2[i], blur.P2[i + 1]);
-        }
-
-        if (blur.LifeTime <= 0)
-        {
-            blur.Number = std::max<int>(blur.Number - 1, 0);
-            if (blur.Number <= 0)
+            if (!blur.Live)
             {
-                blur.Live = false;
+                continue;
+            }
+
+            blur.LifeTime--;
+            blur.Number = std::max<int>(blur.Number - 1, 0);
+
+            for (int i = blur.Number - 1; i >= 0; --i)
+            {
+                VectorCopy(blur.P1[i], blur.P1[i + 1]);
+                VectorCopy(blur.P2[i], blur.P2[i + 1]);
+            }
+
+            if (blur.LifeTime <= 0)
+            {
+                blur.Number = std::max<int>(blur.Number - 1, 0);
+                if (blur.Number <= 0)
+                {
+                    blur.Live = false;
+                }
             }
         }
     }
+
     MoveObjectBlurs();
 }
 

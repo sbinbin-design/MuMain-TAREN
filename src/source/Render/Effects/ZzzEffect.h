@@ -11,6 +11,7 @@ extern PARTICLE Points[];
 extern PARTICLE Pointers[];
 
 void CreateBlur(CHARACTER* Owner, vec3_t p1, vec3_t p2, vec3_t Light, int Type, bool Short = false, int SubType = 0);
+void BeginLegacyBlurUpdate();
 void MoveBlurs();
 void RenderBlurs();
 void ClearAllObjectBlurs();
