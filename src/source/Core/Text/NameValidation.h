@@ -13,7 +13,7 @@ namespace Core::Text
         TooLong,
     };
 
-    constexpr std::size_t CharacterNameUtf8Capacity = 10;
+    constexpr std::size_t CharacterNameByteCapacity = 10;
     constexpr std::size_t GuildNameCp936Capacity = 8;
 
     NameValidationResult ValidateCharacterName(const std::wstring& name);

@@ -3789,10 +3789,10 @@ void ReceiveChatRoomUserStateChange(DWORD dwWindowUIID, const BYTE* ReceiveBuffe
     auto* pChatWindow = (CUIChatWindow*)g_pWindowMgr->GetWindow(dwWindowUIID);
     if (pChatWindow == NULL) return;
     wchar_t szName[MAX_USERNAME_SIZE + 1] = { 0 };
-    CMultiLanguage::ConvertFromUtf8(szName, Data->Name, MAX_USERNAME_SIZE);
+    CMultiLanguage::ConvertFromMuChineseLegacy(szName, Data->Name, MAX_USERNAME_SIZE);
     szName[MAX_USERNAME_SIZE] = '\0';
     wchar_t szText[MAX_TEXT_LENGTH + 1] = { 0 };
-    CMultiLanguage::ConvertFromUtf8(szText, Data->Name, MAX_USERNAME_SIZE);
+    CMultiLanguage::ConvertFromMuChineseLegacy(szText, Data->Name, MAX_USERNAME_SIZE);
     szText[MAX_USERNAME_SIZE] = '\0';
     switch (Data->Type)
     {
@@ -3827,7 +3827,7 @@ void ReceiveChatRoomUserList(DWORD dwWindowUIID, const BYTE* ReceiveBuffer)
     for (int i = 0; i < Header->Count; ++i)
     {
         auto Data = (LPFS_CHAT_USERLIST_DATA)(ReceiveBuffer + iMoveOffset);
-        CMultiLanguage::ConvertFromUtf8(szName, Data->Name, MAX_USERNAME_SIZE);
+        CMultiLanguage::ConvertFromMuChineseLegacy(szName, Data->Name, MAX_USERNAME_SIZE);
         szName[MAX_USERNAME_SIZE] = '\0';
         ((CUIChatWindow*)g_pWindowMgr->GetWindow(dwWindowUIID))->AddChatPal(szName, Data->Index, 0);
         iMoveOffset += sizeof(FS_CHAT_USERLIST_DATA);

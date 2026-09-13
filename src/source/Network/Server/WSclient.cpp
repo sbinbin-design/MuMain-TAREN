@@ -742,7 +742,7 @@ void ReceiveCharacterListExtended(const BYTE* ReceiveBuffer)
 
         memset(c->ID, 0, sizeof(c->ID));
 
-        CMultiLanguage::ConvertFromUtf8(c->ID, Data2->ID, MAX_USERNAME_SIZE);
+        CMultiLanguage::ConvertFromMuChineseLegacy(c->ID, Data2->ID, MAX_USERNAME_SIZE);
 
         ReadEquipmentExtended(Data2->Index, Data2->Flags, Data2->Equipment);
 
@@ -822,7 +822,7 @@ void ReceiveCreateCharacter(const BYTE* ReceiveBuffer)
 
         CharactersClient[Data->Index].Class = iClass;
         CharactersClient[Data->Index].SkinIndex = gCharacterManager.GetSkinModelIndex(iClass);
-        CMultiLanguage::ConvertFromUtf8(CharactersClient[Data->Index].ID, Data->ID, MAX_USERNAME_SIZE);
+        CMultiLanguage::ConvertFromMuChineseLegacy(CharactersClient[Data->Index].ID, Data->ID, MAX_USERNAME_SIZE);
         CharactersClient[Data->Index].ID[MAX_USERNAME_SIZE] = L'\0';
         CurrentProtocolState = RECEIVE_CREATE_CHARACTER_SUCCESS;
         CUIMng& rUIMng = CUIMng::Instance();
@@ -1832,7 +1832,7 @@ void ReceiveChat(const BYTE* ReceiveBuffer)
         auto Data = (LPPCHATING)ReceiveBuffer;
 
         wchar_t ID[MAX_USERNAME_SIZE + 1]{};
-        CMultiLanguage::ConvertFromUtf8(ID, Data->ID, MAX_USERNAME_SIZE);
+        CMultiLanguage::ConvertFromMuChineseLegacy(ID, Data->ID, MAX_USERNAME_SIZE);
         ID[MAX_USERNAME_SIZE] = L'\0';
 
         const auto messageSize = Data->Header.Size - MAX_USERNAME_SIZE - sizeof(PBMSG_HEADER);
@@ -1933,7 +1933,7 @@ void ReceiveChatWhisper(const BYTE* ReceiveBuffer)
     auto Data = (LPPCHATING)ReceiveBuffer;
 
     wchar_t ID[MAX_USERNAME_SIZE + 1]{};
-    CMultiLanguage::ConvertFromUtf8(ID, Data->ID, MAX_USERNAME_SIZE);
+    CMultiLanguage::ConvertFromMuChineseLegacy(ID, Data->ID, MAX_USERNAME_SIZE);
     ID[MAX_USERNAME_SIZE] = L'\0';
 
     const auto messageSize = Data->Header.Size - MAX_USERNAME_SIZE - sizeof(PBMSG_HEADER);
@@ -2602,7 +2602,7 @@ void ReceiveCreatePlayerViewportExtended(std::span<const BYTE> ReceiveBuffer)
 
     CHARACTER* c = CreateCharacter(Key, MODEL_PLAYER, Data->PositionX, Data->PositionY, 0);
     memset(c->ID, 0, sizeof c->ID);
-    CMultiLanguage::ConvertFromUtf8(c->ID, Data->ID, MAX_USERNAME_SIZE);
+    CMultiLanguage::ConvertFromMuChineseLegacy(c->ID, Data->ID, MAX_USERNAME_SIZE);
     OBJECT* o = &c->Object;
     // DeleteCloth(c, o);
     c->Class = gCharacterManager.ChangeServerClassTypeToClientClassType(Data->Class);
@@ -2729,7 +2729,7 @@ void ReceiveCreateTransformViewport(std::span<const BYTE> ReceiveBuffer)
         Key &= 0x7FFF;
 
         wchar_t characterName[MAX_USERNAME_SIZE + 1]{};
-        CMultiLanguage::ConvertFromUtf8(characterName, Data2->ID, MAX_USERNAME_SIZE);
+        CMultiLanguage::ConvertFromMuChineseLegacy(characterName, Data2->ID, MAX_USERNAME_SIZE);
 
         CHARACTER* pCha;
         int iIndex = FindCharacterIndex(Key);
@@ -2821,7 +2821,7 @@ void ReceiveCreateTransformViewport(std::span<const BYTE> ReceiveBuffer)
                 c->Movement = true;
             }
 
-            CMultiLanguage::ConvertFromUtf8(c->ID, Data2->ID, MAX_USERNAME_SIZE);
+            CMultiLanguage::ConvertFromMuChineseLegacy(c->ID, Data2->ID, MAX_USERNAME_SIZE);
 
             ChangeCharacterExt(FindCharacterIndex(Key), Data2->Equipment);
         }
@@ -3101,10 +3101,10 @@ void ReceiveCreateSummonViewport(const BYTE* ReceiveBuffer)
         {
             wchar_t Temp[100]{};
             wcscat(c->ID, I18N::Game::Of);
-            CMultiLanguage::ConvertFromUtf8(Temp, Data2->ID, MAX_USERNAME_SIZE);
+            CMultiLanguage::ConvertFromMuChineseLegacy(Temp, Data2->ID, MAX_USERNAME_SIZE);
             wcscat(c->ID, Temp);
 
-            CMultiLanguage::ConvertFromUtf8(c->OwnerID, Data2->ID, MAX_USERNAME_SIZE);
+            CMultiLanguage::ConvertFromMuChineseLegacy(c->OwnerID, Data2->ID, MAX_USERNAME_SIZE);
             c->OwnerID[MAX_USERNAME_SIZE] = 0;
         }
 
@@ -7375,7 +7375,7 @@ void ReceivePartyList(const BYTE* ReceiveBuffer)
     {
         auto Data2 = (LPPRECEIVE_PARTY_LIST)(ReceiveBuffer + Offset);
         PARTY_t* p = &Party[i];
-        CMultiLanguage::ConvertFromUtf8(p->Name, Data2->ID, MAX_USERNAME_SIZE);
+        CMultiLanguage::ConvertFromMuChineseLegacy(p->Name, Data2->ID, MAX_USERNAME_SIZE);
         p->Name[MAX_USERNAME_SIZE] = 0;
         p->Number = Data2->Number;
         p->Map = Data2->Map;
@@ -7552,7 +7552,7 @@ void ReceiveGuildList(const BYTE* ReceiveBuffer)
     {
         auto Data2 = (LPPRECEIVE_GUILD_LIST)(ReceiveBuffer + Offset);
         GUILD_LIST_t* p = &GuildList[i];
-        CMultiLanguage::ConvertFromUtf8(p->Name, Data2->ID, MAX_USERNAME_SIZE);
+        CMultiLanguage::ConvertFromMuChineseLegacy(p->Name, Data2->ID, MAX_USERNAME_SIZE);
         p->Number = Data2->Number;
         p->Server = (0x80 & Data2->CurrentServer) ? (0x7F & Data2->CurrentServer) : -1;
         p->GuildStatus = Data2->GuildStatus;
@@ -8997,7 +8997,7 @@ void ReceiveDuelRequest(const BYTE* ReceiveBuffer)
 
     auto Data = (LPPMSG_REQ_DUEL_ANSWER)ReceiveBuffer;
     wchar_t playerName[MAX_USERNAME_SIZE + 1]{};
-    CMultiLanguage::ConvertFromUtf8(playerName, Data->szID, MAX_USERNAME_SIZE);
+    CMultiLanguage::ConvertFromMuChineseLegacy(playerName, Data->szID, MAX_USERNAME_SIZE);
 
     auto enemyCharacter = FindCharacterByID(playerName);
     short enemyKey = enemyCharacter->Key;
@@ -9019,7 +9019,7 @@ void ReceiveDuelStart(const BYTE* ReceiveBuffer)
     auto Data = (LPPMSG_ANS_DUEL_INVITE)ReceiveBuffer;
     wchar_t szMessage[256];
     wchar_t playerName[MAX_USERNAME_SIZE + 1]{};
-    CMultiLanguage::ConvertFromUtf8(playerName, Data->szID, MAX_USERNAME_SIZE);
+    CMultiLanguage::ConvertFromMuChineseLegacy(playerName, Data->szID, MAX_USERNAME_SIZE);
     if (Data->nResult == 0)
     {
         g_DuelMgr.EnableDuel(TRUE);
@@ -9062,7 +9062,7 @@ void ReceiveDuelEnd(const BYTE* ReceiveBuffer)
     if (Data->nResult == 0)
     {
         wchar_t playerName[MAX_USERNAME_SIZE + 1]{};
-        CMultiLanguage::ConvertFromUtf8(playerName, Data->szID, MAX_USERNAME_SIZE);
+        CMultiLanguage::ConvertFromMuChineseLegacy(playerName, Data->szID, MAX_USERNAME_SIZE);
         g_pNewUISystem->Hide(SEASON3B::INTERFACE_DUEL_WINDOW);
         g_DuelMgr.EnableDuel(FALSE);
         g_DuelMgr.SetDuelPlayer(DUEL_ENEMY, MAKEWORD(Data->bIndexL, Data->bIndexH), playerName);
@@ -9122,8 +9122,8 @@ void ReceiveDuelChannelList(const BYTE* ReceiveBuffer)
         wchar_t name1[MAX_USERNAME_SIZE + 1]{};
         wchar_t name2[MAX_USERNAME_SIZE + 1]{};
 
-        CMultiLanguage::ConvertFromUtf8(name1, Data->channel[i].szID1, MAX_USERNAME_SIZE);
-        CMultiLanguage::ConvertFromUtf8(name2, Data->channel[i].szID2, MAX_USERNAME_SIZE);
+    CMultiLanguage::ConvertFromMuChineseLegacy(name1, Data->channel[i].szID1, MAX_USERNAME_SIZE);
+    CMultiLanguage::ConvertFromMuChineseLegacy(name2, Data->channel[i].szID2, MAX_USERNAME_SIZE);
         g_DuelMgr.SetDuelChannel(i, Data->channel[i].bStart, Data->channel[i].bWatch, name1, name2);
     }
 }
@@ -9136,8 +9136,8 @@ void ReceiveDuelWatchRequestReply(const BYTE* ReceiveBuffer)
         wchar_t name1[MAX_USERNAME_SIZE + 1]{};
         wchar_t name2[MAX_USERNAME_SIZE + 1]{};
 
-        CMultiLanguage::ConvertFromUtf8(name1, Data->szID1, MAX_USERNAME_SIZE);
-        CMultiLanguage::ConvertFromUtf8(name2, Data->szID2, MAX_USERNAME_SIZE);
+    CMultiLanguage::ConvertFromMuChineseLegacy(name1, Data->szID1, MAX_USERNAME_SIZE);
+    CMultiLanguage::ConvertFromMuChineseLegacy(name2, Data->szID2, MAX_USERNAME_SIZE);
 
         g_pNewUISystem->Hide(SEASON3B::INTERFACE_DUELWATCH);
 
@@ -9163,7 +9163,7 @@ void ReceiveDuelWatcherJoin(const BYTE* ReceiveBuffer)
     auto Data = (LPPMSG_DUEL_JOINCNANNEL_BROADCAST)ReceiveBuffer;
 
     wchar_t name[MAX_USERNAME_SIZE + 1]{};
-    CMultiLanguage::ConvertFromUtf8(name, Data->szID, MAX_USERNAME_SIZE);
+    CMultiLanguage::ConvertFromMuChineseLegacy(name, Data->szID, MAX_USERNAME_SIZE);
     g_DuelMgr.AddDuelWatchUser(name);
 }
 
@@ -9183,7 +9183,7 @@ void ReceiveDuelWatcherQuit(const BYTE* ReceiveBuffer)
 {
     auto Data = (LPPMSG_DUEL_LEAVECNANNEL_BROADCAST)ReceiveBuffer;
     wchar_t name[MAX_USERNAME_SIZE + 1]{};
-    CMultiLanguage::ConvertFromUtf8(name, Data->szID, MAX_USERNAME_SIZE);
+    CMultiLanguage::ConvertFromMuChineseLegacy(name, Data->szID, MAX_USERNAME_SIZE);
     g_DuelMgr.RemoveDuelWatchUser(name);
 }
 
@@ -9195,7 +9195,7 @@ void ReceiveDuelWatcherList(const BYTE* ReceiveBuffer)
     for (int i = 0; i < Data->nCount; ++i)
     {
         wchar_t name[MAX_USERNAME_SIZE + 1]{};
-        CMultiLanguage::ConvertFromUtf8(name, Data->user[i].szID, MAX_USERNAME_SIZE);
+    CMultiLanguage::ConvertFromMuChineseLegacy(name, Data->user[i].szID, MAX_USERNAME_SIZE);
         g_DuelMgr.AddDuelWatchUser(name);
     }
 }
@@ -9214,8 +9214,8 @@ void ReceiveDuelResult(const BYTE* ReceiveBuffer)
     {
         wchar_t winnerName[MAX_USERNAME_SIZE + 1]{};
         wchar_t loserName[MAX_USERNAME_SIZE + 1]{};
-        CMultiLanguage::ConvertFromUtf8(winnerName, Data->szWinner, MAX_USERNAME_SIZE);
-        CMultiLanguage::ConvertFromUtf8(loserName, Data->szLoser, MAX_USERNAME_SIZE);
+        CMultiLanguage::ConvertFromMuChineseLegacy(winnerName, Data->szWinner, MAX_USERNAME_SIZE);
+        CMultiLanguage::ConvertFromMuChineseLegacy(loserName, Data->szLoser, MAX_USERNAME_SIZE);
         lpMsgBox->SetIDs(winnerName, loserName);
     }
     PlayBuffer(SOUND_OPEN_DUELWINDOW);
@@ -9279,7 +9279,7 @@ void ReceiveShopTitleChange(const BYTE* ReceiveBuffer)
         CMultiLanguage::ConvertFromUtf8(szShopTitle, Header->szTitle, MAX_SHOPTITLE);
 
         wchar_t szID[MAX_USERNAME_SIZE + 1]{};
-        CMultiLanguage::ConvertFromUtf8(szID, Header->szId, MAX_USERNAME_SIZE);
+        CMultiLanguage::ConvertFromMuChineseLegacy(szID, Header->szId, MAX_USERNAME_SIZE);
 
         if (wcsncmp(pPlayer->ID, szID, MAX_USERNAME_SIZE) == 0)
             AddShopTitle(key, pPlayer, (const wchar_t*)szShopTitle);
@@ -9589,7 +9589,7 @@ void NotifySoldItem(const BYTE* ReceiveBuffer)
     auto Header = (LPSOLDITEM_RESULTINFO)ReceiveBuffer;
     wchar_t szId[MAX_USERNAME_SIZE + 2] = {0};
 
-    CMultiLanguage::ConvertFromUtf8(szId, Header->szId, MAX_USERNAME_SIZE);
+    CMultiLanguage::ConvertFromMuChineseLegacy(szId, Header->szId, MAX_USERNAME_SIZE);
     wchar_t Text[100];
     mu_swprintf(Text, I18N::Game::ItemWasSoldToS, szId);
     g_pSystemLogBox->AddText(Text, SEASON3B::TYPE_SYSTEM_MESSAGE);
@@ -9683,7 +9683,7 @@ void ReceiveFriendList(const BYTE* ReceiveBuffer)
     for (int i = 0; i < Header->Count; ++i)
     {
         auto Data = (LPFS_FRIEND_LIST_DATA)(ReceiveBuffer + iMoveOffset);
-        CMultiLanguage::ConvertFromUtf8(szName, Data->Name, MAX_USERNAME_SIZE);
+        CMultiLanguage::ConvertFromMuChineseLegacy(szName, Data->Name, MAX_USERNAME_SIZE);
         szName[MAX_USERNAME_SIZE] = '\0';
         g_pFriendList->AddFriend(szName, 0, Data->Server);
         iMoveOffset += sizeof(FS_FRIEND_LIST_DATA);
@@ -9714,11 +9714,11 @@ void ReceiveAddFriendResult(const BYTE* ReceiveBuffer)
     auto Data = (LPFS_FRIEND_RESULT)ReceiveBuffer;
 
     wchar_t szName[MAX_USERNAME_SIZE + 1] = {0};
-    CMultiLanguage::ConvertFromUtf8(szName, Data->Name, MAX_USERNAME_SIZE);
+    CMultiLanguage::ConvertFromMuChineseLegacy(szName, Data->Name, MAX_USERNAME_SIZE);
     szName[MAX_USERNAME_SIZE] = '\0';
 
     wchar_t szText[MAX_TEXT_LENGTH + 1] = {0};
-    CMultiLanguage::ConvertFromUtf8(szText, Data->Name, MAX_USERNAME_SIZE);
+    CMultiLanguage::ConvertFromMuChineseLegacy(szText, Data->Name, MAX_USERNAME_SIZE);
     szText[MAX_USERNAME_SIZE] = '\0';
 
     switch (Data->Result)
@@ -9762,11 +9762,11 @@ void ReceiveRequestAcceptAddFriend(const BYTE* ReceiveBuffer)
     auto Data = (LPFS_ACCEPT_ADD_FRIEND_RESULT)ReceiveBuffer;
 
     wchar_t szName[MAX_USERNAME_SIZE + 1] = {0};
-    CMultiLanguage::ConvertFromUtf8(szName, Data->Name, MAX_USERNAME_SIZE);
+    CMultiLanguage::ConvertFromMuChineseLegacy(szName, Data->Name, MAX_USERNAME_SIZE);
     szName[MAX_USERNAME_SIZE] = '\0';
 
     wchar_t szText[MAX_TEXT_LENGTH + 1] = {0};
-    CMultiLanguage::ConvertFromUtf8(szText, Data->Name, MAX_USERNAME_SIZE);
+    CMultiLanguage::ConvertFromMuChineseLegacy(szText, Data->Name, MAX_USERNAME_SIZE);
     szText[MAX_USERNAME_SIZE] = '\0';
 
     mu_swprintf(szText, L"%ls %ls", szText,
@@ -9790,7 +9790,7 @@ void ReceiveDeleteFriendResult(const BYTE* ReceiveBuffer)
     auto Data = (LPFS_FRIEND_RESULT)ReceiveBuffer;
 
     wchar_t szName[MAX_USERNAME_SIZE + 1] = {0};
-    CMultiLanguage::ConvertFromUtf8(szName, Data->Name, MAX_USERNAME_SIZE);
+    CMultiLanguage::ConvertFromMuChineseLegacy(szName, Data->Name, MAX_USERNAME_SIZE);
     szName[MAX_USERNAME_SIZE] = '\0';
 
     switch (Data->Result)
@@ -9812,7 +9812,7 @@ void ReceiveFriendStateChange(const BYTE* ReceiveBuffer)
     auto Data = (LPFS_FRIEND_STATE_CHANGE)ReceiveBuffer;
 
     wchar_t szName[MAX_USERNAME_SIZE + 1] = {0};
-    CMultiLanguage::ConvertFromUtf8(szName, Data->Name, MAX_USERNAME_SIZE);
+    CMultiLanguage::ConvertFromMuChineseLegacy(szName, Data->Name, MAX_USERNAME_SIZE);
     szName[MAX_USERNAME_SIZE] = '\0';
 
     if (Data->Server == 0xFC)
@@ -9911,7 +9911,7 @@ void ReceiveLetter(const BYTE* ReceiveBuffer)
     CMultiLanguage::ConvertFromUtf8(szTime, Data->Time, MAX_LETTER_TIME_LENGTH);
 
     wchar_t szName[MAX_USERNAME_SIZE + 1] = {};
-    CMultiLanguage::ConvertFromUtf8(szName, Data->Name, MAX_USERNAME_SIZE);
+    CMultiLanguage::ConvertFromMuChineseLegacy(szName, Data->Name, MAX_USERNAME_SIZE);
     szName[MAX_USERNAME_SIZE] = '\0';
 
     wchar_t szSubject[MAX_TEXT_LENGTH + 1] = {};
@@ -10037,7 +10037,7 @@ void ReceiveCreateChatRoomResult(const BYTE* ReceiveBuffer)
     auto Data = (LPFS_CHAT_CREATE_RESULT)ReceiveBuffer;
 
     wchar_t szName[MAX_USERNAME_SIZE + 1] = {0};
-    CMultiLanguage::ConvertFromUtf8(szName, Data->ID, MAX_USERNAME_SIZE);
+    CMultiLanguage::ConvertFromMuChineseLegacy(szName, Data->ID, MAX_USERNAME_SIZE);
 
     wchar_t szIP[sizeof(Data->IP) + 1]{};
     CMultiLanguage::ConvertFromUtf8(szIP, Data->IP, sizeof(Data->IP));
@@ -10958,8 +10958,8 @@ void ReceiveWTMatchResult(const BYTE* ReceiveBuffer)
         g_wtMatchResult.m_Type = Data->m_Type;
         g_wtMatchResult.m_Score1 = Data->m_Score1;
         g_wtMatchResult.m_Score2 = Data->m_Score2;
-        CMultiLanguage::ConvertFromUtf8(g_wtMatchResult.m_MatchTeamName1, Data->m_MatchTeamName1, MAX_USERNAME_SIZE);
-        CMultiLanguage::ConvertFromUtf8(g_wtMatchResult.m_MatchTeamName2, Data->m_MatchTeamName2, MAX_USERNAME_SIZE);
+    CMultiLanguage::ConvertFromMuChineseLegacy(g_wtMatchResult.m_MatchTeamName1, Data->m_MatchTeamName1, MAX_USERNAME_SIZE);
+    CMultiLanguage::ConvertFromMuChineseLegacy(g_wtMatchResult.m_MatchTeamName2, Data->m_MatchTeamName2, MAX_USERNAME_SIZE);
     }
 }
 
@@ -11725,7 +11725,7 @@ bool Check_Switch(PRECEIVE_CROWN_SWITCH_INFO* Data)
             Switch_Info[0].m_JoinSide = Data->m_JoinSide;
             CMultiLanguage::ConvertFromMuChineseLegacy(Switch_Info[0].m_szGuildName, Data->m_szGuildName,
                                                         MAX_GUILDNAME);
-            CMultiLanguage::ConvertFromUtf8(Switch_Info[0].m_szUserName, Data->m_szUserName, MAX_USERNAME_SIZE);
+            CMultiLanguage::ConvertFromMuChineseLegacy(Switch_Info[0].m_szUserName, Data->m_szUserName, MAX_USERNAME_SIZE);
         }
         else
         {
@@ -11733,7 +11733,7 @@ bool Check_Switch(PRECEIVE_CROWN_SWITCH_INFO* Data)
             Switch_Info[1].m_JoinSide = Data->m_JoinSide;
             CMultiLanguage::ConvertFromMuChineseLegacy(Switch_Info[1].m_szGuildName, Data->m_szGuildName,
                                                         MAX_GUILDNAME);
-            CMultiLanguage::ConvertFromUtf8(Switch_Info[1].m_szUserName, Data->m_szUserName, MAX_USERNAME_SIZE);
+            CMultiLanguage::ConvertFromMuChineseLegacy(Switch_Info[1].m_szUserName, Data->m_szUserName, MAX_USERNAME_SIZE);
         }
     }
     return true;
@@ -12168,7 +12168,7 @@ void ReceiveCrywolfHeroList(const BYTE* ReceiveBuffer)
         Offset += sizeof(PMSG_ANS_CRYWOLF_HERO_LIST_INFO);
 
         wchar_t playerName[MAX_USERNAME_SIZE + 1];
-        CMultiLanguage::ConvertFromUtf8(playerName, pData2->szHeroName, MAX_USERNAME_SIZE);
+        CMultiLanguage::ConvertFromMuChineseLegacy(playerName, pData2->szHeroName, MAX_USERNAME_SIZE);
         auto heroClass = gCharacterManager.ChangeServerClassTypeToClientClassType(pData2->btHeroClass);
         M34CryWolf1st::Set_WorldRank(pData2->iRank, heroClass, pData2->iHeroScore, playerName);
     }
@@ -13090,7 +13090,7 @@ bool ReceiveIGS_StorageGiftItemList(const BYTE* pReceiveBuffer)
 
     wchar_t szID[MAX_USERNAME_SIZE + 1];
     wchar_t szMessage[MAX_GIFT_MESSAGE_SIZE];
-    CMultiLanguage::ConvertFromUtf8(szID, Data->chSendUserName, MAX_USERNAME_SIZE);
+    CMultiLanguage::ConvertFromMuChineseLegacy(szID, Data->chSendUserName, MAX_USERNAME_SIZE);
     CMultiLanguage::ConvertFromUtf8(szMessage, Data->chMessage, MAX_GIFT_MESSAGE_SIZE);
 
     g_pInGameShop->AddStorageItem((int)Data->lStorageIndex, (int)Data->lItemSeq, (int)Data->lStorageGroupCode,

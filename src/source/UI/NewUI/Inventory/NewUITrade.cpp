@@ -591,7 +591,7 @@ void CNewUITrade::ProcessToReceiveTradeRequest(char* pbyYourID)
         return;
     }
 
-    CMultiLanguage::ConvertFromUtf8(m_szYourID, pbyYourID);
+    CMultiLanguage::ConvertFromMuChineseLegacy(m_szYourID, pbyYourID);
 
     SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CTradeMsgBoxLayout));
 
@@ -619,7 +619,7 @@ void CNewUITrade::ProcessToReceiveTradeResult(LPPTRADE pTradeData)
         SetCursorPos(x * WindowWidth / REFERENCE_WIDTH, MouseY * WindowHeight / REFERENCE_HEIGHT);
 
         wchar_t szTempID[MAX_USERNAME_SIZE + 1]{ };
-        CMultiLanguage::ConvertFromUtf8(szTempID, pTradeData->ID, MAX_USERNAME_SIZE);
+        CMultiLanguage::ConvertFromMuChineseLegacy(szTempID, pTradeData->ID, MAX_USERNAME_SIZE);
 
         if (!m_bTradeAlert && ::wcscmp(m_szYourID, szTempID))
             InitYourInvenBackUp();

@@ -626,7 +626,7 @@ void CNewUIGuardWindow::SetData(LPPMSG_ANS_CASTLESIEGESTATE Info)
 
     m_eTimeType = (CASTLESIEGE_STATE)Info->cCastleSiegeState;
     CMultiLanguage::ConvertFromUtf8(m_szOwnerGuild, Info->cOwnerGuild, MAX_GUILDNAME);
-    CMultiLanguage::ConvertFromUtf8(m_szOwnerGuildMaster, Info->cOwnerGuildMaster, MAX_USERNAME_SIZE);
+    CMultiLanguage::ConvertFromMuChineseLegacy(m_szOwnerGuildMaster, Info->cOwnerGuildMaster, MAX_USERNAME_SIZE);
 
     m_wStartYear = MAKEWORD(Info->btStartYearL, Info->btStartYearH);
     m_byStartMonth = Info->btStartMonth;

@@ -62,7 +62,7 @@ namespace Core::Text
 {
     NameValidationResult ValidateCharacterName(const std::wstring& name)
     {
-        return ValidateName(name, CharacterNameUtf8Capacity, false);
+        return ValidateName(name, CharacterNameByteCapacity, true);
     }
 
     NameValidationResult ValidateGuildName(const std::wstring& name)
