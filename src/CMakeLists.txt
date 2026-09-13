@@ -355,9 +355,7 @@ if (APPLE)
   )
 endif()
 
-# --- .NET / NuGet infrastructure (shared by wire-sizes codegen and ClientLibrary)
-# Lifted up here so the wire-sizes block below can resolve the OpenMU packet
-# XML from the same NuGet cache the ClientLibrary uses.
+# --- .NET / NuGet infrastructure (used by wire-sizes codegen and ClientLibrary)
 # A Linux target needs the native Linux dotnet to Native-AOT-compile the
 # linux-x64 .so (a Windows dotnet.exe cannot cross-OS AOT). Everything else
 # (Windows/MinGW targets, including from WSL) prefers dotnet.exe so the win-*
@@ -404,45 +402,14 @@ file(MAKE_DIRECTORY "${MU_NUGET_CACHE_DIR}")
 # struct's sizeof <= the wire length declared by the server. Guards against
 # the PR #402 class of bug (silent #pragma pack drift that freezes the client).
 #
-# The XML lives in the MUnique.OpenMU.Network.Packets NuGet package -- the
-# same package the .NET ClientLibrary consumes (see MUnique.Client.Library.csproj).
-# Sourcing from NuGet means a single versioned dependency instead of vendoring
-# the entire OpenMU repository as a submodule.
-set(OPENMU_PACKETS_VERSION "0.9.10" CACHE STRING
-    "Version of MUnique.OpenMU.Network.Packets to source packet XML from")
+# Use the sibling OpenMU checkout as the authoritative packet source. This keeps
+# the wire-size guards and the ClientLibrary on the same current definitions.
 set(OPENMU_PACKETS_XML
-    "${MU_NUGET_CACHE_DIR}/munique.openmu.network.packets/${OPENMU_PACKETS_VERSION}/contentFiles/any/net10.0/ServerToClient/ServerToClientPackets.xml")
+    "${REPO_ROOT}/../OpenMU/src/Network/Packets/ServerToClient/ServerToClientPackets.xml")
 
-# Restore the package on demand at configure time if it isn't cached yet.
-# dotnet restore is fast on cache-hit, so re-configuring stays cheap.
 if (NOT EXISTS "${OPENMU_PACKETS_XML}")
-  if (NOT DOTNET_EXECUTABLE)
-    message(FATAL_ERROR
-      "wire-size codegen needs MUnique.OpenMU.Network.Packets v${OPENMU_PACKETS_VERSION} "
-      "but it is not cached at ${MU_NUGET_CACHE_DIR} and no .NET SDK was found to restore "
-      "it. Install dotnet (Linux or Windows) or pre-populate the NuGet cache.")
-  endif()
-  message(STATUS "Restoring MUnique.OpenMU.Network.Packets v${OPENMU_PACKETS_VERSION} for wire-size codegen...")
-  set(_packets_csproj "${CMAKE_CURRENT_SOURCE_DIR}/../ClientLibrary/MUnique.Client.Library.csproj")
-  mu_native_path("${_packets_csproj}" _packets_csproj_native)
-  mu_native_path("${MU_NUGET_CACHE_DIR}" _packets_nuget_native)
-  # WSLENV=NUGET_PACKAGES/w is needed so the env var crosses the WSL->Windows
-  # interop boundary when DOTNET_EXECUTABLE is dotnet.exe; harmless otherwise.
-  execute_process(
-    COMMAND ${CMAKE_COMMAND} -E env
-            "WSLENV=NUGET_PACKAGES/w"
-            "NUGET_PACKAGES=${_packets_nuget_native}"
-            "${DOTNET_EXECUTABLE}" restore "${_packets_csproj_native}" --nologo
-    RESULT_VARIABLE _restore_rc
-  )
-  if (NOT _restore_rc EQUAL 0)
-    message(FATAL_ERROR "dotnet restore failed (rc=${_restore_rc}) -- see output above.")
-  endif()
-  if (NOT EXISTS "${OPENMU_PACKETS_XML}")
-    message(FATAL_ERROR
-      "dotnet restore completed but ServerToClientPackets.xml is still missing at "
-      "${OPENMU_PACKETS_XML}. Did the NuGet package layout change?")
-  endif()
+  message(FATAL_ERROR
+    "OpenMU packet XML is missing at ${OPENMU_PACKETS_XML}.")
 endif()
 
 set(WIRE_SIZES_GEN_SCRIPT "${REPO_ROOT}/tools/gen_wire_sizes.py")
@@ -452,10 +419,10 @@ add_custom_command(
   OUTPUT "${WIRE_SIZES_GEN_HEADER}"
   COMMAND "${Python3_EXECUTABLE}" "${WIRE_SIZES_GEN_SCRIPT}"
           --xml "${OPENMU_PACKETS_XML}"
-          --source-label "MUnique.OpenMU.Network.Packets v${OPENMU_PACKETS_VERSION} (NuGet)"
+          --source-label "OpenMU source packet definitions"
           --output "${WIRE_SIZES_GEN_HEADER}"
   DEPENDS "${WIRE_SIZES_GEN_SCRIPT}" "${OPENMU_PACKETS_XML}"
-  COMMENT "Generating wire_sizes.generated.h from OpenMU NuGet packet XML..."
+  COMMENT "Generating wire_sizes.generated.h from OpenMU source packet XML..."
   VERBATIM
 )
 add_custom_target(GenWireSizes DEPENDS "${WIRE_SIZES_GEN_HEADER}")

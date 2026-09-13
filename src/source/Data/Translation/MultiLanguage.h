@@ -5,6 +5,7 @@
 
 #include <cstdint>
 #include <cstddef>
+#include <optional>
 #include <string>
 
 class CMultiLanguage
@@ -20,6 +21,8 @@ private:
     };
 
 public:
+    static constexpr unsigned int MuChineseCodePage = 936;
+
     CMultiLanguage(std::wstring strSelectedML);
     ~CMultiLanguage()
     {
@@ -41,6 +44,9 @@ public:
     static int GetUtf8SafePrefixLength(const char* source, int maxLength);
     static int32_t ConvertFromUtf8(wchar_t* target, const char* source, int maxSourceLength = -1);
     static int32_t ConvertToUtf8(char* target, const wchar_t* source, int maxSourceLength = -1);
+    static int32_t ConvertFromMuChineseLegacy(wchar_t* target, const char* source, int maxSourceLength = -1);
+    static int32_t ConvertToMuChineseLegacy(char* target, const wchar_t* source, int maxTargetLength = -1);
+    static std::optional<std::size_t> GetMuChineseLegacyByteLength(const wchar_t* source);
 
     static CMultiLanguage* GetSingletonPtr()
     {

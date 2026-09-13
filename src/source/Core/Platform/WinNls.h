@@ -23,6 +23,9 @@
 #ifndef CP_UTF8
 #define CP_UTF8 65001
 #endif
+#ifndef WC_NO_BEST_FIT_CHARS
+#define WC_NO_BEST_FIT_CHARS 0x00000400
+#endif
 
 // Same contract as Win32: cbMultiByte/cchWideChar == -1 means the source is
 // null-terminated (the terminator is converted and counted); a zero output size

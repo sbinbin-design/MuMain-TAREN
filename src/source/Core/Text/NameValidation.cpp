@@ -20,7 +20,8 @@ namespace
         return character >= 0x4E00 && character <= 0x9FFF;
     }
 
-    Core::Text::NameValidationResult ValidateName(const std::wstring& name, const std::size_t byteCapacity)
+    Core::Text::NameValidationResult ValidateName(const std::wstring& name, const std::size_t byteCapacity,
+                                                  const bool useMuChineseEncoding)
     {
         if (!CMultiLanguage::IsValidUtf16(name.c_str()))
             return Core::Text::NameValidationResult::IllegalCharacter;
@@ -38,7 +39,15 @@ namespace
             return Core::Text::NameValidationResult::IllegalCharacter;
         }
 
-        if (CMultiLanguage::GetUtf8ByteLength(name.c_str()) > byteCapacity)
+        if (useMuChineseEncoding)
+        {
+            const auto encodedByteLength = CMultiLanguage::GetMuChineseLegacyByteLength(name.c_str());
+            if (!encodedByteLength)
+                return Core::Text::NameValidationResult::IllegalCharacter;
+            if (*encodedByteLength > byteCapacity)
+                return Core::Text::NameValidationResult::TooLong;
+        }
+        else if (CMultiLanguage::GetUtf8ByteLength(name.c_str()) > byteCapacity)
             return Core::Text::NameValidationResult::TooLong;
 
         const std::size_t minimumLength = containsChinese ? CjkNameMinimum : AsciiNameMinimum;
@@ -53,12 +62,12 @@ namespace Core::Text
 {
     NameValidationResult ValidateCharacterName(const std::wstring& name)
     {
-        return ValidateName(name, CharacterNameUtf8Capacity);
+        return ValidateName(name, CharacterNameUtf8Capacity, false);
     }
 
     NameValidationResult ValidateGuildName(const std::wstring& name)
     {
-        return ValidateName(name, GuildNameUtf8Capacity);
+        return ValidateName(name, GuildNameCp936Capacity, true);
     }
 
     bool IsChatMessageWithinUtf8Limit(const wchar_t* message, const std::size_t byteCapacity)

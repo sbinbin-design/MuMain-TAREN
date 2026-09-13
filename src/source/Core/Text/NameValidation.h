@@ -14,7 +14,7 @@ namespace Core::Text
     };
 
     constexpr std::size_t CharacterNameUtf8Capacity = 10;
-    constexpr std::size_t GuildNameUtf8Capacity = 8;
+    constexpr std::size_t GuildNameCp936Capacity = 8;
 
     NameValidationResult ValidateCharacterName(const std::wstring& name);
     NameValidationResult ValidateGuildName(const std::wstring& name);

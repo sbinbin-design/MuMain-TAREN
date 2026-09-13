@@ -101,6 +101,85 @@ int32_t CMultiLanguage::ConvertFromUtf8(wchar_t* target, const char* source, int
     return ConvertFromCodePage(target, source, CP_UTF8, maxSourceLength);
 }
 
+int32_t CMultiLanguage::ConvertFromMuChineseLegacy(wchar_t* target, const char* source, int maxSourceLength)
+{
+    if (target == nullptr || source == nullptr)
+        return 0;
+
+    const int requiredChars = MultiByteToWideChar(MuChineseCodePage, MB_ERR_INVALID_CHARS, source, maxSourceLength,
+                                                   nullptr, 0);
+    if (requiredChars <= 0)
+    {
+        target[0] = L'\0';
+        return 0;
+    }
+
+    const int written = MultiByteToWideChar(MuChineseCodePage, MB_ERR_INVALID_CHARS, source, maxSourceLength, target,
+                                            requiredChars);
+    if (written <= 0)
+    {
+        target[0] = L'\0';
+        return 0;
+    }
+
+    if (maxSourceLength > 0)
+        target[written] = L'\0';
+    return written;
+}
+
+int32_t CMultiLanguage::ConvertToMuChineseLegacy(char* target, const wchar_t* source, int maxTargetLength)
+{
+    if (target == nullptr || source == nullptr)
+        return 0;
+
+    const int requiredBytesWithNull = WideCharToMultiByte(
+        MuChineseCodePage, WC_NO_BEST_FIT_CHARS, source, -1, nullptr, 0, nullptr, nullptr);
+    if (requiredBytesWithNull <= 0)
+    {
+        target[0] = '\0';
+        return 0;
+    }
+
+    if (maxTargetLength > 0 && requiredBytesWithNull > maxTargetLength)
+    {
+        target[0] = '\0';
+        return 0;
+    }
+
+    BOOL usedDefaultChar = FALSE;
+    const int written = WideCharToMultiByte(
+        MuChineseCodePage, WC_NO_BEST_FIT_CHARS, source, -1, target,
+        maxTargetLength > 0 ? maxTargetLength : requiredBytesWithNull, nullptr, &usedDefaultChar);
+    if (usedDefaultChar)
+    {
+        target[0] = '\0';
+        return 0;
+    }
+    if (written <= 0)
+    {
+        target[0] = '\0';
+        return 0;
+    }
+    return written - 1;
+}
+
+std::optional<std::size_t> CMultiLanguage::GetMuChineseLegacyByteLength(const wchar_t* source)
+{
+    if (source == nullptr)
+        return std::nullopt;
+    if (source[0] == L'\0')
+        return 0;
+
+    BOOL usedDefaultChar = FALSE;
+    const int byteLength = WideCharToMultiByte(
+        MuChineseCodePage, WC_NO_BEST_FIT_CHARS, source, -1, nullptr, 0, nullptr,
+        &usedDefaultChar);
+    if (byteLength <= 0 || usedDefaultChar)
+        return std::nullopt;
+
+    return static_cast<std::size_t>(byteLength - 1);
+}
+
 int32_t CMultiLanguage::ConvertFromCodePageBounded(wchar_t* target, std::size_t targetCapacity,
                                                    const char* source, unsigned int codePage,
                                                    int maxSourceLength)

@@ -58,8 +58,10 @@ int CGuildCache::SetGuildMark(int nGuildKey, char* UnionName, char* GuildName, B
     int nIndex = GetGuildMarkIndex(nGuildKey);
     if (nIndex != GuildConstants::INVALID_MARK_INDEX)
     {
-        CMultiLanguage::ConvertFromUtf8(GuildMark[nIndex].UnionName, UnionName, GuildConstants::GUILD_NAME_LENGTH);
-        CMultiLanguage::ConvertFromUtf8(GuildMark[nIndex].GuildName, GuildName, GuildConstants::GUILD_NAME_LENGTH);
+        CMultiLanguage::ConvertFromMuChineseLegacy(GuildMark[nIndex].UnionName, UnionName,
+                                                    GuildConstants::GUILD_NAME_LENGTH);
+        CMultiLanguage::ConvertFromMuChineseLegacy(GuildMark[nIndex].GuildName, GuildName,
+                                                    GuildConstants::GUILD_NAME_LENGTH);
         GuildMark[nIndex].UnionName[GuildConstants::GUILD_NAME_LENGTH] = L'\0';
         GuildMark[nIndex].GuildName[GuildConstants::GUILD_NAME_LENGTH] = L'\0';
 
