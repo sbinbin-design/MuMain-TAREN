@@ -1,5 +1,9 @@
 # MuMain
 
+## 🎮 一个80后的游戏爱好者
+
+这个项目我想在 `MU_S6_Full_Client_20190930` 基础上优化成中文客户端。如果有相同情怀的朋友或爱好者感兴趣，可以加我微信一起交流（备注：MU）：**alexbin**。
+
 MuMain 是一个面向 **MU Online Season 6 Episode 3** 的跨平台客户端项目，
 基于 [Luois 发布的 Season 5.2 客户端源码](https://github.com/LouisEmulator/Main5.2)
 持续演进。项目目标是保留原版游戏行为和资源兼容性，同时逐步完善渲染、网络、
