@@ -522,7 +522,7 @@ void SEASON3B::CNewUIMoveCommandWindow::RenderFrame()
     g_pRenderText->RenderText(m_StrifePos.x, m_StartUISubjectName.y + 20, I18N::Game::BattleZone, 0, 0, RT3_WRITE_CENTER);
     g_pRenderText->RenderText(m_MapNamePos.x, m_StartUISubjectName.y + 20, I18N::Game::Map, 0, 0, RT3_WRITE_CENTER);
     g_pRenderText->RenderText(m_ReqLevelPos.x, m_StartUISubjectName.y + 20, I18N::Game::MinLevel, 0, 0, RT3_WRITE_CENTER);
-    g_pRenderText->RenderText(m_ReqZenPos.x, m_StartUISubjectName.y + 20, I18N::Game::Cost, 0, 0, RT3_WRITE_CENTER);
+    g_pRenderText->RenderText(m_ReqZenPos.x, m_StartUISubjectName.y + 20, I18N::Game::MoveCommandCost, 0, 0, RT3_WRITE_CENTER);
 }
 
 bool SEASON3B::CNewUIMoveCommandWindow::Render()

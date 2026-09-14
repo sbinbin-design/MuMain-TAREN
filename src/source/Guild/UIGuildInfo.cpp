@@ -661,7 +661,7 @@ void CUIGuildInfo::Render()
         ptOrigin.x = GetPosition_x() + 35;
         ptOrigin.y = GetPosition_y() + 53;
         g_pRenderText->SetTextColor(200, 255, 100, 255);
-        mu_swprintf(szTemp, L"%ls ( Score:%d )", GuildMark[Hero->GuildMarkIndex].GuildName, GuildTotalScore);
+        mu_swprintf(szTemp, I18N::Game::GuildNameWithScore, GuildMark[Hero->GuildMarkIndex].GuildName, GuildTotalScore);
         g_pRenderText->RenderText(ptOrigin.x, ptOrigin.y, szTemp, 120, 0, RT3_SORT_CENTER);
     }
 

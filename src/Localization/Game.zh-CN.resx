@@ -808,7 +808,11 @@
   </data>
   <data name="Cost" xml:space="preserve">
     <value>Cost</value>
-    <comment>legacy_id=198,936</comment>
+    <comment>legacy_id=198</comment>
+  </data>
+  <data name="MoveCommandCost" xml:space="preserve">
+    <value>需要金</value>
+    <comment>legacy_id=936</comment>
   </data>
   <data name="Spare Points: %d / %d" xml:space="preserve">
     <value>增加点数: %d / %d</value>
@@ -1731,7 +1735,11 @@
   </data>
   <data name="Connect" xml:space="preserve">
     <value>Connect</value>
-    <comment>legacy_id=452,562</comment>
+    <comment>legacy_id=452</comment>
+  </data>
+  <data name="ServerSelectConnect" xml:space="preserve">
+    <value>连接</value>
+    <comment>legacy_id=562</comment>
   </data>
   <data name="Exit" xml:space="preserve">
     <value>退      出</value>
@@ -2937,6 +2945,12 @@
   <data name="ServerMigrationErrorPleaseContactA" xml:space="preserve">
     <value>服务器错误 : 请联系客服</value>
     <comment>legacy_id=760</comment>
+  </data>
+  <data name="CatapultStateFailed" xml:space="preserve">
+    <value>投石车状态错误。</value>
+  </data>
+  <data name="CatapultFireFailed" xml:space="preserve">
+    <value>投石车攻击失败。</value>
   </data>
   <data name="Error21TryRunningTheGameAgain" xml:space="preserve">
     <value>[错误21] 请重新启动游戏。如果继续发生相同错误，请重新安装客户端。</value>
@@ -4743,6 +4757,9 @@
   <data name="Guild score: %d" xml:space="preserve">
     <value>战盟分数 : %d</value>
     <comment>legacy_id=1256</comment>
+  </data>
+  <data name="Guild name with score" xml:space="preserve">
+    <value>%ls ( 战盟分数 : %d )</value>
   </data>
   <data name="To make the alliance," xml:space="preserve">
     <value>找有意向建立联合关系的战盟</value>
@@ -9904,6 +9921,36 @@
     <value>要求事项</value>
     <comment>legacy_id=2809</comment>
   </data>
+  <data name="QuestMonsterProgress" xml:space="preserve">
+    <value>怪物：%ls x %lu/%lu</value>
+  </data>
+  <data name="QuestItemProgress" xml:space="preserve">
+    <value>物品：%ls x %lu/%lu</value>
+  </data>
+  <data name="QuestRequiredLevel" xml:space="preserve">
+    <value>等级：%lu %ls</value>
+  </data>
+  <data name="QuestRequiredZen" xml:space="preserve">
+    <value>金币：%lu</value>
+  </data>
+  <data name="QuestRequiredSkill" xml:space="preserve">
+    <value>技能：%ls</value>
+  </data>
+  <data name="QuestRequiredBonus" xml:space="preserve">
+    <value>奖励：%ls</value>
+  </data>
+  <data name="QuestRewardExperience" xml:space="preserve">
+    <value>经验：%lu</value>
+  </data>
+  <data name="QuestRewardZen" xml:space="preserve">
+    <value>金币：%lu</value>
+  </data>
+  <data name="QuestRewardItem" xml:space="preserve">
+    <value>物品：%ls x %lu</value>
+  </data>
+  <data name="QuestRewardBonus" xml:space="preserve">
+    <value>奖励：%ls x %lu%ls</value>
+  </data>
   <data name="Up to" xml:space="preserve">
     <value>才可</value>
     <comment>legacy_id=2813</comment>
@@ -12947,6 +12994,15 @@
   <data name="BasicAttackFallback" xml:space="preserve">
     <value>Basic Attack Fallback</value>
   </data>
+  <data name="MaximumLevelAlreadyReached" xml:space="preserve">
+    <value>您已达到最高等级。</value>
+  </data>
+  <data name="MaximumMasterLevelAlreadyReached" xml:space="preserve">
+    <value>您已达到最高大师等级。</value>
+  </data>
+  <data name="NeedStrongerMonstersForMasterExperience" xml:space="preserve">
+    <value>您需要击杀更强大的怪物来获得大师经验。</value>
+  </data>
   <data name="Connection lost" xml:space="preserve">
     <value>Connection lost</value>
   </data>
@@ -13012,5 +13068,20 @@
   </data>
   <data name="ChatCommandsUnknownCommand" xml:space="preserve">
     <value>This command is not available anymore.</value>
+  </data>
+  <data name="ApplicationError" xml:space="preserve">
+    <value>应用程序错误</value>
+  </data>
+  <data name="WindowsApplicationInitializationFailed" xml:space="preserve">
+    <value>Windows 应用程序初始化失败。</value>
+  </data>
+  <data name="PlayerBmdFileError" xml:space="preserve">
+    <value>%ls 文件错误！！！</value>
+  </data>
+  <data name="CreditFileNotFound" xml:space="preserve">
+    <value>%hs 文件不存在。&#xD;&#xA;</value>
+  </data>
+  <data name="CreditFileReadFailed" xml:space="preserve">
+    <value>%hs 文件读取失败或文件已损坏。&#xD;&#xA;</value>
   </data>
 </root>

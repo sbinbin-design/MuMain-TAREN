@@ -315,7 +315,10 @@ void CServerSelWin::UpdateDisplay()
         const std::size_t connectSuffixPos = serverButtonText.rfind(connectSuffix);
         if (connectSuffixPos == serverButtonText.length() - connectSuffix.length())
         {
-            serverButtonText.replace(connectSuffixPos, connectSuffix.length(), L" 连接");
+            serverButtonText.replace(
+                connectSuffixPos,
+                connectSuffix.length(),
+                L" " + std::wstring(I18N::Game::ServerSelectConnect));
         }
 
         m_aServerBtn[icntServer].SetText(serverButtonText.c_str(), adwServerBtnClr[pServerInfo->m_byNonPvP]);

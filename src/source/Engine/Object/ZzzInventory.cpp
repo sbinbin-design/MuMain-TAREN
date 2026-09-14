@@ -10967,7 +10967,7 @@ void RenderGuildList(int StartX, int StartY)
     if (Hero->GuildMarkIndex == -1)
         mu_swprintf(Text, I18N::Game::Guild);
     else
-        mu_swprintf(Text, L"%ls (Score:%d)", GuildMark[Hero->GuildMarkIndex].GuildName, GuildTotalScore);
+        mu_swprintf(Text, I18N::Game::GuildNameWithScore, GuildMark[Hero->GuildMarkIndex].GuildName, GuildTotalScore);
 
     g_pRenderText->RenderText(StartX + 95 - 60, StartY + 12, Text, 120 * WindowWidth / REFERENCE_WIDTH, true, 3);
 

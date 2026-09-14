@@ -384,7 +384,7 @@ void CCreditWin::LoadText()
 	if (!file)
 	{
 		wchar_t szMessage[256];
-		std::swprintf(szMessage, std::size(szMessage), L"%hs file not found.\r\n", kCreditDataPath.data());
+		std::swprintf(szMessage, std::size(szMessage), I18N::Game::CreditFileNotFound, kCreditDataPath.data());
 		g_ErrorReport.Write(szMessage);
 		::MessageBox(g_hWnd, szMessage, NULL, MB_OK);
 		::PostMessage(g_hWnd, WM_DESTROY, 0, 0);
@@ -395,7 +395,7 @@ void CCreditWin::LoadText()
 	if (std::fread(m_aCredit, nSize, 1, file.get()) != 1)
 	{
 		wchar_t szMessage[256];
-		std::swprintf(szMessage, std::size(szMessage), L"Failed to read %hs file or file is corrupt.\r\n", kCreditDataPath.data());
+		std::swprintf(szMessage, std::size(szMessage), I18N::Game::CreditFileReadFailed, kCreditDataPath.data());
 		g_ErrorReport.Write(szMessage);
 		::MessageBox(g_hWnd, szMessage, NULL, MB_OK);
 		::PostMessage(g_hWnd, WM_DESTROY, 0, 0);

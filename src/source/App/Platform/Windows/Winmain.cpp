@@ -1998,7 +1998,8 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine, int nC
     if (!SDL_InitSubSystem(SDL_INIT_VIDEO))
     {
         g_ErrorReport.Write(L"> SDL video init failed.\r\n");
-        MessageBox(nullptr, L"Windows aplication error!", L"Aplication Error", MB_ICONERROR);
+        MessageBox(nullptr, I18N::Game::WindowsApplicationInitializationFailed, I18N::Game::ApplicationError,
+                   MB_ICONERROR);
         return 0;
     }
 
@@ -2013,7 +2014,8 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine, int nC
     if (!g_sdlWindow)
     {
         g_ErrorReport.Write(L"> SDL_CreateWindow failed.\r\n");
-        MessageBox(nullptr, L"Windows aplication error!", L"Aplication Error", MB_ICONERROR);
+        MessageBox(nullptr, I18N::Game::WindowsApplicationInitializationFailed, I18N::Game::ApplicationError,
+                   MB_ICONERROR);
         return 0;
     }
 

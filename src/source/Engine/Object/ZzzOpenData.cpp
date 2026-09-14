@@ -27,6 +27,7 @@
 #include "GameLogic/Items/MixMgr.h"
 #include "UI/NewUI/NewUISystem.h"
 #include "UI/NewUI/Dialogs/NewUIHelpWindow.h"
+#include "I18N/All.h"
 #include "Camera/CameraMove.h"
 #include "GameLogic/Quests/QuestMng.h"
 #include "Network/Server/ServerListManager.h"
@@ -121,7 +122,9 @@ void OpenPlayers()
     if (Models[MODEL_PLAYER].NumMeshs > 0)
     {
         g_ErrorReport.Write(L"Player.bmd file error.\r\n");
-        MessageBox(g_hWnd, L"Player.bmd file error!!!", NULL, MB_OK);
+        wchar_t message[256];
+        mu_swprintf(message, I18N::Game::PlayerBmdFileError, L"Player.bmd");
+        MessageBox(g_hWnd, message, NULL, MB_OK);
         SendMessage(g_hWnd, WM_DESTROY, 0, 0);
     }
 

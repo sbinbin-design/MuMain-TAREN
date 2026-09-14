@@ -441,7 +441,7 @@ void CUIGuildMaster::RenderEditGuildMark()
     g_pRenderText->RenderText(ptOrigin.x, ptOrigin.y, I18N::Game::NAME);
 
     wchar_t Text[100];
-    mu_swprintf(Text, L"%ls ( Score:%d )", GuildMark[Hero->GuildMarkIndex].GuildName, GuildTotalScore);
+    mu_swprintf(Text, I18N::Game::GuildNameWithScore, GuildMark[Hero->GuildMarkIndex].GuildName, GuildTotalScore);
     g_pRenderText->RenderText(ptOrigin.x, ptOrigin.y, Text, 140 * g_fScreenRate_x, 0, RT3_SORT_CENTER);
     g_pRenderText->SetFont(g_hFont);
 
@@ -497,7 +497,7 @@ void CUIGuildMaster::RenderGuildMasterMain()
     if (Hero->GuildStatus != G_NONE)
     {
         wchar_t Text[100];
-        mu_swprintf(Text, L"%ls ( Score:%d )", GuildMark[Hero->GuildMarkIndex].GuildName, GuildTotalScore);
+        mu_swprintf(Text, I18N::Game::GuildNameWithScore, GuildMark[Hero->GuildMarkIndex].GuildName, GuildTotalScore);
         g_pRenderText->RenderText(ptOrigin.x, ptOrigin.y, Text, 140 * g_fScreenRate_x, 0, RT3_SORT_CENTER);
         m_CreateGuildButton.SetState(UISTATE_DISABLE);
         m_EditGuildMarkButton.SetState(UISTATE_NORMAL);

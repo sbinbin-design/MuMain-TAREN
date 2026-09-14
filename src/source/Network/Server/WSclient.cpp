@@ -5797,16 +5797,13 @@ BOOL ReceiveDieExpLarge(const BYTE* ReceiveBuffer, BOOL bEncrypted)
     switch (experienceType)
     {
     case eExperienceType_MaxLevelReached:
-        // TODO: show message "You already reached maximum Level."
-        g_pSystemLogBox->AddText(L"You already reached maximum Level.", SEASON3B::TYPE_SYSTEM_MESSAGE);
+        g_pSystemLogBox->AddText(I18N::Game::MaximumLevelAlreadyReached, SEASON3B::TYPE_SYSTEM_MESSAGE);
         return TRUE;
     case eExperienceType_MaxMasterLevelReached:
-        // TODO: show message "You already reached maximum master Level."
-        g_pSystemLogBox->AddText(L"You already reached maximum master Level.", SEASON3B::TYPE_SYSTEM_MESSAGE);
+        g_pSystemLogBox->AddText(I18N::Game::MaximumMasterLevelAlreadyReached, SEASON3B::TYPE_SYSTEM_MESSAGE);
         return TRUE;
     case eExperienceType_MonsterLevelTooLowForMasterExperience:
-        // TODO: You need to kill stronger monsters to gain master experience.
-        g_pSystemLogBox->AddText(L"You need to kill stronger monsters to gain master experience.",
+        g_pSystemLogBox->AddText(I18N::Game::NeedStrongerMonstersForMasterExperience,
                                  SEASON3B::TYPE_SYSTEM_MESSAGE);
         return TRUE;
     }
@@ -10294,7 +10291,7 @@ void ReceiveServerImmigration(const BYTE* ReceiveBuffer)
         SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CServerImmigrationErrorMsgBoxLayout));
         break;
     case 1:
-        SEASON3B::CreateOkMessageBox(L"ReceiveServerImmigration");
+        SEASON3B::CreateOkMessageBox(I18N::Game::ServerMigrationErrorPleaseContactA);
         break;
     }
 }
@@ -11879,7 +11876,7 @@ void ReceiveCatapultState(const BYTE* ReceiveBuffer)
     }
     else if (pData->m_byResult == 0)
     {
-        g_pSystemLogBox->AddText(L"ReceiveCatapultState", SEASON3B::TYPE_SYSTEM_MESSAGE);
+        g_pSystemLogBox->AddText(I18N::Game::CatapultStateFailed, SEASON3B::TYPE_SYSTEM_MESSAGE);
     }
 }
 
@@ -11896,7 +11893,7 @@ void ReceiveCatapultFire(const BYTE* ReceiveBuffer)
     }
     else if (pData->m_byResult == 0)
     {
-        g_pSystemLogBox->AddText(L"ReceiveCatapultFire", SEASON3B::TYPE_SYSTEM_MESSAGE);
+        g_pSystemLogBox->AddText(I18N::Game::CatapultFireFailed, SEASON3B::TYPE_SYSTEM_MESSAGE);
     }
 }
 

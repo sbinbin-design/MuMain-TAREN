@@ -501,7 +501,7 @@ void SEASON3B::CNewUIGuildInfoWindow::Render_Text()
     ptOrigin.y = m_Pos.y + 48;
 
     g_pRenderText->SetTextColor(200, 255, 100, 255);
-    mu_swprintf(Text, L"%ls ( Score:%d )", GuildMark[Hero->GuildMarkIndex].GuildName, GuildTotalScore);
+    mu_swprintf(Text, I18N::Game::GuildNameWithScore, GuildMark[Hero->GuildMarkIndex].GuildName, GuildTotalScore);
     g_pRenderText->RenderText(ptOrigin.x, ptOrigin.y, Text, 120, 0, RT3_SORT_CENTER);
 
 
