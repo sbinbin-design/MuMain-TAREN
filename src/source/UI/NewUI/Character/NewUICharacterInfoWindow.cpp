@@ -23,6 +23,8 @@ using namespace SEASON3B;
 
 namespace
 {
+    constexpr int kTableTextFieldGap = 5;
+
     float GetMasterSkillValue(ActionSkillType skill)
     {
         return CharacterAttribute->MasterSkillInfo[skill].GetSkillValue();
@@ -331,6 +333,9 @@ void SEASON3B::CNewUICharacterInfoWindow::RenderTableTexts()
     mu_swprintf(strLevel, I18N::Game::LevelUResetsU, CharacterAttribute->Level, CharacterAttribute->Resets);
     mu_swprintf(strExp, I18N::Game::EXPI64dI64d, CharacterAttribute->Experience, CharacterAttribute->NextExperience);
 
+    g_pRenderText->SetFont(g_hFontBold);
+    const SIZE levelTextSize = g_pRenderText->MeasureText(strLevel, static_cast<int>(wcslen(strLevel)));
+
     if (CharacterAttribute->Level > 9)
     {
         int iMinus, iMaxMinus;
@@ -354,7 +359,6 @@ void SEASON3B::CNewUICharacterInfoWindow::RenderTableTexts()
         mu_swprintf(strPoint, L"%ls %d/%d | %ls %d/%d", I18N::Game::Create, 0, 0, I18N::Game::Decrease, 0, 0);
     }
 
-    g_pRenderText->SetFont(g_hFontBold);
     g_pRenderText->SetTextColor(230, 230, 0, 255);
     g_pRenderText->SetBgColor(0, 0, 0, 0);
     g_pRenderText->RenderText(m_Pos.x + 18, m_Pos.y + 58, strLevel);
@@ -372,7 +376,10 @@ void SEASON3B::CNewUICharacterInfoWindow::RenderTableTexts()
         g_pRenderText->SetFont(g_hFontBold);
         g_pRenderText->SetTextColor(255, 138, 0, 255);
         g_pRenderText->SetBgColor(0, 0, 0, 0);
-        g_pRenderText->RenderText(m_Pos.x + 110, m_Pos.y + 58, strLevelUpPoint);
+        const int originalPointX = m_Pos.x + 110;
+        const int measuredPointX = m_Pos.x + 18 + levelTextSize.cx + kTableTextFieldGap;
+        const int pointX = std::max(originalPointX, measuredPointX);
+        g_pRenderText->RenderText(pointX, m_Pos.y + 58, strLevelUpPoint);
     }
 
     g_pRenderText->SetFont(g_hFont);
