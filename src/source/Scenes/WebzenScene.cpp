@@ -23,6 +23,7 @@ constexpr int CLASSIC_BACKGROUND_PROBABILITY = 70;
 // Bitmap indices for title scene resources
 constexpr int TITLE_BITMAP_BASE = BITMAP_TITLE;
 constexpr int TITLE_BITMAP_BACK_02 = BITMAP_TITLE + 1;
+constexpr int TITLE_BITMAP_MU = BITMAP_TITLE + 2;
 constexpr int TITLE_BITMAP_LOGO = BITMAP_TITLE + 3;
 constexpr int TITLE_BITMAP_PATTERN = BITMAP_TITLE + 5;
 constexpr int TITLE_BITMAP_DYNAMIC_START = BITMAP_TITLE + 6;
@@ -77,6 +78,7 @@ static void LoadCommonTitleBitmaps()
 {
     LoadBitmap(L"Interface\\New_lo_back_01.jpg", BITMAP_TITLE, GL_LINEAR);
     LoadBitmap(L"Interface\\New_lo_back_02.jpg", BITMAP_TITLE + 1, GL_LINEAR);
+    LoadBitmap(L"Interface\\MU_TITLE.tga", TITLE_BITMAP_MU, GL_LINEAR);
     LoadBitmap(L"Interface\\lo_121518.tga", BITMAP_TITLE + 3, GL_LINEAR);
     LoadBitmap(L"Interface\\lo_lo.jpg", BITMAP_TITLE + 5, GL_LINEAR, GL_REPEAT);
     LoadBitmap(L"Interface\\lo_back_s5_03.jpg", BITMAP_TITLE + 6, GL_LINEAR);
@@ -90,6 +92,7 @@ static void UnloadTitleBitmaps()
 {
     DeleteBitmap(TITLE_BITMAP_BASE);
     DeleteBitmap(TITLE_BITMAP_BACK_02);
+    DeleteBitmap(TITLE_BITMAP_MU);
     DeleteBitmap(TITLE_BITMAP_LOGO);
     DeleteBitmap(TITLE_BITMAP_PATTERN);
 

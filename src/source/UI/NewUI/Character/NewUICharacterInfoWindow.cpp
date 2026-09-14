@@ -1075,7 +1075,7 @@ void SEASON3B::CNewUICharacterInfoWindow::RenderAttribute()
     }
     else
     {
-        mu_swprintf(strBlocking, I18N::Game::DefenseRateD, CharacterAttribute->SuccessfulBlockingPK + add_defense_success_rate_pvp);
+        mu_swprintf(strBlocking, I18N::Game::PKDefenseRateD, CharacterAttribute->SuccessfulBlockingPK + add_defense_success_rate_pvp);
     }
 
     iY += 13;

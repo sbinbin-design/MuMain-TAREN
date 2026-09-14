@@ -62,6 +62,7 @@ public:
     // accessors. Distinct from GetLanguageSelection above, which is the
     // legacy "Eng"/"Por"/"Spn" data-dir prefix used by .bmd asset loaders.
     std::wstring GetUILocale() const { return m_uiLocale; }
+    bool IsSimplifiedChineseLocale() const { return m_uiLocale == L"zh-CN"; }
     void SetUILocale(const std::wstring& locale);
 
     // UI font family name (GDI face name). Empty = platform default.

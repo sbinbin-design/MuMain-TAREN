@@ -5522,7 +5522,19 @@ void OpenBasicData(HDC hDC)
     ::LoadBitmap(L"Interface\\menu01_new2_SD.jpg", BITMAP_INTERFACE_EX + 46);
 
 #ifdef ASG_ADD_GENS_SYSTEM
-    std::wstring strFileName = L"Local\\" + g_strSelectedML + L"\\ImgsMapName\\MapNameAddStrife.tga";
+    std::wstring strFileName;
+    if (GameConfig::GetInstance().IsSimplifiedChineseLocale())
+    {
+        const std::wstring officialFileName = L"Data\\Interface\\MapNameAddStrife.OZT";
+        if (CanOpenMonsterNameFile(officialFileName.c_str()))
+            strFileName = L"Interface\\MapNameAddStrife.tga";
+        else
+            strFileName = L"Local\\Eng\\ImgsMapName\\MapNameAddStrife.tga";
+    }
+    else
+    {
+        strFileName = L"Local\\" + g_strSelectedML + L"\\ImgsMapName\\MapNameAddStrife.tga";
+    }
     ::LoadBitmap(strFileName.c_str(), BITMAP_INTERFACE_EX + 47);
 #endif	// ASG_ADD_GENS_SYSTEM
 

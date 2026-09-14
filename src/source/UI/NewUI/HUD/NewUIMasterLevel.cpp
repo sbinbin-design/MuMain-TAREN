@@ -413,19 +413,16 @@ void SEASON3B::CNewUIMasterLevel::LoadLocalizedMasterSkillTooltip(const wchar_t*
 
     using LocalizedTooltipKey = std::pair<ActionSkillType, MASTER_SKILL_TREE_CLASS>;
     std::set<LocalizedTooltipKey> muMainKeys;
-    for (const auto& masterSkillTooltip : m_stMasterSkillTooltip)
+    for (const auto& treeEntry : this->map_masterData)
     {
-        if (masterSkillTooltip.SkillNumber < AT_SKILL_MASTER_BEGIN ||
-            masterSkillTooltip.SkillNumber > AT_SKILL_MASTER_END)
+        const auto& masterSkillTree = treeEntry.second;
+        if (masterSkillTree.Skill < AT_SKILL_MASTER_BEGIN ||
+            masterSkillTree.Skill > AT_SKILL_MASTER_END)
         {
             continue;
         }
 
-        for (const auto activeClass : kLocalizedClassBits)
-        {
-            if ((masterSkillTooltip.ClassCode & activeClass) != 0)
-                muMainKeys.emplace(masterSkillTooltip.SkillNumber, activeClass);
-        }
+        muMainKeys.emplace(masterSkillTree.Skill, this->classCode);
     }
 
     std::map<LocalizedTooltipKey, _LOCALIZED_MASTER_SKILL_TOOLTIP> loaded;

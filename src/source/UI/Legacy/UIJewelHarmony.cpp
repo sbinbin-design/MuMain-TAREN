@@ -6,6 +6,7 @@
 #include "UIManager.h"
 #include "UIJewelHarmony.h"
 #include "Core/Utilities/Log/MuLogger.h"
+#include "Data/GameConfig/GameConfig.h"
 
 #define HARMONYJEWELOPTION_DATA_FILE                                                                                   \
     std::wstring(L"Data\\Local\\" + g_strSelectedML + L"\\JewelOfHarmonyOption_" + g_strSelectedML + L".bmd").c_str()
@@ -14,6 +15,50 @@
 
 namespace
 {
+constexpr size_t HARMONY_NAME_SIZE = 60;
+constexpr size_t HARMONY_LEVEL_COUNT = 14;
+constexpr size_t HARMONY_ENTRY_SIZE = sizeof(int) + HARMONY_NAME_SIZE + sizeof(int) +
+                                      HARMONY_LEVEL_COUNT * sizeof(int) + HARMONY_LEVEL_COUNT * sizeof(int);
+constexpr size_t HARMONY_ENTRY_COUNT = MAXHARMONYJEWELOPTIONTYPE * MAXHARMONYJEWELOPTIONINDEX;
+constexpr size_t HARMONY_FILE_SIZE = HARMONY_ENTRY_SIZE * HARMONY_ENTRY_COUNT;
+
+bool DecodeHarmonyName(const BYTE* source, wchar_t* target)
+{
+    const char* bytes = reinterpret_cast<const char*>(source);
+    const char* terminator = static_cast<const char*>(memchr(bytes, '\0', HARMONY_NAME_SIZE));
+    if (terminator == nullptr || terminator == bytes)
+        return false;
+
+    const int sourceLength = static_cast<int>(terminator - bytes);
+    wchar_t decoded[HARMONY_NAME_SIZE]{};
+    if (CMultiLanguage::GetSingletonPtr()->ConvertFromMuChineseLegacy(decoded, bytes, sourceLength) <= 0)
+        return false;
+
+    const size_t characterCount = wcslen(decoded);
+    if (characterCount == 0 || characterCount >= HARMONY_NAME_SIZE)
+        return false;
+    for (size_t i = 0; i < characterCount; ++i)
+    {
+        if (iswcntrl(decoded[i]))
+            return false;
+    }
+
+    memcpy(target, decoded, (characterCount + 1) * sizeof(wchar_t));
+    return true;
+}
+
+bool MatchesHarmonyBusinessRecord(const HarmonyJewelOption& business, const BYTE* entry)
+{
+    const BYTE* name = entry + sizeof(int);
+    const BYTE* minLevel = name + HARMONY_NAME_SIZE;
+    const BYTE* harmonyLevel = minLevel + sizeof(int);
+    const BYTE* zen = harmonyLevel + HARMONY_LEVEL_COUNT * sizeof(int);
+    return memcmp(&business.OptionType, entry, sizeof(int)) == 0 &&
+           memcmp(&business.Minlevel, minLevel, sizeof(int)) == 0 &&
+           memcmp(business.HarmonyJewelLevel, harmonyLevel, HARMONY_LEVEL_COUNT * sizeof(int)) == 0 &&
+           memcmp(business.Zen, zen, HARMONY_LEVEL_COUNT * sizeof(int)) == 0;
+}
+
 int GetTextLines(const wchar_t* inText, wchar_t* outText, int maxLine, int lineSize)
 {
     int iLine = 0;
@@ -78,25 +123,21 @@ JewelHarmonyInfo::JewelHarmonyInfo()
         ::MessageBox(g_hWnd, szMessage, NULL, MB_OK);
         ::PostMessage(g_hWnd, WM_DESTROY, 0, 0);
     }
+    else if (GameConfig::GetInstance().IsSimplifiedChineseLocale())
+    {
+        LoadSimplifiedChineseNameOverlay();
+    }
 }
 
 JewelHarmonyInfo::~JewelHarmonyInfo() {}
 
 const bool JewelHarmonyInfo::OpenJewelHarmonyInfoFile(const std::wstring& filename)
 {
-    constexpr size_t NAME_SIZE = 60;
-    constexpr size_t LEVEL_COUNT = 14;
-    constexpr size_t ENTRY_SIZE = sizeof(int) +               // OptionType
-                                  NAME_SIZE +                 // Name
-                                  sizeof(int) +               // Minlevel
-                                  LEVEL_COUNT * sizeof(int) + // HarmonyJewelLevel
-                                  LEVEL_COUNT * sizeof(int);  // Zen
-
     FILE* fp = ::_wfopen(filename.c_str(), L"rb");
     if (fp != NULL)
     {
         int nEntries = MAXHARMONYJEWELOPTIONTYPE * MAXHARMONYJEWELOPTIONINDEX;
-        size_t nSize = ENTRY_SIZE * nEntries;
+        size_t nSize = HARMONY_ENTRY_SIZE * nEntries;
 
         std::vector<BYTE> tempBuffer(nSize);
 
@@ -111,31 +152,76 @@ const bool JewelHarmonyInfo::OpenJewelHarmonyInfoFile(const std::wstring& filena
             int option = i % MAXHARMONYJEWELOPTIONINDEX;
 
             // Calculate base offset for the current entry
-            BYTE* entry = tempBuffer.data() + i * ENTRY_SIZE;
+            BYTE* entry = tempBuffer.data() + i * HARMONY_ENTRY_SIZE;
 
             // Read OptionType
             m_OptionData[type][option].OptionType = *reinterpret_cast<int*>(entry);
 
             // Read Name and convert to wchar_t
             char* name = reinterpret_cast<char*>(entry + sizeof(int));
-            CMultiLanguage::GetSingletonPtr()->ConvertFromUtf8(m_OptionData[type][option].Name, name, NAME_SIZE);
+            CMultiLanguage::GetSingletonPtr()->ConvertFromUtf8(m_OptionData[type][option].Name, name,
+                                                                HARMONY_NAME_SIZE);
 
             // Read Minlevel
-            m_OptionData[type][option].Minlevel = *reinterpret_cast<int*>(entry + sizeof(int) + NAME_SIZE);
+            m_OptionData[type][option].Minlevel = *reinterpret_cast<int*>(entry + sizeof(int) + HARMONY_NAME_SIZE);
 
             // Read HarmonyJewelLevel[14]
-            memcpy(m_OptionData[type][option].HarmonyJewelLevel, entry + sizeof(int) + NAME_SIZE + sizeof(int),
-                   LEVEL_COUNT * sizeof(int));
+            memcpy(m_OptionData[type][option].HarmonyJewelLevel,
+                   entry + sizeof(int) + HARMONY_NAME_SIZE + sizeof(int),
+                   HARMONY_LEVEL_COUNT * sizeof(int));
 
             // Read Zen[14]
             memcpy(m_OptionData[type][option].Zen,
-                   entry + sizeof(int) + NAME_SIZE + sizeof(int) + LEVEL_COUNT * sizeof(int),
-                   LEVEL_COUNT * sizeof(int));
+                   entry + sizeof(int) + HARMONY_NAME_SIZE + sizeof(int) + HARMONY_LEVEL_COUNT * sizeof(int),
+                   HARMONY_LEVEL_COUNT * sizeof(int));
         }
 
         return true;
     }
     return false;
+}
+
+void JewelHarmonyInfo::LoadSimplifiedChineseNameOverlay()
+{
+    FILE* fp = ::_wfopen(L"Data\\Local\\JewelOfHarmonyOption.bmd", L"rb");
+    if (fp == nullptr)
+        return;
+
+    if (::fseek(fp, 0, SEEK_END) != 0 || ::ftell(fp) != static_cast<long>(HARMONY_FILE_SIZE))
+    {
+        ::fclose(fp);
+        return;
+    }
+    ::rewind(fp);
+
+    std::vector<BYTE> buffer(HARMONY_FILE_SIZE);
+    if (::fread(buffer.data(), 1, HARMONY_FILE_SIZE, fp) != HARMONY_FILE_SIZE)
+    {
+        ::fclose(fp);
+        return;
+    }
+    ::fclose(fp);
+
+    ::BuxConvert(buffer.data(), static_cast<int>(HARMONY_FILE_SIZE));
+    for (size_t i = 0; i < HARMONY_ENTRY_COUNT; ++i)
+    {
+        const int type = static_cast<int>(i / MAXHARMONYJEWELOPTIONINDEX);
+        const int option = static_cast<int>(i % MAXHARMONYJEWELOPTIONINDEX);
+        const BYTE* entry = buffer.data() + i * HARMONY_ENTRY_SIZE;
+        if (MatchesHarmonyBusinessRecord(m_OptionData[type][option], entry))
+            DecodeHarmonyName(entry + sizeof(int), m_LocalizedName[type][option]);
+    }
+}
+
+const wchar_t* JewelHarmonyInfo::GetHarmonyJewelOptionDisplayName(int type, int option) const
+{
+    static const wchar_t emptyName[] = L"";
+    if (type < SI_Weapon || type > SI_Defense || option < 1 || option > MAXHARMONYJEWELOPTIONINDEX)
+        return emptyName;
+
+    if (GameConfig::GetInstance().IsSimplifiedChineseLocale() && m_LocalizedName[type][option - 1][0] != L'\0')
+        return m_LocalizedName[type][option - 1];
+    return m_OptionData[type][option - 1].Name;
 }
 
 const StrengthenItem JewelHarmonyInfo::GetItemType(int type)

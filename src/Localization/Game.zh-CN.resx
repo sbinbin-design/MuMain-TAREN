@@ -141,7 +141,7 @@
     <comment>legacy_id=35</comment>
   </data>
   <data name="Arena" xml:space="preserve">
-    <value>Arena</value>
+    <value>竞技场</value>
     <comment>legacy_id=36,1141</comment>
   </data>
   <data name="Atlans" xml:space="preserve">
@@ -257,7 +257,7 @@
     <comment>legacy_id=64</comment>
   </data>
   <data name="Defense: %d" xml:space="preserve">
-    <value>Defense: %d</value>
+    <value>防御力: %d</value>
     <comment>legacy_id=65,209</comment>
   </data>
   <data name="Spell resistance: %d" xml:space="preserve">
@@ -265,8 +265,11 @@
     <comment>legacy_id=66</comment>
   </data>
   <data name="Defense rate: %d" xml:space="preserve">
-    <value>Defense rate: %d</value>
+    <value>防御率: %d</value>
     <comment>legacy_id=67,2045</comment>
+  </data>
+  <data name="PK defense rate: %d" xml:space="preserve">
+    <value>PK防御率: %d</value>
   </data>
   <data name="Moving speed: %d" xml:space="preserve">
     <value>移动速度: %d</value>
@@ -900,7 +903,7 @@
     <comment>legacy_id=222</comment>
   </data>
   <data name="Inventory" xml:space="preserve">
-    <value>Inventory</value>
+    <value>背包</value>
     <comment>legacy_id=223,3425,3453</comment>
   </data>
   <data name="Close (I,V)" xml:space="preserve">
@@ -12938,7 +12941,7 @@
     <comment>legacy_id=3809</comment>
   </data>
   <data name="Level: %u | Resets: %u" xml:space="preserve">
-    <value>Level: %u | Resets: %u</value>
+    <value>等级: %u | 重置次数: %u</value>
     <comment>legacy_id=3810</comment>
   </data>
   <data name="BasicAttackFallback" xml:space="preserve">

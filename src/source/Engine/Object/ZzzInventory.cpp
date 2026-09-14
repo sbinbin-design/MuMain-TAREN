@@ -5051,15 +5051,18 @@ void RenderItemInfo(int sx, int sy, ITEM* ip, bool Sell, int Inventype, bool bIt
                 {
                     mu_swprintf(TextList[TextNum], L"\n"); TextNum++; SkipNum++;
 
-                    HARMONYJEWELOPTION harmonyjewel = g_pUIJewelHarmonyinfo->GetHarmonyJewelOptionInfo(type, ip->Jewel_Of_Harmony_Option);
+                    const HARMONYJEWELOPTION& harmonyjewel =
+                        g_pUIJewelHarmonyinfo->GetHarmonyJewelOptionInfo(type, ip->Jewel_Of_Harmony_Option);
+                    const wchar_t* harmonyName = g_pUIJewelHarmonyinfo->GetHarmonyJewelOptionDisplayName(
+                        type, ip->Jewel_Of_Harmony_Option);
 
                     if (type == SI_Defense && ip->Jewel_Of_Harmony_Option == 7)
                     {
-                        mu_swprintf(TextList[TextNum], L"%ls +%d%%", harmonyjewel.Name, harmonyjewel.HarmonyJewelLevel[ip->Jewel_Of_Harmony_OptionLevel]);
+                        mu_swprintf(TextList[TextNum], L"%ls +%d%%", harmonyName, harmonyjewel.HarmonyJewelLevel[ip->Jewel_Of_Harmony_OptionLevel]);
                     }
                     else
                     {
-                        mu_swprintf(TextList[TextNum], L"%ls +%d", harmonyjewel.Name, harmonyjewel.HarmonyJewelLevel[ip->Jewel_Of_Harmony_OptionLevel]);
+                        mu_swprintf(TextList[TextNum], L"%ls +%d", harmonyName, harmonyjewel.HarmonyJewelLevel[ip->Jewel_Of_Harmony_OptionLevel]);
                     }
 
                     if (Level >= ip->Jewel_Of_Harmony_OptionLevel) TextListColor[TextNum] = TEXT_COLOR_YELLOW;

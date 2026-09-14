@@ -30,6 +30,7 @@
 // #define	UIM_TS_BG_BLACK		0
 #define UIM_TS_BACK0 0
 #define UIM_TS_BACK1 1
+#define UIM_TS_MU 2
 #define UIM_TS_121518 3
 #define UIM_TS_BACK2 5
 #define UIM_TS_BACK3 6
@@ -111,6 +112,13 @@ void CUIMng::CreateTitleSceneUI()
                                      fScaleY);
     m_asprTitle[UIM_TS_BACK1].SetPosition(400, 0);
 
+    m_asprTitle[UIM_TS_MU].Create(216, 138, BITMAP_TITLE + 2, 0, NULL, 0, 0, false, SPR_SIZING_DATUMS_LT,
+                                  _fScaleXTemp, _fScaleYTemp);
+    if (rInput.GetScreenWidth() == 1280)
+        m_asprTitle[UIM_TS_MU].SetPosition(640 - 108, 663 + 53);
+    else
+        m_asprTitle[UIM_TS_MU].SetPosition(640 - 108, 663);
+
     m_asprTitle[UIM_TS_BACK2].Create(400, 100, BITMAP_TITLE + 6, 0, NULL, 0, 0, false, SPR_SIZING_DATUMS_LT, fScaleX,
                                      fScaleY);
     m_asprTitle[UIM_TS_BACK2].SetPosition(0, 500);
@@ -189,6 +197,8 @@ void CUIMng::RenderTitleSceneUI(HDC hDC, DWORD dwNow, DWORD dwTotal)
             continue;
         m_asprTitle[i].Render();
     }
+
+    m_asprTitle[UIM_TS_MU].Render();
 
     m_pgbLoding->SetValue(dwNow, dwTotal);
     m_pgbLoding->Render();

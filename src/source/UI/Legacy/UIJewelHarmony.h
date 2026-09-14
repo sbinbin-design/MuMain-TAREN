@@ -88,6 +88,7 @@ public:
 public:
     const StrengthenItem GetItemType(int type);
     const HARMONYJEWELOPTION& GetHarmonyJewelOptionInfo(int type, int option);
+    const wchar_t* GetHarmonyJewelOptionDisplayName(int type, int option) const;
     void GetStrengthenCapability(StrengthenCapability* pitemSC, const ITEM* pitem, const int index);
 
 public:
@@ -96,9 +97,11 @@ public:
 private:
     JewelHarmonyInfo();
     const bool OpenJewelHarmonyInfoFile(const std::wstring& filename);
+    void LoadSimplifiedChineseNameOverlay();
 
 private:
     HARMONYJEWELOPTION m_OptionData[MAXHARMONYJEWELOPTIONTYPE][MAXHARMONYJEWELOPTIONINDEX];
+    wchar_t m_LocalizedName[MAXHARMONYJEWELOPTIONTYPE][MAXHARMONYJEWELOPTIONINDEX][60]{};
 };
 
 inline const HARMONYJEWELOPTION& JewelHarmonyInfo::GetHarmonyJewelOptionInfo(int type, int option)

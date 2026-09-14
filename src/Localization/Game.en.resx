@@ -268,6 +268,9 @@
     <value>Defense rate: %d</value>
     <comment>legacy_id=67,2045</comment>
   </data>
+  <data name="PK defense rate: %d" xml:space="preserve">
+    <value>PK defense rate: %d</value>
+  </data>
   <data name="Moving speed: %d" xml:space="preserve">
     <value>Moving speed: %d</value>
     <comment>legacy_id=68</comment>

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <array>
+
 namespace SEASON4A
 {
     enum _SOCKET_OPTION_TYPE
@@ -145,6 +147,8 @@ namespace SEASON4A
 
         void CreateSocketOptionText(wchar_t* pszOptionText, int iSeedID, int iSphereLv);
 
+        const wchar_t* GetSocketOptionDisplayName(int iOptionType, int iOptionIndex) const;
+
         __int64 CalcSocketBonusItemValue(const ITEM* pItem, __int64 iOrgGold);
 
         int GetSocketOptionValue(const ITEM* pItem, int iSocketIndex);
@@ -160,8 +164,13 @@ namespace SEASON4A
         void CalcSocketOptionValueText(wchar_t* pszOptionValueText, int iOptionType, float fOptionValue);
         int CalcSocketOptionValue(int iOptionType, float fOptionValue);
 
+        void ClearLocalizedSocketNames();
+        bool LoadOfficialLocalizedSocketNames(const wchar_t* szFileName);
+
     protected:
         SOCKET_OPTION_INFO m_SocketOptionInfo[MAX_SOCKET_OPTION_TYPES][MAX_SOCKET_OPTION];
+        std::array<std::array<std::wstring, MAX_SOCKET_OPTION>, MAX_SOCKET_OPTION_TYPES> m_LocalizedSocketNames;
+        bool m_HasLocalizedSocketNames;
         int m_iNumEquitSetBonusOptions;
 
         std::deque<DWORD> m_EquipSetBonusList;

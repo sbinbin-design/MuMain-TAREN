@@ -7,6 +7,7 @@
 #include "World/MapInfra/MapManager.h"
 #include "Render/Textures/ZzzOpenglUtil.h"
 #include "Render/Textures/ZzzTexture.h"
+#include "Data/GameConfig/GameConfig.h"
 
 #ifdef ASG_ADD_GENS_SYSTEM
 #include "Engine/Object/ZzzInventory.h"
@@ -25,6 +26,33 @@
 namespace
 {
     constexpr float kImageTop = 220.0f;
+
+    bool HasOfficialMapNameImage(const wchar_t* fileName)
+    {
+        std::wstring officialFileName = L"Data\\Interface\\" + std::wstring(fileName);
+        const std::size_t extension = officialFileName.find_last_of(L'.');
+        if (extension == std::wstring::npos)
+            return false;
+
+        officialFileName.replace(extension, std::wstring::npos, L".OZT");
+        FILE* file = _wfopen(officialFileName.c_str(), L"rb");
+        if (file == nullptr)
+            return false;
+
+        fclose(file);
+        return true;
+    }
+
+    std::wstring ResolveMapNameImagePath(const wchar_t* fileName)
+    {
+        if (!GameConfig::GetInstance().IsSimplifiedChineseLocale())
+            return L"Local\\" + g_strSelectedML + L"\\ImgsMapName\\" + fileName;
+
+        if (HasOfficialMapNameImage(fileName))
+            return L"Interface\\" + std::wstring(fileName);
+
+        return L"Local\\Eng\\ImgsMapName\\" + std::wstring(fileName);
+    }
 }
 
 CUIMapName::CUIMapName()
@@ -38,82 +66,82 @@ CUIMapName::~CUIMapName()
 
 void CUIMapName::InitImgPathMap()
 {
-    std::wstring strFolderName = L"Local\\" + g_strSelectedML + L"\\ImgsMapName\\";
+    auto resolve = [](const wchar_t* fileName) { return ResolveMapNameImagePath(fileName); };
 
-    m_mapImgPath[0] = strFolderName + L"lorencia.tga";
-    m_mapImgPath[1] = strFolderName + L"dungeun.tga";
-    m_mapImgPath[2] = strFolderName + L"devias.tga";
-    m_mapImgPath[3] = strFolderName + L"noria.tga";
-    m_mapImgPath[4] = strFolderName + L"losttower.tga";
-    m_mapImgPath[6] = strFolderName + L"stadium.tga";
-    m_mapImgPath[7] = strFolderName + L"atlans.tga";
-    m_mapImgPath[8] = strFolderName + L"tarcan.tga";
-    m_mapImgPath[9] = strFolderName + L"devilsquare.tga";
-    m_mapImgPath[10] = strFolderName + L"Icarus.tga";
-    m_mapImgPath[11] = strFolderName + L"bloodcastle.tga";
-    m_mapImgPath[12] = strFolderName + L"bloodcastle.tga";
-    m_mapImgPath[13] = strFolderName + L"bloodcastle.tga";
-    m_mapImgPath[14] = strFolderName + L"bloodcastle.tga";
-    m_mapImgPath[15] = strFolderName + L"bloodcastle.tga";
-    m_mapImgPath[16] = strFolderName + L"bloodcastle.tga";
-    m_mapImgPath[17] = strFolderName + L"bloodcastle.tga";
-    m_mapImgPath[18] = strFolderName + L"chaoscastle.tga";
-    m_mapImgPath[19] = strFolderName + L"chaoscastle.tga";
-    m_mapImgPath[20] = strFolderName + L"chaoscastle.tga";
-    m_mapImgPath[21] = strFolderName + L"chaoscastle.tga";
-    m_mapImgPath[22] = strFolderName + L"chaoscastle.tga";
-    m_mapImgPath[23] = strFolderName + L"chaoscastle.tga";
-    m_mapImgPath[24] = strFolderName + L"Kalima.tga";
-    m_mapImgPath[25] = strFolderName + L"Kalima.tga";
-    m_mapImgPath[26] = strFolderName + L"Kalima.tga";
-    m_mapImgPath[27] = strFolderName + L"Kalima.tga";
-    m_mapImgPath[28] = strFolderName + L"Kalima.tga";
-    m_mapImgPath[29] = strFolderName + L"Kalima.tga";
-    m_mapImgPath[30] = strFolderName + L"loren.tga";
-    m_mapImgPath[31] = strFolderName + L"ordeal.tga";
+    m_mapImgPath[0] = resolve(L"lorencia.tga");
+    m_mapImgPath[1] = resolve(L"dungeun.tga");
+    m_mapImgPath[2] = resolve(L"devias.tga");
+    m_mapImgPath[3] = resolve(L"noria.tga");
+    m_mapImgPath[4] = resolve(L"losttower.tga");
+    m_mapImgPath[6] = resolve(L"stadium.tga");
+    m_mapImgPath[7] = resolve(L"atlans.tga");
+    m_mapImgPath[8] = resolve(L"tarcan.tga");
+    m_mapImgPath[9] = resolve(L"devilsquare.tga");
+    m_mapImgPath[10] = resolve(L"Icarus.tga");
+    m_mapImgPath[11] = resolve(L"bloodcastle.tga");
+    m_mapImgPath[12] = resolve(L"bloodcastle.tga");
+    m_mapImgPath[13] = resolve(L"bloodcastle.tga");
+    m_mapImgPath[14] = resolve(L"bloodcastle.tga");
+    m_mapImgPath[15] = resolve(L"bloodcastle.tga");
+    m_mapImgPath[16] = resolve(L"bloodcastle.tga");
+    m_mapImgPath[17] = resolve(L"bloodcastle.tga");
+    m_mapImgPath[18] = resolve(L"chaoscastle.tga");
+    m_mapImgPath[19] = resolve(L"chaoscastle.tga");
+    m_mapImgPath[20] = resolve(L"chaoscastle.tga");
+    m_mapImgPath[21] = resolve(L"chaoscastle.tga");
+    m_mapImgPath[22] = resolve(L"chaoscastle.tga");
+    m_mapImgPath[23] = resolve(L"chaoscastle.tga");
+    m_mapImgPath[24] = resolve(L"Kalima.tga");
+    m_mapImgPath[25] = resolve(L"Kalima.tga");
+    m_mapImgPath[26] = resolve(L"Kalima.tga");
+    m_mapImgPath[27] = resolve(L"Kalima.tga");
+    m_mapImgPath[28] = resolve(L"Kalima.tga");
+    m_mapImgPath[29] = resolve(L"Kalima.tga");
+    m_mapImgPath[30] = resolve(L"loren.tga");
+    m_mapImgPath[31] = resolve(L"ordeal.tga");
 
-    m_mapImgPath[33] = strFolderName + L"aida.tga";
-    m_mapImgPath[34] = strFolderName + L"crywolffortress.tga";
+    m_mapImgPath[33] = resolve(L"aida.tga");
+    m_mapImgPath[34] = resolve(L"crywolffortress.tga");
 
-    m_mapImgPath[36] = strFolderName + L"lostkalima.tga";
-    m_mapImgPath[37] = strFolderName + L"kantru.tga";
-    m_mapImgPath[38] = strFolderName + L"kantru.tga";
-    m_mapImgPath[39] = strFolderName + L"kantru.tga";
+    m_mapImgPath[36] = resolve(L"lostkalima.tga");
+    m_mapImgPath[37] = resolve(L"kantru.tga");
+    m_mapImgPath[38] = resolve(L"kantru.tga");
+    m_mapImgPath[39] = resolve(L"kantru.tga");
 
-    m_mapImgPath[41] = strFolderName + L"BalgasBarrack.tga";
-    m_mapImgPath[42] = strFolderName + L"BalgasRefuge.tga";
+    m_mapImgPath[41] = resolve(L"BalgasBarrack.tga");
+    m_mapImgPath[42] = resolve(L"BalgasRefuge.tga");
 
-    m_mapImgPath[45] = strFolderName + L"IllusionTemple.tga";
-    m_mapImgPath[46] = strFolderName + L"IllusionTemple.tga";
-    m_mapImgPath[47] = strFolderName + L"IllusionTemple.tga";
-    m_mapImgPath[48] = strFolderName + L"IllusionTemple.tga";
-    m_mapImgPath[49] = strFolderName + L"IllusionTemple.tga";
-    m_mapImgPath[50] = strFolderName + L"IllusionTemple.tga";
+    m_mapImgPath[45] = resolve(L"IllusionTemple.tga");
+    m_mapImgPath[46] = resolve(L"IllusionTemple.tga");
+    m_mapImgPath[47] = resolve(L"IllusionTemple.tga");
+    m_mapImgPath[48] = resolve(L"IllusionTemple.tga");
+    m_mapImgPath[49] = resolve(L"IllusionTemple.tga");
+    m_mapImgPath[50] = resolve(L"IllusionTemple.tga");
 
-    m_mapImgPath[51] = strFolderName + L"Elbeland.tga";
-    m_mapImgPath[52] = strFolderName + L"bloodcastle.tga";
-    m_mapImgPath[53] = strFolderName + L"chaoscastle.tga";
+    m_mapImgPath[51] = resolve(L"Elbeland.tga");
+    m_mapImgPath[52] = resolve(L"bloodcastle.tga");
+    m_mapImgPath[53] = resolve(L"chaoscastle.tga");
 
-    m_mapImgPath[56] = strFolderName + L"SwampOfCalmness.tga";
-    m_mapImgPath[57] = strFolderName + L"mapname_raklion.tga";
-    m_mapImgPath[58] = strFolderName + L"mapname_raklionboss.tga";
+    m_mapImgPath[56] = resolve(L"SwampOfCalmness.tga");
+    m_mapImgPath[57] = resolve(L"mapname_raklion.tga");
+    m_mapImgPath[58] = resolve(L"mapname_raklionboss.tga");
 
-    m_mapImgPath[62] = strFolderName + L"santatown.tga";
-    m_mapImgPath[63] = strFolderName + L"pkfield.tga";
-    m_mapImgPath[64] = strFolderName + L"duelarena.tga";
-    m_mapImgPath[65] = strFolderName + L"doppelganger.tga";
-    m_mapImgPath[66] = strFolderName + L"doppelganger.tga";
-    m_mapImgPath[67] = strFolderName + L"doppelganger.tga";
-    m_mapImgPath[68] = strFolderName + L"doppelganger.tga";
-    m_mapImgPath[69] = strFolderName + L"EmpireGuardian.tga";
-    m_mapImgPath[70] = strFolderName + L"EmpireGuardian.tga";
-    m_mapImgPath[71] = strFolderName + L"EmpireGuardian.tga";
-    m_mapImgPath[72] = strFolderName + L"EmpireGuardian.tga";
-    m_mapImgPath[79] = strFolderName + L"MapName_MarketRolen.tga";
+    m_mapImgPath[62] = resolve(L"santatown.tga");
+    m_mapImgPath[63] = resolve(L"pkfield.tga");
+    m_mapImgPath[64] = resolve(L"duelarena.tga");
+    m_mapImgPath[65] = resolve(L"doppelganger.tga");
+    m_mapImgPath[66] = resolve(L"doppelganger.tga");
+    m_mapImgPath[67] = resolve(L"doppelganger.tga");
+    m_mapImgPath[68] = resolve(L"doppelganger.tga");
+    m_mapImgPath[69] = resolve(L"EmpireGuardian.tga");
+    m_mapImgPath[70] = resolve(L"EmpireGuardian.tga");
+    m_mapImgPath[71] = resolve(L"EmpireGuardian.tga");
+    m_mapImgPath[72] = resolve(L"EmpireGuardian.tga");
+    m_mapImgPath[79] = resolve(L"MapName_MarketRolen.tga");
 
 #ifdef ASG_ADD_MAP_KARUTAN
-    m_mapImgPath[80] = strFolderName + L"MapName_Karutan.tga";
-    m_mapImgPath[81] = strFolderName + L"MapName_Karutan.tga";
+    m_mapImgPath[80] = resolve(L"MapName_Karutan.tga");
+    m_mapImgPath[81] = resolve(L"MapName_Karutan.tga");
 #endif	// ASG_ADD_MAP_KARUTAN
 }
 
