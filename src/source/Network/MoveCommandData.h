@@ -40,14 +40,14 @@ namespace SEASON3B
 
     public:
         static CMoveCommandData* GetInstance();
-        static bool OpenMoveReqScript(const std::wstring& filename);
+        static bool OpenMoveReqScript(const std::wstring& filename, bool useMuChineseLegacy);
 
         int GetNumMoveMap();
         const MOVEINFODATA* GetMoveCommandDataByIndex(int iIndex);
         const std::list<MOVEINFODATA*>& GetMoveCommandDatalist();
 
     protected:
-        bool Create(const std::wstring& filename);
+        bool Create(const std::wstring& filename, bool useMuChineseLegacy);
         void Release();
     };
 }

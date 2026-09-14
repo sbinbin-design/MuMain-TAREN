@@ -5642,14 +5642,23 @@ void OpenBasicData(HDC hDC)
     }
 
     std::wstring moveReqFile = L"Data\\Local\\" + g_strSelectedML + L"\\movereq_" + g_strSelectedML + L".bmd";
-    const std::wstring chineseMoveReqFile = L"Data\\Local\\zh-CN\\movereq_zh-CN.bmd";
-    if (GameConfig::GetInstance().GetUILocale() == L"zh-CN" &&
-        CanOpenMonsterNameFile(chineseMoveReqFile.c_str()))
+    const std::wstring officialChineseMoveReqFile = L"Data\\Local\\movereq.bmd";
+    const std::wstring chineseMoveReqFallbackFile = L"Data\\Local\\zh-CN\\movereq_zh-CN.bmd";
+    bool useMuChineseLegacy = false;
+    if (GameConfig::GetInstance().IsSimplifiedChineseLocale())
     {
-        moveReqFile = chineseMoveReqFile;
+        if (CanOpenMonsterNameFile(officialChineseMoveReqFile.c_str()))
+        {
+            moveReqFile = officialChineseMoveReqFile;
+            useMuChineseLegacy = true;
+        }
+        else if (CanOpenMonsterNameFile(chineseMoveReqFallbackFile.c_str()))
+        {
+            moveReqFile = chineseMoveReqFallbackFile;
+        }
     }
     mu_swprintf(Text, L"%ls", moveReqFile.c_str());
-    SEASON3B::CMoveCommandData::OpenMoveReqScript(Text);
+    SEASON3B::CMoveCommandData::OpenMoveReqScript(Text, useMuChineseLegacy);
 
     const std::wstring defaultNpcNameFile =
         L"Data\\Local\\" + g_strSelectedML + L"\\NpcName_" + g_strSelectedML + L".txt";

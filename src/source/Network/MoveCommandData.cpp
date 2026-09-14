@@ -32,7 +32,7 @@ CMoveCommandData* CMoveCommandData::GetInstance()
     return &s_Instance;
 }
 
-bool CMoveCommandData::Create(const std::wstring& filename)
+bool CMoveCommandData::Create(const std::wstring& filename, bool useMuChineseLegacy)
 {
     FILE* fp = _wfopen(filename.c_str(), L"rb");
     if (fp == NULL)
@@ -54,10 +54,12 @@ bool CMoveCommandData::Create(const std::wstring& filename)
         pMoveInfoData->_ReqInfo.iReqLevel = moveReqInfo.iReqLevel;
         pMoveInfoData->_ReqInfo.iReqZen = moveReqInfo.iReqZen;
         pMoveInfoData->_ReqInfo.m_iReqMaxLevel = moveReqInfo.m_iReqMaxLevel;
-        CMultiLanguage::ConvertFromUtf8(pMoveInfoData->_ReqInfo.szMainMapName, moveReqInfo.szMainMapName,
-                                        sizeof moveReqInfo.szMainMapName);
-        CMultiLanguage::ConvertFromUtf8(pMoveInfoData->_ReqInfo.szSubMapName, moveReqInfo.szSubMapName,
-                                        sizeof moveReqInfo.szSubMapName);
+        auto convertMapName = useMuChineseLegacy ? CMultiLanguage::ConvertFromMuChineseLegacy
+                                                 : CMultiLanguage::ConvertFromUtf8;
+        convertMapName(pMoveInfoData->_ReqInfo.szMainMapName, moveReqInfo.szMainMapName,
+                       sizeof moveReqInfo.szMainMapName);
+        convertMapName(pMoveInfoData->_ReqInfo.szSubMapName, moveReqInfo.szSubMapName,
+                       sizeof moveReqInfo.szSubMapName);
 
         m_listMoveInfoData.push_back(pMoveInfoData);
     }
@@ -74,9 +76,9 @@ void CMoveCommandData::Release()
     m_listMoveInfoData.clear();
 }
 
-bool CMoveCommandData::OpenMoveReqScript(const std::wstring& filename)
+bool CMoveCommandData::OpenMoveReqScript(const std::wstring& filename, bool useMuChineseLegacy)
 {
-    return CMoveCommandData::GetInstance()->Create(filename);
+    return CMoveCommandData::GetInstance()->Create(filename, useMuChineseLegacy);
 }
 
 int CMoveCommandData::GetNumMoveMap()
