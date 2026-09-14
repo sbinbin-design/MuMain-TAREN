@@ -26,6 +26,10 @@
 #include "UI/NewUI/NewUISystem.h"
 #include "Character/CharacterManager.h"
 #include "GameLogic/Skills/SkillManager.h"
+#include "Data/GameConfig/GameConfig.h"
+
+#include <cwchar>
+#include <memory>
 
 CLASS_ATTRIBUTE     ClassAttribute[MAX_CLASS];
 MONSTER_SCRIPT      MonsterScript[MAX_MONSTER];
@@ -60,6 +64,50 @@ wchar_t AbuseFilter[MAX_FILTERS][20];
 wchar_t AbuseNameFilter[MAX_NAMEFILTERS][20];
 int  AbuseFilterNumber = 0;
 int  AbuseNameFilterNumber = 0;
+
+namespace
+{
+    constexpr std::size_t NameFilterRecordSize = 20;
+    constexpr std::size_t NameFilterTextCapacity = 20;
+    constexpr DWORD NameFilterChecksumSeed = 0x2BC1;
+
+    void ReportNameFilterFileCorrupted(const wchar_t* fileName)
+    {
+        wchar_t text[256];
+        mu_swprintf(text, L"%ls - File corrupted.", fileName);
+        g_ErrorReport.Write(text);
+        MessageBox(g_hWnd, text, NULL, MB_OK);
+        SendMessage(g_hWnd, WM_DESTROY, 0, 0);
+    }
+
+    bool ConvertNameFilterRecord(wchar_t* target, const BYTE* record, const bool preferMuChineseEncoding)
+    {
+        target[0] = L'\0';
+
+        const char* source = reinterpret_cast<const char*>(record);
+        std::size_t sourceLength = 0;
+        while (sourceLength < NameFilterRecordSize && source[sourceLength] != '\0')
+            ++sourceLength;
+
+        auto convert = [&](const unsigned int codePage) {
+            // ASCII is valid in both UTF-8 and CP936, so it needs no language-specific branch.
+            std::wstring converted;
+            if (!CMultiLanguage::ConvertFromCodePageToString(converted, source, codePage,
+                                                              static_cast<int>(sourceLength)))
+                return false;
+            if (converted.size() >= NameFilterTextCapacity)
+                return false;
+
+            std::wmemcpy(target, converted.c_str(), converted.size());
+            target[converted.size()] = L'\0';
+            return true;
+        };
+
+        const unsigned int preferredCodePage = preferMuChineseEncoding ? CMultiLanguage::MuChineseCodePage : CP_UTF8;
+        const unsigned int fallbackCodePage = preferMuChineseEncoding ? CP_UTF8 : CMultiLanguage::MuChineseCodePage;
+        return convert(preferredCodePage) || convert(fallbackCodePage);
+    }
+}
 
 void OpenFilterFile(const wchar_t* FileName)
 {
@@ -111,38 +159,73 @@ void OpenNameFilterFile(const wchar_t* FileName)
         SendMessage(g_hWnd, WM_DESTROY, 0, 0);
         return;
     }
-    int Size = 20;
-    BYTE* Buffer = new BYTE[Size * MAX_NAMEFILTERS];
-
-    fread(Buffer, Size * MAX_NAMEFILTERS, 1, fp);
-
-    DWORD dwCheckSum;
-    fread(&dwCheckSum, sizeof(DWORD), 1, fp);
-    fclose(fp);
-    if (dwCheckSum != GenerateCheckSum2(Buffer, Size * MAX_NAMEFILTERS, 0x2BC1))
+    if (_fseeki64(fp, 0, SEEK_END) != 0)
     {
-        wchar_t Text[256];
-        mu_swprintf(Text, L"%ls - File corrupted.", FileName);
-        g_ErrorReport.Write(Text);
-        MessageBox(g_hWnd, Text, NULL, MB_OK);
-        SendMessage(g_hWnd, WM_DESTROY, 0, 0);
+        fclose(fp);
+        ReportNameFilterFileCorrupted(FileName);
+        return;
+    }
+
+    const __int64 fileSize = _ftelli64(fp);
+    if (fileSize < static_cast<__int64>(sizeof(DWORD)) || _fseeki64(fp, 0, SEEK_SET) != 0)
+    {
+        fclose(fp);
+        ReportNameFilterFileCorrupted(FileName);
+        return;
+    }
+
+    const __int64 payloadSize = fileSize - sizeof(DWORD);
+    if (payloadSize <= 0 || payloadSize % NameFilterRecordSize != 0)
+    {
+        fclose(fp);
+        ReportNameFilterFileCorrupted(FileName);
+        return;
+    }
+
+    const std::size_t recordCount = static_cast<std::size_t>(payloadSize / NameFilterRecordSize);
+    if (recordCount > MAX_NAMEFILTERS)
+    {
+        fclose(fp);
+        ReportNameFilterFileCorrupted(FileName);
+        return;
+    }
+
+    std::unique_ptr<BYTE[]> Buffer(new BYTE[static_cast<std::size_t>(payloadSize)]);
+    DWORD dwCheckSum = 0;
+    if (fread(Buffer.get(), static_cast<std::size_t>(payloadSize), 1, fp) != 1
+        || fread(&dwCheckSum, sizeof(DWORD), 1, fp) != 1)
+    {
+        fclose(fp);
+        ReportNameFilterFileCorrupted(FileName);
+        return;
+    }
+    fclose(fp);
+    if (dwCheckSum != GenerateCheckSum2(Buffer.get(), static_cast<DWORD>(payloadSize), static_cast<WORD>(NameFilterChecksumSeed)))
+    {
+        ReportNameFilterFileCorrupted(FileName);
     }
     else
     {
-        BYTE* pSeek = Buffer;
-        for (int i = 0; i < MAX_NAMEFILTERS; i++)
+        const bool preferMuChineseEncoding = GameConfig::GetInstance().IsSimplifiedChineseLocale();
+        int validCount = 0;
+        for (std::size_t i = 0; i < recordCount; i++)
         {
-            BuxConvert(pSeek, Size);
-            memcpy(AbuseNameFilter[i], pSeek, Size);
-            if (AbuseNameFilter[i][0] == 0)
-            {
-                AbuseNameFilterNumber = i;
+            BYTE* record = Buffer.get() + i * NameFilterRecordSize;
+            BuxConvert(record, static_cast<int>(NameFilterRecordSize));
+            if (record[0] == '\0')
                 break;
+
+            if (!ConvertNameFilterRecord(AbuseNameFilter[validCount], record, preferMuChineseEncoding))
+            {
+                g_ErrorReport.Write(L"%ls - invalid name filter record %d.\r\n", FileName, static_cast<int>(i));
+                continue;
             }
-            pSeek += Size;
+
+            ++validCount;
         }
+
+        AbuseNameFilterNumber = validCount;
     }
-    delete[] Buffer;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
