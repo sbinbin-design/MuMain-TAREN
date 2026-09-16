@@ -1,0 +1,44 @@
+<Window x:Class="ServerListEditor.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="MU Season 6 ServerList 编辑器" Height="500" Width="900"
+        MinHeight="360" MinWidth="680" WindowStartupLocation="CenterScreen">
+    <DockPanel Margin="12">
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,10">
+            <Button Content="打开文件" Click="Open_Click" Padding="14,6" Margin="0,0,8,0" />
+            <Button Content="新增服务器组" Click="AddGroup_Click" Padding="14,6" Margin="0,0,8,0" />
+            <Button Content="删除服务器组" Click="DeleteGroup_Click" Padding="14,6" Margin="0,0,8,0" />
+            <Button Content="保存" Click="Save_Click" Padding="14,6" Margin="0,0,8,0" />
+            <Button Content="另存为" Click="SaveAs_Click" Padding="14,6" />
+        </StackPanel>
+        <StackPanel DockPanel.Dock="Bottom" Margin="0,10,0,0">
+            <TextBlock x:Name="PathText" Text="当前文件：未打开" TextTrimming="CharacterEllipsis" />
+            <TextBlock x:Name="CountText" Text="服务器组数量：0" Margin="0,4,0,0" />
+        </StackPanel>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="2*" />
+                <ColumnDefinition Width="6" />
+                <ColumnDefinition Width="3*" />
+            </Grid.ColumnDefinitions>
+            <GridSplitter Grid.Column="1" Width="6" HorizontalAlignment="Stretch" />
+            <DataGrid x:Name="GroupGrid" Grid.Column="0" AutoGenerateColumns="False"
+                      CanUserAddRows="False" IsReadOnly="False" SelectionChanged="Group_SelectionChanged">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="ID" Binding="{Binding Id}" IsReadOnly="True" Width="80" />
+                    <DataGridTextColumn Header="名称" Binding="{Binding Name, UpdateSourceTrigger=PropertyChanged}" Width="*" />
+                </DataGrid.Columns>
+            </DataGrid>
+            <DataGrid x:Name="LineGrid" Grid.Column="2" AutoGenerateColumns="False"
+                      CanUserAddRows="False" IsReadOnly="False" Margin="8,0,0,0">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Slot" Binding="{Binding Slot}" IsReadOnly="True" Width="70" />
+                    <DataGridTextColumn Header="线路编号" Binding="{Binding LineNumber}" IsReadOnly="True" Width="90" />
+                    <DataGridComboBoxColumn Header="类型"
+                                            SelectedValueBinding="{Binding Type, UpdateSourceTrigger=PropertyChanged}"
+                                            SelectedValuePath="Value" DisplayMemberPath="Label" Width="*" />
+                </DataGrid.Columns>
+            </DataGrid>
+        </Grid>
+    </DockPanel>
+</Window>

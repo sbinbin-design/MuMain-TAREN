@@ -11448,7 +11448,7 @@
     <comment>legacy_id=3322</comment>
   </data>
   <data name="Expanded Inventory" xml:space="preserve">
-    <value>Expanded Inventory</value>
+    <value>扩展背包</value>
     <comment>legacy_id=3323,3451</comment>
   </data>
   <data name="You can't buy W coin while in full screen mode." xml:space="preserve">
