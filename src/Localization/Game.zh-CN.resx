@@ -500,19 +500,19 @@
     <comment>legacy_id=124</comment>
   </data>
   <data name="F8 - Toggle Monster HP Bar" xml:space="preserve">
-    <value>F8 - Toggle Monster HP Bar</value>
+    <value>F8 - 切换怪物血条显示</value>
   </data>
   <data name="F9 - Toggle 3D Camera" xml:space="preserve">
-    <value>F9 - Toggle 3D Camera</value>
+    <value>F9 - 切换3D视角</value>
   </data>
   <data name="F10 - Lock / Unlock Camera Zoom" xml:space="preserve">
-    <value>F10 - Lock / Unlock Camera Zoom</value>
+    <value>F10 - 锁定/解除镜头缩放</value>
   </data>
   <data name="F11 - Reset Camera View" xml:space="preserve">
-    <value>F11 - Reset Camera View</value>
+    <value>F11 - 重置镜头视角</value>
   </data>
   <data name="Home - Toggle MU Helper" xml:space="preserve">
-    <value>Home - Toggle MU Helper</value>
+    <value>Home - 开关MU助手</value>
   </data>
   <data name="Enter: Chatting Mode" xml:space="preserve">
     <value>Enter : 开启聊天输入窗口</value>
@@ -571,7 +571,7 @@
     <comment>legacy_id=138</comment>
   </data>
   <data name="Print Screen: Save screenshots" xml:space="preserve">
-    <value>PrintScreen : 储存当前画面</value>
+    <value>PrintScreen：保存当前画面</value>
     <comment>legacy_id=139</comment>
   </data>
   <data name="Chatting Instructions" xml:space="preserve">
@@ -3509,7 +3509,7 @@
     <comment>legacy_id=921</comment>
   </data>
   <data name="Ring of Warrior" xml:space="preserve">
-    <value>Ring of Warrior</value>
+    <value>战士之戒</value>
     <comment>legacy_id=922,928</comment>
   </data>
   <data name="You can drop the ring when you reach level %d." xml:space="preserve">
@@ -13040,7 +13040,7 @@
     <value>Execute</value>
   </data>
   <data name="JToggleChatCommands" xml:space="preserve">
-    <value>J : Chat Commands On/Off</value>
+    <value>J：聊天命令开关</value>
   </data>
   <data name="SpecialCommands" xml:space="preserve">
     <value>Special</value>

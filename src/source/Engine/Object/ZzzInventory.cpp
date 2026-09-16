@@ -6665,10 +6665,6 @@ void BuildGroundItemLabelDescriptor(OBJECT* o, ITEM* ip, GroundItemLabelDescript
                 AppendGroundItemLabelText(descriptor.Name, L"%ls", I18N::Game::KnightSpecificSkill);
             }
         }
-        if (ip->OptionLevel > 0)
-        {
-            AppendGroundItemLabelText(descriptor.Name, L"%ls", I18N::Game::Option);
-        }
         if (ip->HasLuck)
         {
             AppendGroundItemLabelText(descriptor.Name, L"%ls", I18N::Game::Luck);
