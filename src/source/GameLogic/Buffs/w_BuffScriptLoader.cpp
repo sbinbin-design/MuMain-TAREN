@@ -11,9 +11,7 @@
 #include "Core/Utilities/Log/MuLogger.h"
 #include "Data/GameConfig/GameConfig.h"
 
-#include <cwctype>
 #include <set>
-#include <utility>
 #include <vector>
 
 //////////////////////////////////////////////////////////////////////
@@ -60,81 +58,14 @@ bool HasIllegalControlCharacters(const std::wstring& text)
     return false;
 }
 
-bool GetPrintfSignature(const std::wstring& text, std::vector<wchar_t>& signature)
+bool IsOfficialOnlyBuff(short index)
 {
-    for (size_t index = 0; index < text.size(); ++index)
-    {
-        if (text[index] != L'%')
-            continue;
-
-        if (index + 1 < text.size() && text[index + 1] == L'%')
-        {
-            signature.push_back(L'%');
-            ++index;
-            continue;
-        }
-
-        size_t specifier = index + 1;
-        while (specifier < text.size() && wcschr(L"-+ #0'", text[specifier]) != nullptr)
-            ++specifier;
-        while (specifier < text.size() && iswdigit(text[specifier]) != 0)
-            ++specifier;
-        if (specifier < text.size() && text[specifier] == L'*')
-            ++specifier;
-        if (specifier < text.size() && text[specifier] == L'.')
-        {
-            ++specifier;
-            if (specifier < text.size() && text[specifier] == L'*')
-                ++specifier;
-            else
-            {
-                while (specifier < text.size() && iswdigit(text[specifier]) != 0)
-                    ++specifier;
-            }
-        }
-        while (specifier < text.size() && wcschr(L"hljztL", text[specifier]) != nullptr)
-            ++specifier;
-
-        if (specifier >= text.size() || wcschr(L"diuoxXfFeEgGaAcspn", text[specifier]) == nullptr)
-            return false;
-
-        signature.push_back(text[specifier]);
-        index = specifier;
-    }
-
-    return true;
+    return (index >= 122 && index <= 128) || (index >= 170 && index <= 173) || index == 185;
 }
 
-bool IsSafeBusinessMatch(const BuffInfo& original, const _BUFFINFO& official)
+bool IsSupportedBuffIdentity(short index)
 {
-    const bool effectMatches = original.s_BuffEffectType == official.s_BuffEffectType;
-    const bool itemTypeMatches = original.s_ItemType == official.s_ItemType;
-    const bool itemIndexMatches = original.s_ItemIndex == official.s_ItemIndex;
-    const bool classMatches = original.s_BuffClassType == official.s_BuffClassType;
-    const bool noticeMatches = original.s_NoticeType == official.s_NoticeType;
-    const bool clearMatches = original.s_ClearType == official.s_ClearType;
-
-    if (itemTypeMatches && itemIndexMatches && classMatches && noticeMatches && clearMatches && effectMatches)
-        return true;
-
-    const short index = original.s_BuffIndex;
-    if (index == 29 || index == 30 || index == 31 || index == 44 || index == 45 || index == 46 || index == 47
-        || index == 48 || index == 49 || index == 89 || index == 90 || index == 121)
-    {
-        return itemTypeMatches && itemIndexMatches && classMatches && noticeMatches && clearMatches;
-    }
-
-    if (index == 40 || index == 41 || index == 42 || index == 43)
-    {
-        return effectMatches && itemTypeMatches && itemIndexMatches && classMatches && clearMatches;
-    }
-
-    return false;
-}
-
-bool IsFixedEnglishFallback(short index)
-{
-    return index == 87 || index == 88 || index == 106;
+    return index > eBuffNone && index < eBuff_Count && !IsOfficialOnlyBuff(index);
 }
 
 bool DecodeLocalizedField(std::wstring& target, const char* source, size_t capacity)
@@ -151,12 +82,47 @@ bool DecodeLocalizedField(std::wstring& target, const char* source, size_t capac
     return !target.empty() && !HasIllegalControlCharacters(target);
 }
 
-bool IsDescriptionCompatible(const std::wstring& english, const std::wstring& chinese)
+void ApplyMuMainCompatibility(_BUFFINFO& buff)
 {
-    std::vector<wchar_t> englishSignature;
-    std::vector<wchar_t> chineseSignature;
-    return GetPrintfSignature(english, englishSignature) && GetPrintfSignature(chinese, chineseSignature)
-        && englishSignature == chineseSignature;
+    switch (buff.s_BuffIndex)
+    {
+    case 29:
+    case 30:
+    case 31:
+        buff.s_BuffEffectType = 24;
+        break;
+    case 40:
+    case 41:
+    case 42:
+    case 43:
+        buff.s_NoticeType = 0;
+        break;
+    case 44:
+    case 45:
+    case 46:
+    case 47:
+    case 48:
+    case 49:
+        buff.s_BuffEffectType = static_cast<BYTE>(buff.s_BuffIndex + 23);
+        break;
+    case 87:
+    case 88:
+        buff.s_BuffEffectType = 13;
+        break;
+    case 89:
+    case 90:
+        buff.s_BuffEffectType = 14;
+        break;
+    case 106:
+        buff.s_ItemType = 255;
+        buff.s_ItemIndex = 255;
+        break;
+    case 121:
+        buff.s_BuffEffectType = 75;
+        break;
+    default:
+        break;
+    }
 }
 } // namespace
 
@@ -178,15 +144,25 @@ BuffScriptLoaderPtr BuffScriptLoader::Make()
 
 BuffScriptLoader::BuffScriptLoader()
 {
-    std::wstring filename = L"data/local/" + g_strSelectedML + L"/BuffEffect_" + g_strSelectedML + L".bmd";
-
-    if (!Load(filename))
+    const bool isSimplifiedChinese = GameConfig::GetInstance().IsSimplifiedChineseLocale();
+    if (isSimplifiedChinese)
     {
-        assert(0);
+        constexpr wchar_t kLocalizedBuffFile[] = L"Data\\Local\\BuffEffect.bmd";
+        if (!LoadOfficialLocalizedBuffEffect())
+        {
+            mu::log::Get("gameplay")->warn("{} - File corrupted or unavailable.",
+                                            mu_wchar_to_utf8(kLocalizedBuffFile));
+            wchar_t Text[256];
+            mu_swprintf(Text, L"%ls - File corrupted or unavailable.", kLocalizedBuffFile);
+            MessageBox(g_hWnd, Text, NULL, MB_OK);
+            SendMessage(g_hWnd, WM_DESTROY, 0, 0);
+        }
+        return;
     }
 
-    if (GameConfig::GetInstance().IsSimplifiedChineseLocale())
-        LoadLocalizedText();
+    const std::wstring filename = L"data/local/" + g_strSelectedML + L"/BuffEffect_" + g_strSelectedML + L".bmd";
+    if (!Load(filename))
+        assert(0);
 }
 
 BuffScriptLoader::~BuffScriptLoader() {}
@@ -271,31 +247,13 @@ const BuffInfo BuffScriptLoader::GetBuffinfo(eBuffState type) const
 
     if (iter != m_Info.end())
     {
-        BuffInfo result = (*iter).second;
-        const auto localized = m_LocalizedText.find(type);
-        if (localized != m_LocalizedText.end())
-        {
-            if (!localized->second.Name.empty())
-            {
-                wcsncpy(result.s_BuffName, localized->second.Name.c_str(), MAX_BUFF_NAME_LENGTH - 1);
-                result.s_BuffName[MAX_BUFF_NAME_LENGTH - 1] = L'\0';
-            }
-            if (!localized->second.Description.empty())
-            {
-                wcsncpy(result.s_BuffDescript, localized->second.Description.c_str(), MAX_DESCRIPT_LENGTH - 1);
-                result.s_BuffDescript[MAX_DESCRIPT_LENGTH - 1] = L'\0';
-                result.s_BuffDescriptlist.clear();
-                CutTokenString(result.s_BuffDescript, result.s_BuffDescriptlist);
-            }
-        }
-
-        return result;
+        return (*iter).second;
     }
 
     return BuffInfo();
 }
 
-bool BuffScriptLoader::LoadLocalizedText()
+bool BuffScriptLoader::LoadOfficialLocalizedBuffEffect()
 {
     FILE* file = _wfopen(L"Data\\Local\\BuffEffect.bmd", L"rb");
     if (file == nullptr)
@@ -333,7 +291,7 @@ bool BuffScriptLoader::LoadLocalizedText()
         return false;
 
     std::set<short> seenIndices;
-    std::map<eBuffState, LocalizedBuffText> localizedText;
+    BuffInfoMap officialInfo;
     for (DWORD record = 0; record < recordCount; ++record)
     {
         std::vector<BYTE> decrypted(buffer.begin() + record * kLocalizedBuffRecordSize,
@@ -342,27 +300,43 @@ bool BuffScriptLoader::LoadLocalizedText()
 
         _BUFFINFO official{};
         memcpy(&official, decrypted.data(), sizeof(official));
-        const auto original = m_Info.find(static_cast<eBuffState>(official.s_BuffIndex));
-        if (original == m_Info.end() || IsFixedEnglishFallback(official.s_BuffIndex)
-            || !IsSafeBusinessMatch(original->second, official))
+        if (!IsSupportedBuffIdentity(official.s_BuffIndex))
             continue;
         if (!seenIndices.insert(official.s_BuffIndex).second)
             return false;
 
-        LocalizedBuffText localized;
-        if (!DecodeLocalizedField(localized.Name, official.s_BuffName, MAX_BUFF_NAME_LENGTH))
-            continue;
+        ApplyMuMainCompatibility(official);
 
-        std::wstring description;
-        if (DecodeLocalizedField(description, official.s_BuffDescript, MAX_DESCRIPT_LENGTH)
-            && IsDescriptionCompatible(std::wstring(original->second.s_BuffDescript), description))
+        BuffInfo buffinfo;
+        buffinfo.s_BuffIndex = official.s_BuffIndex;
+        buffinfo.s_BuffEffectType = official.s_BuffEffectType;
+        buffinfo.s_ItemType = official.s_ItemType;
+        buffinfo.s_ItemIndex = official.s_ItemIndex;
+        buffinfo.s_BuffClassType = official.s_BuffClassType;
+        buffinfo.s_NoticeType = official.s_NoticeType;
+        buffinfo.s_ClearType = official.s_ClearType;
+
+        std::wstring name;
+        if (!DecodeLocalizedField(name, official.s_BuffName, MAX_BUFF_NAME_LENGTH))
+            return false;
+
+        wcsncpy(buffinfo.s_BuffName, name.c_str(), MAX_BUFF_NAME_LENGTH - 1);
+        buffinfo.s_BuffName[MAX_BUFF_NAME_LENGTH - 1] = L'\0';
+
+        if (official.s_BuffDescript[0] != '\0')
         {
-            localized.Description = std::move(description);
+            std::wstring description;
+            if (!DecodeLocalizedField(description, official.s_BuffDescript, MAX_DESCRIPT_LENGTH))
+                return false;
+            wcsncpy(buffinfo.s_BuffDescript, description.c_str(), MAX_DESCRIPT_LENGTH - 1);
+            buffinfo.s_BuffDescript[MAX_DESCRIPT_LENGTH - 1] = L'\0';
         }
-        localizedText[static_cast<eBuffState>(official.s_BuffIndex)] = std::move(localized);
+
+        CutTokenString(buffinfo.s_BuffDescript, buffinfo.s_BuffDescriptlist);
+        officialInfo.insert(std::make_pair(static_cast<eBuffState>(buffinfo.s_BuffIndex), buffinfo));
     }
 
-    m_LocalizedText.swap(localizedText);
+    m_Info.swap(officialInfo);
     return true;
 }
 

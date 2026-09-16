@@ -514,7 +514,7 @@ void ReceiveServerList(const BYTE* ReceiveBuffer)
         rUIMng.ShowWin(&rUIMng.m_LoginMainWin);
     }
 
-    g_ErrorReport.Write(L"Success Receive Server List.\r\n");
+    g_ErrorReport.WriteInfo(L"Success Receive Server List.\r\n");
 
     g_ConsoleDebug->Write(MCD_RECEIVE, L"0xF4 [ReceiveServerList]");
 }
@@ -1824,7 +1824,7 @@ void ReceiveChat(const BYTE* ReceiveBuffer)
 {
     if (SceneFlag == LOG_IN_SCENE)
     {
-        g_ErrorReport.Write(L"Send Request Server List.\r\n");
+        g_ErrorReport.WriteInfo(L"Send Request Server List.\r\n");
         SocketClient->ToConnectServer()->SendServerListRequest();
     }
     else

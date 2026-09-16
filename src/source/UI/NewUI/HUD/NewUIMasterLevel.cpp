@@ -522,12 +522,14 @@ void SEASON3B::CNewUIMasterLevel::SetMasterType(CLASS_TYPE Class)
 
     this->SetMasterSkillTreeData();
 
-    this->SetMasterSkillToolTipData();
-
-    if (GameConfig::GetInstance().GetUILocale() == L"zh-CN")
+    if (GameConfig::GetInstance().IsSimplifiedChineseLocale())
     {
         this->LoadLocalizedMasterSkillTooltip(L"Data\\Local\\MasterSkillTooltip.bmd");
-        this->SetLocalizedMasterSkillToolTipData();
+        this->MaterializeLocalizedMasterSkillToolTipData();
+    }
+    else
+    {
+        this->SetMasterSkillToolTipData();
     }
 
     switch (Class)
@@ -621,6 +623,35 @@ void SEASON3B::CNewUIMasterLevel::SetMasterSkillToolTipData()
         }
     }
 
+}
+
+void SEASON3B::CNewUIMasterLevel::MaterializeLocalizedMasterSkillToolTipData()
+{
+    this->map_masterSkillToolTip.clear();
+    this->map_localizedMasterSkillToolTip.clear();
+
+    for (const auto& treeEntry : this->map_masterData)
+    {
+        const auto& masterSkillTree = treeEntry.second;
+        const auto localized = this->map_localizedMasterSkillToolTipByClass.find(
+            std::make_pair(masterSkillTree.Skill, this->classCode));
+        if (localized == this->map_localizedMasterSkillToolTipByClass.end())
+            continue;
+
+        _MASTER_SKILL_TOOLTIP tooltip{};
+        tooltip.SkillNumber = masterSkillTree.Skill;
+        tooltip.ClassCode = this->classCode;
+        memcpy(tooltip.Info1, localized->second.Info1, sizeof(tooltip.Info1));
+        memcpy(tooltip.Info2, localized->second.Info2, sizeof(tooltip.Info2));
+        memcpy(tooltip.Info3, localized->second.Info3, sizeof(tooltip.Info3));
+        memcpy(tooltip.Info4, localized->second.Info4, sizeof(tooltip.Info4));
+        memcpy(tooltip.Info5, localized->second.Info5, sizeof(tooltip.Info5));
+        memcpy(tooltip.Info6, localized->second.Info6, sizeof(tooltip.Info6));
+        memcpy(tooltip.Info7, localized->second.Info7, sizeof(tooltip.Info7));
+
+        if (!this->map_masterSkillToolTip.emplace(tooltip.SkillNumber, tooltip).second)
+            break;
+    }
 }
 
 void SEASON3B::CNewUIMasterLevel::SetLocalizedMasterSkillToolTipData()

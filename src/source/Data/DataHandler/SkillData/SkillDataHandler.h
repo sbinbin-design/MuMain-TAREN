@@ -14,6 +14,7 @@ public:
 
     // Data Operations - delegates to specialized classes
     bool Load(wchar_t* fileName);
+    bool LoadOfficialZhCnSkillData(const wchar_t* officialSkillFileName);
     void ClearLocalizedSkillNames();
     bool LoadOfficialLocalizedSkillNames(const wchar_t* officialSkillFileName);
 

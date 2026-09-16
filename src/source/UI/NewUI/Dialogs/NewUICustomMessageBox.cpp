@@ -2328,8 +2328,8 @@ CALLBACK_RESULT SEASON3B::CSystemMenuMsgBox::LButtonUp(class CNewUIMessageBoxBas
 
 CALLBACK_RESULT SEASON3B::CSystemMenuMsgBox::GameOverBtnDown(class CNewUIMessageBoxBase* pOwner, const leaf::xstreambuf& xParam)
 {
-    g_ErrorReport.Write(L"> Menu - Exit game. ");
-    g_ErrorReport.WriteCurrentTime();
+    g_ErrorReport.WriteInfo(L"> Menu - Exit game. ");
+    g_ErrorReport.WriteInfoCurrentTime();
 
     SaveOptions();
     SaveMacro(L"Data\\Macro.txt");

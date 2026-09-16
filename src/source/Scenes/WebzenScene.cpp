@@ -134,7 +134,7 @@ void WebzenScene(HDC hDC)
     rUIMng.ReleaseTitleSceneUI();
     UnloadTitleBitmaps();
 
-    g_ErrorReport.Write(L"> Loading ok.\r\n");
+    g_ErrorReport.WriteInfo(L"> Loading ok.\r\n");
 
     SceneFlag = LOG_IN_SCENE;
 }

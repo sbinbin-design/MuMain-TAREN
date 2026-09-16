@@ -15,6 +15,7 @@
 #include "UI/NewUI/NewUISystem.h"
 #include "GameLogic/Skills/SkillManager.h"
 #include "GameLogic/Items/CSItemOption.h"
+#include "Data/GameConfig/GameConfig.h"
 #include "I18N/All.h"
 
 #include <algorithm>
@@ -77,7 +78,10 @@ bool CSItemOption::OpenItemSetScript()
     strFileName = L"Data\\Local\\ItemSetType" + strTest + L".bmd";
     if (!OpenItemSetType(strFileName.c_str()))		return false;
 
-    strFileName = L"Data\\Local\\" + g_strSelectedML + L"\\ItemSetOption" + strTest + L"_" + g_strSelectedML + L".bmd";
+    if (GameConfig::GetInstance().IsSimplifiedChineseLocale())
+        strFileName = L"Data\\Local\\itemsetoption.bmd";
+    else
+        strFileName = L"Data\\Local\\" + g_strSelectedML + L"\\ItemSetOption" + strTest + L"_" + g_strSelectedML + L".bmd";
     if (!OpenItemSetOption(strFileName.c_str()))	 	return false;
     return true;
 }
@@ -162,7 +166,10 @@ bool CSItemOption::OpenItemSetOption(const wchar_t* filename)
         std::memcpy(&current, pSeek, entrySize);
         auto* target = &m_ItemSetOption[i];
 
-        CMultiLanguage::ConvertFromUtf8(target->strSetName, current.strSetName);
+        if (GameConfig::GetInstance().IsSimplifiedChineseLocale())
+            CMultiLanguage::ConvertFromMuChineseLegacy(target->strSetName, current.strSetName);
+        else
+            CMultiLanguage::ConvertFromUtf8(target->strSetName, current.strSetName);
         target->byOptionCount = current.byOptionCount;
         target->bySetItemCount = 0; // Is calculated below
         target->byStandardOption = current.byStandardOption;

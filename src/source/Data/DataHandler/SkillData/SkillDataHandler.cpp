@@ -4,6 +4,7 @@
 #include "SkillDataLoader.h"
 #include "SkillDataSaver.h"
 #include "SkillDataExportS6E3.h"
+#include "Data/DataHandler/DataFileIO.h"
 #include "Data/GameData/SkillData/SkillStructs.h"
 #include "Data/GameConfig/GameConfig.h"
 #include "Core/Globals/_crypt.h"
@@ -16,6 +17,7 @@
 #endif
 
 #include <array>
+#include <cwchar>
 #include <vector>
 
 // External references
@@ -212,6 +214,53 @@ bool CSkillDataHandler::LoadOfficialLocalizedSkillNames(const wchar_t* officialS
     }
 
     m_LocalizedSkillNames.swap(loadedNames);
+    return true;
+}
+
+bool CSkillDataHandler::LoadOfficialZhCnSkillData(const wchar_t* officialSkillFileName)
+{
+    if (officialSkillFileName == nullptr || SkillAttribute == nullptr)
+        return false;
+
+    std::vector<LegacySkillRecord> officialRecords;
+    if (!ReadLegacySkillRecords(officialSkillFileName, officialRecords))
+    {
+        std::wstring errorMessage = L"Failed to load official zh-CN skill file: ";
+        errorMessage += officialSkillFileName;
+        DataFileIO::ReportError(errorMessage.c_str());
+        return false;
+    }
+
+    std::array<SKILL_ATTRIBUTE, MAX_SKILLS> loadedSkills{};
+    for (int i = 0; i < MAX_SKILLS; ++i)
+    {
+        SKILL_ATTRIBUTE_FILE_LEGACY source{};
+        SKILL_ATTRIBUTE& dest = loadedSkills[i];
+        memcpy(&source, officialRecords[i].data(), sizeof(source));
+
+        const int nameLength = SkillNameLength(officialRecords[i]);
+        if (nameLength > 0)
+        {
+            std::wstring convertedName;
+            if (!CMultiLanguage::ConvertFromCodePageToString(
+                    convertedName, source.Name, 54936u, nameLength) ||
+                convertedName.size() >= MAX_SKILL_NAME)
+            {
+                std::wstring errorMessage = L"Failed to decode official zh-CN skill name at index ";
+                errorMessage += std::to_wstring(i);
+                DataFileIO::ReportError(errorMessage.c_str());
+                return false;
+            }
+
+            std::wmemcpy(dest.Name, convertedName.c_str(), convertedName.size());
+            dest.Name[convertedName.size()] = L'\0';
+        }
+
+        COPY_SKILL_ATTRIBUTE_FIELDS(dest, source);
+    }
+
+    loadedSkills[17].Level = 1;
+    memcpy(SkillAttribute, loadedSkills.data(), sizeof(loadedSkills));
     return true;
 }
 

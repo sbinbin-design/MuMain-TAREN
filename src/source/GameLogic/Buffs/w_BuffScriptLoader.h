@@ -17,12 +17,6 @@ struct _BUFFINFO
     char s_BuffDescript[MAX_DESCRIPT_LENGTH];
 };
 
-struct LocalizedBuffText
-{
-    std::wstring Name;
-    std::wstring Description;
-};
-
 class BuffInfo
 {
 public:
@@ -51,7 +45,7 @@ public:
 
 private:
     bool Load(const std::wstring& pchFileName);
-    bool LoadLocalizedText();
+    bool LoadOfficialLocalizedBuffEffect();
 
 public:
     const BuffInfo GetBuffinfo(eBuffState type) const;
@@ -70,5 +64,4 @@ private:
 
 private:
     BuffInfoMap m_Info;
-    std::map<eBuffState, LocalizedBuffText> m_LocalizedText;
 };

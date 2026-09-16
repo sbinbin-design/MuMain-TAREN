@@ -45,6 +45,8 @@ inline constexpr BundledFont kBundledFallbackFont{"Noto Sans SC",
         if (configuredFamily == font.family)
             return font;
     }
+    if (configuredFamily == kBundledFallbackFont.family)
+        return kBundledFallbackFont;
     for (const BundledFont& font : kBundledFonts)
     {
         if (kDefaultBundledFontFamily == font.family)

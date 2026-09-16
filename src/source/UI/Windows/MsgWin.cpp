@@ -204,8 +204,8 @@ void CMsgWin::UpdateWhileActive(double dDeltaTick)
                 m_dDeltaTickSum = 0.0;
                 if (--m_nGameExit == 0)
                 {
-                    g_ErrorReport.Write(L"> Menu - Exit game.");
-                    g_ErrorReport.WriteCurrentTime();
+                    g_ErrorReport.WriteInfo(L"> Menu - Exit game.");
+                    g_ErrorReport.WriteInfoCurrentTime();
                     ::PostMessage(g_hWnd, WM_CLOSE, 0, 0);
                 }
                 else

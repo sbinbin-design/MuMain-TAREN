@@ -552,7 +552,7 @@ void DestroyWindow()
     PtrReset(g_MapProcess);
     PtrReset(g_petProcess);
 
-    g_ErrorReport.Write(L"Destroy");
+    g_ErrorReport.WriteInfo(L"Destroy");
 
     HWND shWnd = FindWindow(nullptr, L"MuPlayer");
     if (shWnd)
@@ -1656,18 +1656,36 @@ HFONT CreateFontForFamily(int size, int weight, std::string_view family)
                       CLEARTYPE_NATURAL_QUALITY, DEFAULT_PITCH | FF_DONTCARE, face.c_str());
 }
 
-HFONT CreateUIFont(int size, int weight)
+std::string GetSelectedUIFontFamily()
 {
     const std::string configuredFamily = WideToUtf8(GameConfig::GetInstance().GetFontSelection());
+    if (configuredFamily.empty() && GameConfig::GetInstance().IsSimplifiedChineseLocale())
+        return std::string(kBundledFallbackFont.family);
+    return configuredFamily;
+}
+
+std::string GetSelectedFixedUIFontFamily()
+{
+    const std::string configuredFamily = WideToUtf8(GameConfig::GetInstance().GetFontSelection());
+    if (!configuredFamily.empty())
+        return configuredFamily;
+    return std::string(kDefaultBundledFontFamily);
+}
+
+HFONT CreateUIFont(int size, int weight, std::string_view selectedFamily)
+{
+    const std::string configuredFamily(selectedFamily);
     return CreateFontForFamily(size, weight, ResolveBundledFont(configuredFamily).family);
 }
 
 bool CreateNewFonts(FontSizes sizes)
 {
-    HFONT normal = CreateUIFont(sizes.normal, FW_NORMAL);
-    HFONT bold = CreateUIFont(sizes.normal, FW_SEMIBOLD);
-    HFONT big = CreateUIFont(sizes.big, FW_SEMIBOLD);
-    HFONT fixed = CreateUIFont(sizes.fixed, FW_NORMAL);
+    const std::string selectedFamily = GetSelectedUIFontFamily();
+    const std::string selectedFixedFamily = GetSelectedFixedUIFontFamily();
+    HFONT normal = CreateUIFont(sizes.normal, FW_NORMAL, selectedFamily);
+    HFONT bold = CreateUIFont(sizes.normal, FW_SEMIBOLD, selectedFamily);
+    HFONT big = CreateUIFont(sizes.big, FW_SEMIBOLD, selectedFamily);
+    HFONT fixed = CreateUIFont(sizes.fixed, FW_NORMAL, selectedFixedFamily);
     if (!normal || !bold || !big || !fixed)
     {
         if (normal)
@@ -1691,9 +1709,10 @@ bool CreateNewFonts(FontSizes sizes)
 void ReinitializeTextRenderer(FontSizes sizes)
 {
     g_pRenderText->Release();
-    const std::string selectedFamily = WideToUtf8(GameConfig::GetInstance().GetFontSelection());
-    const bool fontsReloaded = mu::GetRenderer().ReloadTtfFonts(selectedFamily, static_cast<float>(sizes.normal),
-                                                                static_cast<float>(sizes.big),
+    const std::string selectedFamily = GetSelectedUIFontFamily();
+    const std::string selectedFixedFamily = GetSelectedFixedUIFontFamily();
+    const bool fontsReloaded = mu::GetRenderer().ReloadTtfFonts(selectedFamily, selectedFixedFamily,
+                                                                static_cast<float>(sizes.normal), static_cast<float>(sizes.big),
                                                                 static_cast<float>(sizes.fixed));
     if (!fontsReloaded)
         mu::log::Get("render")->error("SDL_ttf -- keeping the previous font set after reload failure");
@@ -1823,17 +1842,16 @@ static void ShutdownRuntime(std::thread& cpuUsageRecorder)
     mu::log::Shutdown();
 }
 
-static void WriteStartupDiagnostics(const wchar_t* executableVersion, const WORD (&fileVersion)[4])
+static void WriteStartupDiagnostics(const WORD (&fileVersion)[4])
 {
-    g_ErrorReport.Write(L"\r\n");
+    g_ErrorReport.WriteInfo(L"\r\n");
     g_ErrorReport.WriteLogBegin();
     g_ErrorReport.AddSeparator();
-    g_ErrorReport.Write(L"Mu online %ls (%ls) executed. (%d.%d.%d.%d)\r\n", executableVersion, L"Eng", fileVersion[0],
-                        fileVersion[1], fileVersion[2], fileVersion[3]);
+    g_ErrorReport.WriteInfo(L"MU Online client started. Version: %ls\r\n", m_ExeVersion);
     g_ConsoleDebug->Write(MCD_NORMAL, L"Mu Online (Version: %d.%d.%d.%d)", fileVersion[0], fileVersion[1],
                           fileVersion[2], fileVersion[3]);
 
-    g_ErrorReport.WriteCurrentTime();
+    g_ErrorReport.WriteInfoCurrentTime();
     ER_SystemInfo systemInfo;
     ZeroMemory(&systemInfo, sizeof(systemInfo));
     MuGetSystemInfo(&systemInfo);
@@ -1877,8 +1895,6 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine, int nC
 {
     InitializeWorkingDirectoryAndLog();
 
-    wchar_t lpszExeVersion[256] = L"unknown";
-
 #ifdef _WIN32
     wchar_t* lpszCommandLine = GetCommandLine();
 #else
@@ -1890,23 +1906,12 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine, int nC
         0,
     };
     if (GetFileNameOfFilePath(lpszFile, lpszCommandLine))
-    {
-        if (GetFileVersion(lpszFile, wVersion))
-        {
-            mu_swprintf(lpszExeVersion, L"%d.%02d", wVersion[0], wVersion[1]);
-            if (wVersion[2] > 0)
-            {
-                wchar_t lpszMinorVersion[2] = L"a";
-                lpszMinorVersion[0] += (wVersion[2] - 1);
-                wcscat(lpszExeVersion, lpszMinorVersion);
-            }
-        }
-    }
+        GetFileVersion(lpszFile, wVersion);
 
-    WriteStartupDiagnostics(lpszExeVersion, wVersion);
+    WriteStartupDiagnostics(wVersion);
     InitializeDotNetBridge();
 
-    g_ErrorReport.Write(L"> To read config.ini.\r\n");
+    g_ErrorReport.WriteInfo(L"> To read config.ini.\r\n");
 
     // Load game settings from INI file first
     GameConfig::GetInstance().Load();
@@ -1990,7 +1995,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine, int nC
 
     // Fullscreen is requested via an SDL window flag below; SDL handles the
     // display-mode change and restores it on teardown.
-    g_ErrorReport.Write(L"> Screen size = %d x %d.\r\n", WindowWidth, WindowHeight);
+    g_ErrorReport.WriteInfo(L"> Screen size = %d x %d.\r\n", WindowWidth, WindowHeight);
 
     g_hInst = hInstance;
 
@@ -2034,14 +2039,16 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine, int nC
     }
 #endif
 
-    g_ErrorReport.Write(L"> Start window success.\r\n");
+    g_ErrorReport.WriteInfo(L"> Start window success.\r\n");
 
     OpenglWindowWidth = WindowWidth;
     OpenglWindowHeight = WindowHeight;
 
-    const std::string selectedFontFamily = WideToUtf8(GameConfig::GetInstance().GetFontSelection());
+    const std::string selectedFontFamily = GetSelectedUIFontFamily();
+    const std::string selectedFixedFontFamily = GetSelectedFixedUIFontFamily();
     const FontSizes initialFontSizes = CalculateFontSizes();
-    if (!mu::InitSDLGpuRenderer(g_sdlWindow, selectedFontFamily, static_cast<float>(initialFontSizes.normal),
+    if (!mu::InitSDLGpuRenderer(g_sdlWindow, selectedFontFamily, selectedFixedFontFamily,
+                                static_cast<float>(initialFontSizes.normal),
                                 static_cast<float>(initialFontSizes.big),
                                 static_cast<float>(initialFontSizes.fixed)))
     {
@@ -2074,9 +2081,9 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine, int nC
     MuApplyCursorVisibility();
 #endif
 
-    g_ErrorReport.Write(L"> SDL_gpu init success.\r\n");
+    g_ErrorReport.WriteInfo(L"> SDL_gpu init success.\r\n");
     g_ErrorReport.AddSeparator();
-    g_ErrorReport.Write(L"GPU driver\t: %hs\r\n", mu::GetRenderer().GetGPUDriverName());
+    g_ErrorReport.WriteInfo(L"GPU driver\t: %hs\r\n", mu::GetRenderer().GetGPUDriverName());
     g_ErrorReport.AddSeparator();
     g_ErrorReport.WriteSoundCardInfo();
 

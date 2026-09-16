@@ -316,7 +316,7 @@ void CreateLogInScene()
 
     ::PlayMp3(MUSIC_LOGIN_THEME);
 
-    g_ErrorReport.Write(L"> Login Scene init success.\r\n");
+    g_ErrorReport.WriteInfo(L"> Login Scene init success.\r\n");
 }
 
 void NewMoveLogInScene()

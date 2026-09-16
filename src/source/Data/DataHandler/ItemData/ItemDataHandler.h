@@ -3,7 +3,6 @@
 #include "Core/Globals/_define.h"
 #include "Data/GameData/ItemData/ItemStructs.h"
 
-#include <array>
 #include <string>
 
 class CItemDataHandler
@@ -12,9 +11,7 @@ public:
     static CItemDataHandler& GetInstance();
 
     // Data Operations - delegates to specialized classes
-    bool Load(wchar_t* fileName);
-    void ClearLocalizedItemNames();
-    bool LoadOfficialLocalizedItemNames(const wchar_t* currentItemFileName, const wchar_t* officialItemFileName);
+    bool Load(wchar_t* fileName, bool useMuChineseLegacy = false);
 
 #ifdef _EDITOR
     bool Save(wchar_t* fileName, std::string* outChangeLog = nullptr);
@@ -36,7 +33,6 @@ private:
     CItemDataHandler(const CItemDataHandler&) = delete;
     CItemDataHandler& operator=(const CItemDataHandler&) = delete;
 
-    std::array<std::wstring, MAX_ITEM> m_LocalizedItemNames;
 };
 
 #define g_ItemDataHandler CItemDataHandler::GetInstance()

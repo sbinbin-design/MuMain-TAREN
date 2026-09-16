@@ -19,6 +19,7 @@
 #include "Render/Textures/ZzzTexture.h"
 #include "GameLogic/Events/w_CursedTemple.h"
 #include "Network/Server/WSclient.h"
+#include "Core/Utilities/Log/MuLogger.h"
 #include "I18N/All.h"
 
 
@@ -1119,12 +1120,40 @@ void CMapManager::Load() // OK
         }
 
         mu_swprintf(DirName, L"Data\\Object%d\\", iMapWorld);
+        bool worldObjectPresent[MAX_WORLD_OBJECTS] = {};
+        int worldObjectLoaded = 0;
+        int worldObjectMissing = 0;
         for (i = MODEL_WORLD_OBJECT; i < MAX_WORLD_OBJECTS; i++)
+        {
+            wchar_t ModelName[32];
+            wchar_t ModelPath[64];
+            if (i + 1 < 10)
+                mu_swprintf(ModelName, L"Object0%d.bmd", i + 1);
+            else
+                mu_swprintf(ModelName, L"Object%d.bmd", i + 1);
+            mu_swprintf(ModelPath, L"%ls%ls", DirName, ModelName);
+
+            const DWORD attributes = GetFileAttributesW(ModelPath);
+            if (attributes == INVALID_FILE_ATTRIBUTES || (attributes & FILE_ATTRIBUTE_DIRECTORY) != 0)
+            {
+                ++worldObjectMissing;
+                continue;
+            }
+
+            worldObjectPresent[i] = true;
+            ++worldObjectLoaded;
             gLoadData.AccessModel(i, DirName, L"Object", i + 1);
+        }
+
+        mu::log::Get("scenes")->info("World Object load: Object{} loaded={} missing={}", iMapWorld,
+                                      worldObjectLoaded, worldObjectMissing);
 
         mu_swprintf(DirName, L"Object%d\\", iMapWorld);
         for (i = MODEL_WORLD_OBJECT; i < MAX_WORLD_OBJECTS; i++)
         {
+            if (worldObjectPresent[i] == false)
+                continue;
+
             gLoadData.OpenTexture(i, DirName);
         }
 

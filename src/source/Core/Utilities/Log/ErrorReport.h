@@ -25,11 +25,13 @@ public:
 
     void WriteDebugInfoStr(wchar_t* lpszToWrite);
     void Write(const wchar_t* lpszFormat, ...);
+    void WriteInfo(const wchar_t* lpszFormat, ...);
     void HexWrite(void* pBuffer, int iSize);
 
     void AddSeparator(void);
     void WriteLogBegin(void);
     void WriteCurrentTime(BOOL bLineShift = TRUE);
+    void WriteInfoCurrentTime(BOOL bLineShift = TRUE);
 
     void WriteSystemInfo(ER_SystemInfo* si);
     void WriteOpenGLInfo(void);

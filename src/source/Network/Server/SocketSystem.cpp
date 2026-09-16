@@ -10,91 +10,14 @@
 #include "Character/CharacterManager.h"
 #include "Data/GameConfig/GameConfig.h"
 
-#include <array>
 #include <cstring>
 
 using namespace SEASON4A;
-
-namespace
-{
-constexpr long kSocketOptionFileSize =
-    static_cast<long>(sizeof(SOCKET_OPTION_INFO_FILE) * MAX_SOCKET_OPTION_TYPES * MAX_SOCKET_OPTION);
-
-bool HasSocketOptionInfo(const SOCKET_OPTION_INFO_FILE& info)
-{
-    if (info.m_iOptionID != 0 || info.m_iOptionCategory != 0 || info.m_bOptionType != 0)
-        return true;
-
-    for (const int value : info.m_iOptionValue)
-    {
-        if (value != 0)
-            return true;
-    }
-
-    for (const BYTE checkInfo : info.m_bySocketCheckInfo)
-    {
-        if (checkInfo != 0)
-            return true;
-    }
-
-    return info.m_szOptionName[0] != '\0';
-}
-
-bool HasSocketOptionInfo(const SOCKET_OPTION_INFO& info)
-{
-    if (info.m_iOptionID != 0 || info.m_iOptionCategory != 0 || info.m_bOptionType != 0)
-        return true;
-
-    for (const int value : info.m_iOptionValue)
-    {
-        if (value != 0)
-            return true;
-    }
-
-    for (const BYTE checkInfo : info.m_bySocketCheckInfo)
-    {
-        if (checkInfo != 0)
-            return true;
-    }
-
-    return info.m_szOptionName[0] != L'\0';
-}
-
-bool SameSocketOptionBusinessFields(const SOCKET_OPTION_INFO_FILE& official, const SOCKET_OPTION_INFO& current)
-{
-    return official.m_iOptionID == current.m_iOptionID &&
-           official.m_iOptionCategory == current.m_iOptionCategory &&
-           official.m_bOptionType == current.m_bOptionType &&
-           memcmp(official.m_iOptionValue, current.m_iOptionValue, sizeof(official.m_iOptionValue)) == 0 &&
-           memcmp(official.m_bySocketCheckInfo, current.m_bySocketCheckInfo,
-                  sizeof(official.m_bySocketCheckInfo)) == 0;
-}
-
-bool IsSafeLocalizedSocketName(const char* name, int nameLength, wchar_t* localizedName)
-{
-    if (nameLength <= 0 || nameLength >= MAX_SOCKET_OPTION_NAME_LENGTH ||
-        CMultiLanguage::ConvertFromMuChineseLegacy(localizedName, name, nameLength) <= 0)
-    {
-        return false;
-    }
-
-    for (int i = 0; localizedName[i] != L'\0'; ++i)
-    {
-        if (localizedName[i] < 0x20 || localizedName[i] == L'%')
-            return false;
-    }
-
-    return true;
-}
-} // namespace
-
-
 
 CSocketItemMgr g_SocketItemMgr;
 
 CSocketItemMgr::CSocketItemMgr()
 {
-    ClearLocalizedSocketNames();
     m_iNumEquitSetBonusOptions = 0;
     memset(m_SocketOptionInfo, 0, sizeof(SOCKET_OPTION_INFO) * MAX_SOCKET_OPTION);
     memset(&m_StatusBonus, 0, sizeof(SOCKET_OPTION_STATUS_BONUS));
@@ -691,16 +614,14 @@ void CSocketItemMgr::OpenSocketItemScript(const wchar_t* szFileName)
             target->m_bySocketCheckInfo[4] = current.m_bySocketCheckInfo[4];
             target->m_bySocketCheckInfo[5] = current.m_bySocketCheckInfo[5];
 
-            CMultiLanguage::ConvertFromUtf8(target->m_szOptionName, current.m_szOptionName);
+            if (GameConfig::GetInstance().IsSimplifiedChineseLocale())
+                CMultiLanguage::ConvertFromMuChineseLegacy(target->m_szOptionName, current.m_szOptionName);
+            else
+                CMultiLanguage::ConvertFromUtf8(target->m_szOptionName, current.m_szOptionName);
         }
     }
 
     fclose(fp);
-
-    if (GameConfig::GetInstance().IsSimplifiedChineseLocale())
-        LoadOfficialLocalizedSocketNames(L"Data\\Local\\socketitem.bmd");
-    else
-        ClearLocalizedSocketNames();
 
     for (int i = 0; i < MAX_SOCKET_OPTION; ++i)
     {
@@ -708,13 +629,6 @@ void CSocketItemMgr::OpenSocketItemScript(const wchar_t* szFileName)
         BYTE* pbySetTest = m_SocketOptionInfo[SOT_EQUIP_SET_BONUS_OPTIONS][i].m_bySocketCheckInfo;
         if (pbySetTest[0] + pbySetTest[1] + pbySetTest[2] + pbySetTest[3] + pbySetTest[4] + pbySetTest[5] == 0) break;
     }
-}
-
-void CSocketItemMgr::ClearLocalizedSocketNames()
-{
-    for (auto& group : m_LocalizedSocketNames)
-        group.fill(std::wstring());
-    m_HasLocalizedSocketNames = false;
 }
 
 const wchar_t* CSocketItemMgr::GetSocketOptionDisplayName(int iOptionType, int iOptionIndex) const
@@ -725,79 +639,5 @@ const wchar_t* CSocketItemMgr::GetSocketOptionDisplayName(int iOptionType, int i
         return L"";
     }
 
-    if (GameConfig::GetInstance().IsSimplifiedChineseLocale() && m_HasLocalizedSocketNames &&
-        !m_LocalizedSocketNames[iOptionType][iOptionIndex].empty())
-    {
-        return m_LocalizedSocketNames[iOptionType][iOptionIndex].c_str();
-    }
-
     return m_SocketOptionInfo[iOptionType][iOptionIndex].m_szOptionName;
-}
-
-bool CSocketItemMgr::LoadOfficialLocalizedSocketNames(const wchar_t* szFileName)
-{
-    ClearLocalizedSocketNames();
-
-    FILE* fp = _wfopen(szFileName, L"rb");
-    if (fp == nullptr)
-        return false;
-
-    fseek(fp, 0, SEEK_END);
-    const long fileSize = ftell(fp);
-    fseek(fp, 0, SEEK_SET);
-    if (fileSize != kSocketOptionFileSize)
-    {
-        fclose(fp);
-        return false;
-    }
-
-    std::array<std::array<std::wstring, MAX_SOCKET_OPTION>, MAX_SOCKET_OPTION_TYPES> loadedNames;
-    for (int group = 0; group < MAX_SOCKET_OPTION_TYPES; ++group)
-    {
-        for (int index = 0; index < MAX_SOCKET_OPTION; ++index)
-        {
-            SOCKET_OPTION_INFO_FILE official{};
-            if (fread(&official, sizeof(official), 1, fp) != 1)
-            {
-                fclose(fp);
-                return false;
-            }
-            BuxConvert(reinterpret_cast<BYTE*>(&official), sizeof(official));
-
-            const SOCKET_OPTION_INFO& current = m_SocketOptionInfo[group][index];
-            const bool officialValid = HasSocketOptionInfo(official);
-            const bool currentValid = HasSocketOptionInfo(current);
-            if (officialValid != currentValid ||
-                (officialValid && !SameSocketOptionBusinessFields(official, current)))
-            {
-                fclose(fp);
-                return false;
-            }
-
-            if (!officialValid)
-                continue;
-
-            const auto* nameEnd = static_cast<const char*>(memchr(official.m_szOptionName, '\0',
-                                                                    sizeof(official.m_szOptionName)));
-            if (nameEnd == nullptr)
-            {
-                fclose(fp);
-                return false;
-            }
-
-            const int nameLength = static_cast<int>(nameEnd - official.m_szOptionName);
-            wchar_t localizedName[MAX_SOCKET_OPTION_NAME_LENGTH] = { 0 };
-            if (!IsSafeLocalizedSocketName(official.m_szOptionName, nameLength, localizedName))
-            {
-                fclose(fp);
-                return false;
-            }
-            loadedNames[group][index] = localizedName;
-        }
-    }
-
-    fclose(fp);
-    m_LocalizedSocketNames.swap(loadedNames);
-    m_HasLocalizedSocketNames = true;
-    return true;
 }

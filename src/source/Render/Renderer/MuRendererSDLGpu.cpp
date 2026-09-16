@@ -952,19 +952,20 @@ static void CloseTtfFont(TTF_Font*& font)
     return fallback;
 }
 
-[[nodiscard]] static TTF_Font* OpenTtfFallbackRole(std::string_view role, float pointSize)
+[[nodiscard]] static TTF_Font* OpenTtfFallbackRole(const BundledFont& fallbackFamily, std::string_view role,
+                                                   float pointSize)
 {
-    const std::string packagedPath = BundledFontPath(kBundledFallbackFont.regular);
+    const std::string packagedPath = BundledFontPath(fallbackFamily.regular);
     TTF_Font* font = TTF_OpenFont(packagedPath.c_str(), pointSize);
     if (font)
     {
         mu::log::Get("render")->info("SDL_ttf -- bundled fallback family='{}' role='{}' path='{}'",
-                                     kBundledFallbackFont.family, role, packagedPath);
+                                     fallbackFamily.family, role, packagedPath);
         return font;
     }
 
     mu::log::Get("render")->error("SDL_ttf -- bundled fallback family='{}' role='{}' path='{}' failed: {}",
-                                  kBundledFallbackFont.family, role, packagedPath, SDL_GetError());
+                                  fallbackFamily.family, role, packagedPath, SDL_GetError());
     return nullptr;
 }
 
@@ -992,18 +993,25 @@ static void WarmTtfFonts()
     }
 }
 
-[[nodiscard]] static bool LoadTtfFonts(std::string_view configuredFamily, float normalPointSize, float bigPointSize,
-                                       float fixedPointSize)
+[[nodiscard]] static bool LoadTtfFonts(std::string_view configuredFamily, std::string_view configuredFixedFamily,
+                                       float normalPointSize, float bigPointSize, float fixedPointSize)
 {
     const BundledFont& family = ResolveBundledFont(configuredFamily);
+    const BundledFont& fixedFamily = ResolveBundledFont(configuredFixedFamily);
+    const BundledFont& fallbackFamily = configuredFamily == kBundledFallbackFont.family
+        ? ResolveBundledFont(kDefaultBundledFontFamily)
+        : kBundledFallbackFont;
+    const BundledFont& fallbackFixedFamily = configuredFixedFamily == kBundledFallbackFont.family
+        ? ResolveBundledFont(kDefaultBundledFontFamily)
+        : kBundledFallbackFont;
     TTF_Font* normal = OpenTtfFontRole(family.family, "normal", family.regular, normalPointSize);
     TTF_Font* bold = OpenTtfFontRole(family.family, "bold", family.bold, normalPointSize);
     TTF_Font* big = OpenTtfFontRole(family.family, "big-bold", family.bold, bigPointSize);
-    TTF_Font* fixed = OpenTtfFontRole(family.family, "fixed", family.regular, fixedPointSize);
-    TTF_Font* fallback = OpenTtfFallbackRole("normal", normalPointSize);
-    TTF_Font* fallbackBold = OpenTtfFallbackRole("bold", normalPointSize);
-    TTF_Font* fallbackBig = OpenTtfFallbackRole("big-bold", bigPointSize);
-    TTF_Font* fallbackFixed = OpenTtfFallbackRole("fixed", fixedPointSize);
+    TTF_Font* fixed = OpenTtfFontRole(fixedFamily.family, "fixed", fixedFamily.regular, fixedPointSize);
+    TTF_Font* fallback = OpenTtfFallbackRole(fallbackFamily, "normal", normalPointSize);
+    TTF_Font* fallbackBold = OpenTtfFallbackRole(fallbackFamily, "bold", normalPointSize);
+    TTF_Font* fallbackBig = OpenTtfFallbackRole(fallbackFamily, "big-bold", bigPointSize);
+    TTF_Font* fallbackFixed = OpenTtfFallbackRole(fallbackFixedFamily, "fixed", fixedPointSize);
     if (fallbackBold)
         TTF_SetFontStyle(fallbackBold, TTF_STYLE_BOLD);
     if (fallbackBig)
@@ -1326,8 +1334,8 @@ public:
     // Init: Create GPU device, claim window, initialize pipelines and buffers.
     // Called once after window creation, before the game loop.
     // -----------------------------------------------------------------------
-    [[nodiscard]] static bool Init(void* pNativeWindow, std::string_view fontFamily, float normalPointSize,
-                                   float bigPointSize, float fixedPointSize)
+    [[nodiscard]] static bool Init(void* pNativeWindow, std::string_view fontFamily, std::string_view fixedFontFamily,
+                                   float normalPointSize, float bigPointSize, float fixedPointSize)
     {
         s_window = static_cast<SDL_Window*>(pNativeWindow);
         if (!s_window)
@@ -1500,7 +1508,7 @@ public:
             Shutdown();
             return false;
         }
-        if (!LoadTtfFonts(fontFamily, normalPointSize, bigPointSize, fixedPointSize))
+        if (!LoadTtfFonts(fontFamily, fixedFontFamily, normalPointSize, bigPointSize, fixedPointSize))
         {
             Shutdown();
             return false;
@@ -2476,13 +2484,14 @@ public:
         return s_ttfFontFixed ? s_ttfFontFixed : s_ttfFont;
     }
 
-    [[nodiscard]] bool ReloadTtfFonts(std::string_view fontFamily, float normalPointSize, float bigPointSize,
-                                      float fixedPointSize) override
+    [[nodiscard]] bool ReloadTtfFonts(std::string_view fontFamily, std::string_view fixedFontFamily,
+                                      float normalPointSize, float bigPointSize, float fixedPointSize) override
     {
 #if MU_HAS_SDL_TTF
-        return s_textEngine && LoadTtfFonts(fontFamily, normalPointSize, bigPointSize, fixedPointSize);
+        return s_textEngine && LoadTtfFonts(fontFamily, fixedFontFamily, normalPointSize, bigPointSize, fixedPointSize);
 #else
         (void)fontFamily;
+        (void)fixedFontFamily;
         (void)normalPointSize;
         (void)bigPointSize;
         (void)fixedPointSize;
@@ -4609,10 +4618,10 @@ private:
 }
 
 // C++ linkage entry points for MuMain.cpp (no class forward declaration needed).
-[[nodiscard]] bool InitSDLGpuRenderer(void* pNativeWindow, std::string_view fontFamily, float normalPointSize,
-                                      float bigPointSize, float fixedPointSize)
+[[nodiscard]] bool InitSDLGpuRenderer(void* pNativeWindow, std::string_view fontFamily, std::string_view fixedFontFamily,
+                                      float normalPointSize, float bigPointSize, float fixedPointSize)
 {
-    return MuRendererSDLGpu::Init(pNativeWindow, fontFamily, normalPointSize, bigPointSize, fixedPointSize);
+    return MuRendererSDLGpu::Init(pNativeWindow, fontFamily, fixedFontFamily, normalPointSize, bigPointSize, fixedPointSize);
 }
 
 void WaitForSDLGpuIdle()

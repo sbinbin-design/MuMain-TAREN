@@ -10,6 +10,7 @@
 #include <dmusicc.h>
 #include <eh.h>
 #include <imagehlp.h>
+#include <intrin.h>
 #endif
 #include "ErrorReport.h"
 #include "Core/Platform/Audio/AudioDeviceNames.h"
@@ -63,6 +64,21 @@ void CErrorReport::Write(const wchar_t* lpszFormat, ...)
     WriteDebugInfoStr(lpszBuffer);
 }
 
+void CErrorReport::WriteInfo(const wchar_t* lpszFormat, ...)
+{
+    wchar_t lpszBuffer[1024] = { 0, };
+    va_list va;
+    va_start(va, lpszFormat);
+    vswprintf(lpszBuffer, 1024, lpszFormat, va);
+    va_end(va);
+
+    std::string line = WideToUtf8(lpszBuffer);
+    while (!line.empty() && (line.back() == '\r' || line.back() == '\n'))
+        line.pop_back();
+    if (!line.empty())
+        mu::log::Get("core")->info("{}", line);
+}
+
 void CErrorReport::HexWrite(void* pBuffer, int iSize)
 {
     wchar_t szLine[256] = { 0, };
@@ -88,12 +104,12 @@ void CErrorReport::HexWrite(void* pBuffer, int iSize)
 
 void CErrorReport::AddSeparator(void)
 {
-    Write(L"-------------------------------------------------------------------------------------\r\n");
+    WriteInfo(L"-------------------------------------------------------------------------------------\r\n");
 }
 
 void CErrorReport::WriteLogBegin(void)
 {
-    Write(L"###### Log Begin ######\r\n");
+    WriteInfo(L"###### Log Begin ######\r\n");
 }
 
 void CErrorReport::WriteCurrentTime(BOOL bLineShift)
@@ -107,28 +123,38 @@ void CErrorReport::WriteCurrentTime(BOOL bLineShift)
     }
 }
 
+void CErrorReport::WriteInfoCurrentTime(BOOL bLineShift)
+{
+    SYSTEMTIME st;
+    GetLocalTime(&st);
+    WriteInfo(L"%4d/%02d/%02d %02d:%02d", st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute);
+    if (bLineShift)
+    {
+        WriteInfo(L"\r\n");
+    }
+}
+
 void CErrorReport::WriteSystemInfo(ER_SystemInfo* si)
 {
-    Write(L"<System information>\r\n");
-    Write(L"OS \t\t\t: %ls\r\n", si->m_lpszOS);
-    Write(L"CPU \t\t\t: %ls\r\n", si->m_lpszCPU);
-    Write(L"RAM \t\t\t: %lldMB\r\n", static_cast<long long>(1 + (si->m_iMemorySize / 1024 / 1024)));
+    WriteInfo(L"<System information>\r\n");
+    WriteInfo(L"OS \t\t\t: %ls\r\n", si->m_lpszOS);
+    WriteInfo(L"CPU \t\t\t: %ls\r\n", si->m_lpszCPU);
+    WriteInfo(L"RAM \t\t\t: %lldMB\r\n", static_cast<long long>(1 + (si->m_iMemorySize / 1024 / 1024)));
     AddSeparator();
-    Write(L"GPU Backend \t\t: %ls\r\n", si->m_lpszGpuBackend);
 }
 
 void CErrorReport::WriteOpenGLInfo(void)
 {
-    Write(L"<Renderer information>\r\n");
-    Write(L"API\t\t: SDL_gpu\r\n");
-    Write(L"Driver\t\t: %hs\r\n", mu::GetRenderer().GetGPUDriverName());
+    WriteInfo(L"<Renderer information>\r\n");
+    WriteInfo(L"API\t\t: SDL_gpu\r\n");
+    WriteInfo(L"Driver\t\t: %hs\r\n", mu::GetRenderer().GetGPUDriverName());
 }
 
 void CErrorReport::WriteFontInfo(void)
 {
-    Write(L"<UI font>\r\n");
+    WriteInfo(L"<UI font>\r\n");
 #ifdef _WIN32
-    Write(L"Source\t\t: Win32 GDI (system fonts)\r\n");
+    WriteInfo(L"Source\t\t: Win32 GDI (system fonts)\r\n");
 #else
     // On non-Windows the font is discovered at runtime (fontconfig + fallbacks);
     // log what was found so a "no UI text" report is diagnosable. Paths are
@@ -136,7 +162,7 @@ void CErrorReport::WriteFontInfo(void)
     const std::string diag = MuFontDiagnostics();
     if (diag.empty())
     {
-        Write(L"(no font resolved)\r\n");
+        WriteInfo(L"(no font resolved)\r\n");
     }
     else
     {
@@ -147,11 +173,11 @@ void CErrorReport::WriteFontInfo(void)
             const std::string line = diag.substr(pos, (nl == std::string::npos ? diag.size() : nl) - pos);
             pos = (nl == std::string::npos) ? diag.size() : nl + 1;
             if (!line.empty())
-                Write(L"%hs\r\n", line.c_str());
+                WriteInfo(L"%hs\r\n", line.c_str());
         }
         if (diag.find("NOT FOUND") != std::string::npos)
-            Write(L"!! UI text is disabled - no usable font found. Install a "
-                  L"sans-serif font or set MU_FONT.\r\n");
+            WriteInfo(L"!! UI text is disabled - no usable font found. Install a "
+                      L"sans-serif font or set MU_FONT.\r\n");
     }
 #endif
 }
@@ -164,8 +190,8 @@ void CErrorReport::WriteFontInfo(void)
 
 void CErrorReport::WriteImeInfo(SDL_Window* /*window*/)
 {
-    Write(L"<Text input information>\r\n");
-    Write(L"Backend\t\t: SDL3\r\n");
+    WriteInfo(L"<Text input information>\r\n");
+    WriteInfo(L"Backend\t\t: SDL3\r\n");
 }
 
 typedef struct tagER_SOUNDDEVICE {
@@ -203,131 +229,51 @@ BOOL GetFileVersion(wchar_t* lpszFileName, WORD* pwVersion);
 
 void CErrorReport::WriteSoundCardInfo(void)
 {
-    Write(L"<Sound device information>\r\n");
+    WriteInfo(L"<Sound device information>\r\n");
     const auto names = mu::GetAudioDeviceNames();
     if (names.empty())
     {
-        Write(L"No playback device found.\r\n");
+        WriteInfo(L"No playback device found.\r\n");
         return;
     }
-    for (const auto& name : names) Write(L"Description \t\t: %hs\r\n", name.c_str());
+    for (const auto& name : names) MU_LOG_INFO(mu::log::Get("core"), "Description \t\t: {}", name);
 }
 
 void GetOSVersion(ER_SystemInfo* si)
 {
-    const wchar_t* lpszUnknown = L"Unknown";
-    wchar_t lpszTemp[256];
+    using RtlGetVersionPtr = LONG(WINAPI*)(OSVERSIONINFOW*);
+    OSVERSIONINFOW version = {};
+    version.dwOSVersionInfoSize = sizeof(version);
 
-    OSVERSIONINFO osiOne;
-    osiOne.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
-    GetVersionEx(&osiOne);
-
-    int iBuildNumberType = 0;
-    mu_swprintf(si->m_lpszOS, L"%ls %d.%d ", lpszUnknown, osiOne.dwMajorVersion, osiOne.dwMinorVersion);
-
-    switch (osiOne.dwMajorVersion)
+    HMODULE ntdll = GetModuleHandleW(L"ntdll.dll");
+    auto rtlGetVersion = ntdll == nullptr
+        ? nullptr
+        : reinterpret_cast<RtlGetVersionPtr>(GetProcAddress(ntdll, "RtlGetVersion"));
+    if (rtlGetVersion == nullptr || rtlGetVersion(&version) != 0)
     {
-    case 3:	// NT 3.51
-        switch (osiOne.dwMinorVersion)
-        {
-        case 51:
-            wcscpy(si->m_lpszOS, L"Windows NT 3.51");
-            break;
-        }
-        break;
-    case 4:
-        switch (osiOne.dwMinorVersion)
-        {
-        case 0:
-            switch (osiOne.dwPlatformId)
-            {
-            case VER_PLATFORM_WIN32_WINDOWS:
-                wcscpy(si->m_lpszOS, L"Windows 95 ");
-                if (osiOne.szCSDVersion[1] == 'C' || osiOne.szCSDVersion[1] == 'B')
-                {
-                    wcscat(si->m_lpszOS, L"OSR2");
-                }
-                iBuildNumberType = 1;
-                break;
-            case VER_PLATFORM_WIN32_NT:
-                wcscpy(si->m_lpszOS, L"Windows NT 4.0 ");
-                break;
-            }
-            break;
-        case 10:
-            wcscpy(si->m_lpszOS, L"Windows 98 ");
-            if (osiOne.szCSDVersion[1] == 'A')
-            {
-                wcscat(si->m_lpszOS, L"SE ");
-            }
-            iBuildNumberType = 1;
-            break;
-        case 90:
-            wcscpy(si->m_lpszOS, L"Windows Me ");
-            iBuildNumberType = 1;
-            break;
-        }
-        break;
-    case 5:
-        switch (osiOne.dwMinorVersion)
-        {
-        case 0:
-            wcscpy(si->m_lpszOS, L"Windows 2000 ");
-            {
-                HKEY hKey;
-                DWORD dwBufLen;
-                if (ERROR_SUCCESS == RegOpenKeyEx(HKEY_LOCAL_MACHINE, L"SYSTEM\\CurrentControlSet\\Control\\ProductOptions",
-                    0, KEY_QUERY_VALUE, &hKey))
-                {
-                    if (ERROR_SUCCESS == RegQueryValueEx(hKey, L"ProductType", NULL, NULL, (LPBYTE)lpszTemp, &dwBufLen))
-                    {
-                        if (0 == lstrcmpi(L"WINNT", lpszTemp))
-                        {
-                            wcscat(si->m_lpszOS, L"Professional ");
-                        }
-                        if (0 == lstrcmpi(L"LANMANNT", lpszTemp))
-                        {
-                            wcscat(si->m_lpszOS, L"Server ");
-                        }
-                        if (0 == lstrcmpi(L"SERVERNT", lpszTemp))
-                        {
-                            wcscat(si->m_lpszOS, L"Advanced Server ");
-                        }
-                    }
+        wcscpy(si->m_lpszOS, L"Unknown");
+        return;
+    }
 
-                    RegCloseKey(hKey);
-                }
-            }
-            break;
-        case 1:
-            wcscpy(si->m_lpszOS, L"Windows XP ");
-            break;
-        case 2:
-            wcscpy(si->m_lpszOS, L"Windows 2003 family ");
-            break;
-        }
-        break;
-    }
-    switch (iBuildNumberType)
-    {
-    case 0:
-        mu_swprintf(lpszTemp, L"Build %d ", osiOne.dwBuildNumber);
-        break;
-    case 1:
-        mu_swprintf(lpszTemp, L"Build %d.%d.%d ", HIBYTE(HIWORD(osiOne.dwBuildNumber)), LOBYTE(HIWORD(osiOne.dwBuildNumber)), LOWORD(osiOne.dwBuildNumber));
-        break;
-    }
-    wcscat(si->m_lpszOS, lpszTemp);
-    mu_swprintf(lpszTemp, L"(%ls)", osiOne.szCSDVersion);
-    wcscat(si->m_lpszOS, lpszTemp);
+    const wchar_t* name = L"Windows";
+    if (version.dwMajorVersion == 6 && version.dwMinorVersion == 1)
+        name = L"Windows 7";
+    else if (version.dwMajorVersion == 6 && version.dwMinorVersion == 2)
+        name = L"Windows 8";
+    else if (version.dwMajorVersion == 6 && version.dwMinorVersion == 3)
+        name = L"Windows 8.1";
+    else if (version.dwMajorVersion == 10 && version.dwBuildNumber < 22000)
+        name = L"Windows 10";
+    else if (version.dwMajorVersion == 10 && version.dwBuildNumber >= 22000)
+        name = L"Windows 11";
+
+    mu_swprintf(si->m_lpszOS, L"%ls %lu.%lu Build %lu", name, version.dwMajorVersion,
+                version.dwMinorVersion, version.dwBuildNumber);
 }
 
-// NOTE:
-// The original implementation of GetCPUFrequency and GetCPUInfo relied on
-// MSVC inline assembly (cpuid/rdtsc) and 32-bit affinity mask types, which
-// are not portable and fail to compile under MinGW/GCC. For the purposes of
-// error reporting on this toolchain, a simplified, portable implementation
-// is sufficient.
+// CPU frequency measurement remains unavailable in this diagnostic path. The
+// CPU name below uses the architectural x86/x64 CPUID brand leaves instead of
+// maintaining a model-name lookup table.
 
 __int64 GetCPUFrequency(unsigned int uiMeasureMSecs)
 {
@@ -345,6 +291,29 @@ void GetCPUInfo(ER_SystemInfo* si)
         return;
 
     wcscpy(si->m_lpszCPU, L"Unknown CPU");
+
+#if defined(_M_IX86) || defined(_M_X64) || defined(__i386__) || defined(__x86_64__)
+    int registers[4] = {};
+    __cpuid(registers, 0x80000000);
+    const unsigned int maxExtendedLeaf = static_cast<unsigned int>(registers[0]);
+    if (maxExtendedLeaf < 0x80000004)
+        return;
+
+    char brand[49] = {};
+    for (int leaf = 0; leaf < 3; ++leaf)
+    {
+        __cpuid(registers, 0x80000002 + leaf);
+        memcpy(brand + leaf * sizeof(registers), registers, sizeof(registers));
+    }
+
+    std::string brandString(brand);
+    const size_t first = brandString.find_first_not_of(' ');
+    const size_t last = brandString.find_last_not_of(' ');
+    if (first == std::string::npos)
+        return;
+    brandString = brandString.substr(first, last - first + 1);
+    MultiByteToWideChar(CP_UTF8, 0, brandString.c_str(), -1, si->m_lpszCPU, MAX_LENGTH_CPUNAME);
+#endif
 }
 
 typedef HRESULT(WINAPI* DIRECTDRAWCREATE)(GUID*, LPDIRECTDRAW*, IUnknown*);
@@ -630,21 +599,21 @@ void MuGetSystemInfo(ER_SystemInfo* si)
 // IME is a Windows input service; there is nothing to report elsewhere.
 void CErrorReport::WriteImeInfo(SDL_Window* /*window*/)
 {
-    Write(L"<Text input information>\r\n");
-    Write(L"Backend\t\t: SDL3\r\n");
+    WriteInfo(L"<Text input information>\r\n");
+    WriteInfo(L"Backend\t\t: SDL3\r\n");
 }
 
 // Audio runs through SDL; the DirectSound device enumeration has no equivalent.
 void CErrorReport::WriteSoundCardInfo(void)
 {
-    Write(L"<Sound device information>\r\n");
+    WriteInfo(L"<Sound device information>\r\n");
     const auto names = mu::GetAudioDeviceNames();
     if (names.empty())
     {
-        Write(L"No playback device found.\r\n");
+        WriteInfo(L"No playback device found.\r\n");
         return;
     }
-    for (const auto& name : names) Write(L"Description \t\t: %hs\r\n", name.c_str());
+    for (const auto& name : names) MU_LOG_INFO(mu::log::Get("core"), "Description \t\t: {}", name);
 }
 
 void MuGetSystemInfo(ER_SystemInfo* si)

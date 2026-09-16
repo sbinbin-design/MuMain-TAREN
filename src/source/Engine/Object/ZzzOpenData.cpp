@@ -4669,15 +4669,11 @@ void OpenSkills()
     LoadBitmap(L"Effect\\Kwave2.jpg", BITMAP_KWAVE2, GL_LINEAR, GL_CLAMP_TO_EDGE);
     LoadBitmap(L"Effect\\Damage2.jpg", BITMAP_DAMAGE2, GL_LINEAR, GL_CLAMP_TO_EDGE);
     LoadBitmap(L"Effect\\volcano_core.jpg", BITMAP_VOLCANO_CORE, GL_LINEAR, GL_CLAMP_TO_EDGE);
-    gLoadData.AccessModel(MODEL_SHOCKWAVE03, L"Data\\Effect\\", L"shockwave03");
-    gLoadData.OpenTexture(MODEL_SHOCKWAVE03, L"Effect\\");
     LoadBitmap(L"Effect\\ground_smoke.tga", BITMAP_GROUND_SMOKE, GL_LINEAR, GL_CLAMP_TO_EDGE);
     LoadBitmap(L"Effect\\knightSt_blue.jpg", BITMAP_KNIGHTST_BLUE, GL_LINEAR, GL_CLAMP_TO_EDGE);
 
     gLoadData.AccessModel(MODEL_PHOENIX_SHOT, L"Data\\Effect\\", L"phoenix_shot_effect");
     gLoadData.OpenTexture(MODEL_PHOENIX_SHOT, L"Effect\\");
-    gLoadData.AccessModel(MODEL_WINDSPIN01, L"Data\\Effect\\", L"wind_spin01");
-    gLoadData.OpenTexture(MODEL_WINDSPIN01, L"Effect\\");
     gLoadData.AccessModel(MODEL_WINDSPIN02, L"Data\\Effect\\", L"wind_spin02");
     gLoadData.OpenTexture(MODEL_WINDSPIN02, L"Effect\\");
     gLoadData.AccessModel(MODEL_WINDSPIN03, L"Data\\Effect\\", L"wind_spin03");
@@ -5601,7 +5597,7 @@ void OpenBasicData(HDC hDC)
     ::LoadBitmap(L"NPC\\voloE.jpg", BITMAP_VOLO_SKIN_EFFECT, GL_LINEAR, GL_CLAMP_TO_EDGE);
 
 
-    g_ErrorReport.Write(L"> First Load Files OK.\r\n");
+    g_ErrorReport.WriteInfo(L"> First Load Files OK.\r\n");
 
     OpenPlayers();
 
@@ -5636,12 +5632,23 @@ void OpenBasicData(HDC hDC)
     // GameLogic::Quests::Dialog::GetEntry, so there is nothing to load at
     // runtime any more.
 
-    mu_swprintf(Text, L"Data\\Local\\%ls\\Item_%ls.bmd", g_strSelectedML.c_str(), g_strSelectedML.c_str());
-    const bool itemDataLoaded = g_ItemDataHandler.Load(Text);
-    g_ItemDataHandler.ClearLocalizedItemNames();
-    if (itemDataLoaded && GameConfig::GetInstance().GetUILocale() == L"zh-CN")
+    const bool isChineseItemLocale = GameConfig::GetInstance().IsSimplifiedChineseLocale();
+    if (isChineseItemLocale)
     {
-        g_ItemDataHandler.LoadOfficialLocalizedItemNames(Text, L"Data\\Local\\item.bmd");
+        mu_swprintf(Text, L"Data\\Local\\item.bmd");
+    }
+    else
+    {
+        mu_swprintf(Text, L"Data\\Local\\%ls\\Item_%ls.bmd", g_strSelectedML.c_str(), g_strSelectedML.c_str());
+    }
+
+    const bool itemDataLoaded = g_ItemDataHandler.Load(Text, isChineseItemLocale);
+    if (isChineseItemLocale && !itemDataLoaded)
+    {
+        g_ErrorReport.Write(L"Failed to load the zh-CN Item master table: %ls\r\n", Text);
+        MessageBox(g_hWnd, L"Failed to load the zh-CN Item master table.", NULL, MB_OK);
+        SendMessage(g_hWnd, WM_DESTROY, 0, 0);
+        return;
     }
 
     std::wstring moveReqFile = L"Data\\Local\\" + g_strSelectedML + L"\\movereq_" + g_strSelectedML + L".bmd";
@@ -5686,15 +5693,22 @@ void OpenBasicData(HDC hDC)
         OpenMonsterScript(defaultNpcNameFile.c_str(), CP_UTF8);
     }
 
-    mu_swprintf(Text, L"Data\\Local\\%ls\\Skill_%ls.bmd", g_strSelectedML.c_str(), g_strSelectedML.c_str());
-    const bool skillDataLoaded = g_SkillDataHandler.Load(Text);
-    g_SkillDataHandler.ClearLocalizedSkillNames();
-    if (skillDataLoaded && GameConfig::GetInstance().GetUILocale() == L"zh-CN")
+    if (GameConfig::GetInstance().IsSimplifiedChineseLocale())
     {
-        g_SkillDataHandler.LoadOfficialLocalizedSkillNames(L"Data\\Local\\Skill.bmd");
+        g_SkillDataHandler.ClearLocalizedSkillNames();
+        g_SkillDataHandler.LoadOfficialZhCnSkillData(L"Data\\Local\\Skill.bmd");
+    }
+    else
+    {
+        mu_swprintf(Text, L"Data\\Local\\%ls\\Skill_%ls.bmd", g_strSelectedML.c_str(), g_strSelectedML.c_str());
+        g_SkillDataHandler.Load(Text);
+        g_SkillDataHandler.ClearLocalizedSkillNames();
     }
 
-    mu_swprintf(Text, L"Data\\Local\\%ls\\SocketItem_%ls.bmd", g_strSelectedML.c_str(), g_strSelectedML.c_str());
+    if (GameConfig::GetInstance().IsSimplifiedChineseLocale())
+        mu_swprintf(Text, L"Data\\Local\\socketitem.bmd");
+    else
+        mu_swprintf(Text, L"Data\\Local\\%ls\\SocketItem_%ls.bmd", g_strSelectedML.c_str(), g_strSelectedML.c_str());
     g_SocketItemMgr.OpenSocketItemScript(Text);
 
     OpenMacro(L"Data\\Macro.txt");
@@ -5714,7 +5728,8 @@ void OpenBasicData(HDC hDC)
     OpenMonsterSkillScript(L"Data\\Local\\MonsterSkill.bmd");
 
     g_pMasterLevelInterface->OpenMasterSkillTreeData(L"Data\\Local\\MasterSkillTreeData.bmd");
-    g_pMasterLevelInterface->OpenMasterSkillTooltip(L"Data\\Local\\Eng\\MasterSkillTooltip_eng.bmd");
+    if (!GameConfig::GetInstance().IsSimplifiedChineseLocale())
+        g_pMasterLevelInterface->OpenMasterSkillTooltip(L"Data\\Local\\Eng\\MasterSkillTooltip_eng.bmd");
 
     rUIMng.RenderTitleSceneUI(hDC, 9, 11);
 

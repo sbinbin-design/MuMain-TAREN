@@ -157,6 +157,7 @@ namespace SEASON3B
         void SetMasterSkillTreeData();
         void SetMasterSkillToolTipData();
         void LoadLocalizedMasterSkillTooltip(const wchar_t* path);
+        void MaterializeLocalizedMasterSkillToolTipData();
         void SetLocalizedMasterSkillToolTipData();
 
         void ClearSkillTreeData();
