@@ -1,0 +1,12 @@
+diff --git a/src/SDL_ttf.c b/src/SDL_ttf.c
+--- a/src/SDL_ttf.c
++++ b/src/SDL_ttf.c
+@@ -3601,7 +3601,7 @@ static int CollectGlyphs(TTF_Font *font,
+ 
+         // Compute positions
+         pos->x = x + pos->x_offset;
+-        pos->y = y + F26Dot6(pos->font->ascent) - pos->y_offset;
++        pos->y = y + F26Dot6(font->ascent) - pos->y_offset;
+         x += pos->x_advance;
+         y += pos->y_advance;
+ #if !TTF_USE_HARFBUZZ

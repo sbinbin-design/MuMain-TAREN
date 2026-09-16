@@ -26,10 +26,8 @@ inline constexpr std::string_view kDefaultBundledFontFamily = "DejaVu Sans";
 // the configured UI family and does not use this monospace face.
 inline constexpr BundledFont kBundledFixedFont{
     "Cousine", "fonts/Cousine-Regular.ttf", "fonts/Cousine-Regular.ttf"};
-// ponytail: one Hangul face; SDL_ttf synthesizes bold, bundle NanumGothic-Bold if metric parity requires it.
-inline constexpr BundledFont kBundledFallbackFont{"Noto Sans SC",
-    "fonts/NotoSansSC-Regular.otf",
-    "fonts/NotoSansSC-Regular.otf"};
+// ponytail: one Hangul face; SDL_ttf synthesizes bold, bundle Gulim-Regular.ttf for all fallback roles.
+inline constexpr BundledFont kBundledFallbackFont{"Gulim", "fonts/gulim-Regular.ttf", "fonts/gulim-Regular.ttf"};
 
 [[nodiscard]] inline std::filesystem::path ResolveBundledFontPath(const std::filesystem::path& relativePath)
 {
