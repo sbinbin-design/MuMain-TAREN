@@ -59,6 +59,7 @@ void AppendWide(wchar_t (&buffer)[N], const wchar_t* format, Args... args)
 
     std::swprintf(buffer + currentLength, static_cast<std::size_t>(N - currentLength), format, args...);
 }
+
 } // namespace
 
 void CSBaseMatch::clearMatchInfo(void)
