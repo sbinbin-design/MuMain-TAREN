@@ -4,7 +4,31 @@
 #include "stdafx.h"
 #include "MoveCommandData.h"
 
+#include <algorithm>
+#include <cstddef>
+
 using namespace SEASON3B;
+
+namespace
+{
+    constexpr std::size_t MoveReqMapNameCapacity = 32;
+    constexpr std::size_t MoveReqConversionCapacity = MoveReqMapNameCapacity + 1;
+    using MoveReqMapNameConverter = int32_t (*)(wchar_t*, const char*, int);
+
+    void ConvertMoveReqMapName(wchar_t (&target)[MoveReqMapNameCapacity],
+                               const char (&source)[MoveReqMapNameCapacity],
+                               MoveReqMapNameConverter converter)
+    {
+        wchar_t converted[MoveReqConversionCapacity] = {};
+        const int convertedLength = converter(converted, source, static_cast<int>(sizeof source));
+        const std::size_t copyLength = convertedLength > 0
+                                           ? std::min(static_cast<std::size_t>(convertedLength),
+                                                      MoveReqMapNameCapacity - 1)
+                                           : 0;
+        std::copy_n(converted, copyLength, target);
+        target[MoveReqMapNameCapacity - 1] = L'\0';
+    }
+}
 
 #pragma pack(push, 1)
 typedef struct
@@ -56,11 +80,8 @@ bool CMoveCommandData::Create(const std::wstring& filename, bool useMuChineseLeg
         pMoveInfoData->_ReqInfo.m_iReqMaxLevel = moveReqInfo.m_iReqMaxLevel;
         auto convertMapName = useMuChineseLegacy ? CMultiLanguage::ConvertFromMuChineseLegacy
                                                  : CMultiLanguage::ConvertFromUtf8;
-        convertMapName(pMoveInfoData->_ReqInfo.szMainMapName, moveReqInfo.szMainMapName,
-                       sizeof moveReqInfo.szMainMapName);
-        convertMapName(pMoveInfoData->_ReqInfo.szSubMapName, moveReqInfo.szSubMapName,
-                       sizeof moveReqInfo.szSubMapName);
-
+        ConvertMoveReqMapName(pMoveInfoData->_ReqInfo.szMainMapName, moveReqInfo.szMainMapName, convertMapName);
+        ConvertMoveReqMapName(pMoveInfoData->_ReqInfo.szSubMapName, moveReqInfo.szSubMapName, convertMapName);
         m_listMoveInfoData.push_back(pMoveInfoData);
     }
     fclose(fp);

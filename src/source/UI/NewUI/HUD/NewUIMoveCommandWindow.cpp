@@ -553,7 +553,6 @@ bool SEASON3B::CNewUIMoveCommandWindow::Render()
         {
             iReqLevel = int(float(iReqLevel) * 2.f / 3.f);
         }
-
         if ((*li)->_bCanMove == true)
         {
             g_pRenderText->SetTextColor(255, 255, 255, 255);
