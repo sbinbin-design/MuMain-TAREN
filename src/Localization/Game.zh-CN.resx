@@ -947,7 +947,7 @@
     <comment>legacy_id=233</comment>
   </data>
   <data name="Storage" xml:space="preserve">
-    <value>Storage</value>
+    <value>仓库</value>
     <comment>legacy_id=234,2888</comment>
   </data>
   <data name="Deposit" xml:space="preserve">
