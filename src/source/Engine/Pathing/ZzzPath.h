@@ -324,10 +324,6 @@ inline void PATH::SetEndNodes(bool bErrorCheck, int iWall, int xEnd, int yEnd, f
                     AddClearPos(iEndIndex);
                 }
             }
-            else
-            {
-                g_ErrorReport.Write(L"Error Path : %d \r\n", iEndIndex);
-            }
             iEndIndex = GetIndex(xEnd - i, yEnd + j);
 
             if (iEndIndex >= 0 && iEndIndex < (m_iSize))
@@ -337,10 +333,6 @@ inline void PATH::SetEndNodes(bool bErrorCheck, int iWall, int xEnd, int yEnd, f
                     m_pbyClosed[iEndIndex] = PATH_END;
                     AddClearPos(iEndIndex);
                 }
-            }
-            else
-            {
-                g_ErrorReport.Write(L"Error Path : %d \r\n", iEndIndex);
             }
         }
 
@@ -357,10 +349,6 @@ inline void PATH::SetEndNodes(bool bErrorCheck, int iWall, int xEnd, int yEnd, f
                         AddClearPos(iEndIndex);
                     }
                 }
-                else
-                {
-                    g_ErrorReport.Write(L"Error Path : %d \r\n", iEndIndex);
-                }
 
                 iEndIndex = GetIndex(xEnd - i, yEnd + j);
                 if (iEndIndex >= 0 && iEndIndex < (m_iSize))
@@ -370,10 +358,6 @@ inline void PATH::SetEndNodes(bool bErrorCheck, int iWall, int xEnd, int yEnd, f
                         m_pbyClosed[iEndIndex] = PATH_END;
                         AddClearPos(iEndIndex);
                     }
-                }
-                else
-                {
-                    g_ErrorReport.Write(L"Error Path : %d \r\n", iEndIndex);
                 }
             }
         }

@@ -25,6 +25,23 @@
 
 CMapManager gMapManager;
 
+namespace
+{
+constexpr bool IsDeviasEmptyObjectPlaceholder(int type)
+{
+    switch (type)
+    {
+    case 24:
+    case 26:
+    case 32:
+    case 89:
+        return true;
+    default:
+        return false;
+    }
+}
+}
+
 CMapManager::CMapManager() // OK
 {
     this->WorldActive = -1;
@@ -1160,7 +1177,8 @@ void CMapManager::Load() // OK
 
             worldObjectPresent[i] = true;
             ++worldObjectLoaded;
-            gLoadData.AccessModel(i, DirName, L"Object", i + 1);
+            if (this->WorldActive != WD_2DEVIAS || !IsDeviasEmptyObjectPlaceholder(i))
+                gLoadData.AccessModel(i, DirName, L"Object", i + 1);
         }
 
         mu::log::Get("scenes")->info("World Object load: Object{} loaded={} missing={}", iMapWorld,
