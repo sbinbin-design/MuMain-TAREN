@@ -273,7 +273,7 @@ bool CUIManager::Open(DWORD dwInterface, DWORD dwExtraData)
             Open(INTERFACE_INVENTORY);
 
             if (g_iPShopWndType != PSHOPWNDTYPE_NONE) {
-                g_ErrorReport.Write(L"@ OpenPersonalShop : SendRequestInventory\n");
+                g_ErrorReport.WriteInfo(L"@ OpenPersonalShop : SendRequestInventory\n");
                 SocketClient->ToGameServer()->SendInventoryRequest();
             }
 
@@ -292,7 +292,7 @@ bool CUIManager::Open(DWORD dwInterface, DWORD dwExtraData)
             Open(INTERFACE_INVENTORY);
 
             if (g_iPShopWndType != PSHOPWNDTYPE_NONE) {
-                g_ErrorReport.Write(L"@ OpenPersonalShop : SendRequestInventory\n");
+                g_ErrorReport.WriteInfo(L"@ OpenPersonalShop : SendRequestInventory\n");
                 SocketClient->ToGameServer()->SendInventoryRequest();
             }
             CreatePersonalItemTable();

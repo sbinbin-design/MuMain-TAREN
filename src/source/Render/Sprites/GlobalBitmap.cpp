@@ -625,7 +625,7 @@ void CGlobalBitmap::UnloadAllImages()
 
 #ifdef _DEBUG
     if (!m_mapBitmap.empty())
-        g_ErrorReport.Write(L"Unload Images\r\n");
+        g_ErrorReport.WriteInfo(L"Unload Images\r\n");
 #endif // _DEBUG
 
     SDL_GPUDevice* device = static_cast<SDL_GPUDevice*>(mu::GetRenderer().GetDevice());
@@ -660,7 +660,7 @@ void CGlobalBitmap::UnloadAllImages()
         BITMAP_t* pBitmap = pair.second.get();
         if (pBitmap->Ref > 1)
         {
-            g_ErrorReport.Write(L"Bitmap %ls(RefCount= %d)\r\n", pBitmap->FileName, pBitmap->Ref);
+            g_ErrorReport.WriteInfo(L"Bitmap %ls(RefCount= %d)\r\n", pBitmap->FileName, pBitmap->Ref);
         }
 #endif // _DEBUG
     }

@@ -524,7 +524,7 @@ void ReceiveServerConnect(const BYTE* ReceiveBuffer)
     wchar_t IP[16];
     CMultiLanguage::ConvertFromUtf8(IP, Data->IP);
 
-    g_ErrorReport.Write(L"[ReceiveServerConnect]");
+    g_ErrorReport.WriteInfo(L"[ReceiveServerConnect]");
     if (SocketClient != nullptr)
     {
         SocketClient->Close();
@@ -607,7 +607,7 @@ void ReceiveJoinServer(const BYTE* ReceiveBuffer)
     //         wchar_t lpszTemp[256];
     //         if (Util_CheckOption(GetCommandLineW(), L'i', lpszTemp))
     //         {
-    //             g_ErrorReport.Write(L"> Try to Login \"%ls\"\r\n", m_ID);
+    //             g_ErrorReport.WriteInfo(L"> Try to Login \"%ls\"\r\n", m_ID);
     //             SendRequestLogIn(m_ID, lpszTemp);
     //         }
     //     }
@@ -693,7 +693,7 @@ void ReceiveCharacterListExtended(const BYTE* ReceiveBuffer)
 #ifdef _DEBUG
     g_ConsoleDebug->Write(MCD_RECEIVE, L"[ReceiveList Count %d Max class %d]", Data->CharacterCount, Data->MaxClass);
 #else
-    g_ErrorReport.Write(L"[ReceiveList Count %d Max class %d]", Data->CharacterCount, Data->MaxClass);
+    g_ErrorReport.WriteInfo(L"[ReceiveList Count %d Max class %d]", Data->CharacterCount, Data->MaxClass);
 #endif
 
     CharacterAttribute->IsVaultExtended = Data->IsVaultExtended;
@@ -867,10 +867,11 @@ void ReceiveDeleteCharacter(const BYTE* ReceiveBuffer)
 }
 
 int SummonLife = 0;
+bool ResetFeatureEnabled = false;
 
 extern void StopMusic();
 
-void InitGame()
+void InitGame(const bool sendCloseNpcRequest)
 {
     EnableUse = 0;
     SendGetItem = -1;
@@ -895,7 +896,10 @@ void InitGame()
 
     CheckInventory = nullptr;
 
-    SocketClient->ToGameServer()->SendCloseNpcRequest();
+    if (sendCloseNpcRequest)
+    {
+        SocketClient->ToGameServer()->SendCloseNpcRequest();
+    }
 
     g_iFollowCharacter = -1;
 
@@ -907,6 +911,7 @@ void InitGame()
     UI::Notices::Clear();
 
     CharacterAttribute->InventoryExtensions = 0;
+    ResetFeatureEnabled = false;
     CharacterAttribute->Ability = 0;
     CharacterAttribute->AbilityTime[0] = 0;
     CharacterAttribute->AbilityTime[1] = 0;
@@ -994,7 +999,7 @@ BOOL ReceiveLogOut(const BYTE* ReceiveBuffer, BOOL bEncrypted)
         memset(GuildMark[MARK_EDIT].Mark, 0, sizeof(GuildMark[MARK_EDIT].Mark));
         memset(GuildMark[MARK_EDIT].GuildName, 0, sizeof(GuildMark[MARK_EDIT].GuildName));
         SelectMarkColor = 0;
-        g_ErrorReport.Write(L"[ReceiveLogOut]");
+        g_ErrorReport.WriteInfo(L"[ReceiveLogOut]");
         if (SocketClient != nullptr)
         {
             SocketClient->Close();
@@ -1009,7 +1014,7 @@ BOOL ReceiveLogOut(const BYTE* ReceiveBuffer, BOOL bEncrypted)
 
         LogIn = 0;
         g_csMapServer.Init();
-        InitGame();
+        InitGame(false);
         break;
     }
 
@@ -1058,7 +1063,7 @@ void ResetClientToLoginScene()
     CurrentProtocolState = REQUEST_JOIN_SERVER;
     LogIn = 0;
     g_csMapServer.Init();
-    InitGame();
+    InitGame(false);
 
     g_pWindowMgr->Reset();
     g_pFriendList->ClearFriendList();
@@ -1080,6 +1085,7 @@ void LogSafeCastSizeMismatch(const char* packet_type, std::size_t received, std:
 BOOL ReceiveJoinMapServer(std::span<const BYTE> ReceiveBuffer)
 {
     MouseLButton = false;
+    ResetFeatureEnabled = false;
     HeroIndex = rand() % MAX_CHARACTERS_CLIENT;
     CHARACTER* c = &CharactersClient[HeroIndex];
 
@@ -1116,6 +1122,7 @@ BOOL ReceiveJoinMapServer(std::span<const BYTE> ReceiveBuffer)
     CharacterAttribute->wMinusPoint = Data->wMinusPoint;
     CharacterAttribute->wMaxMinusPoint = Data->wMaxMinusPoint;
     CharacterAttribute->InventoryExtensions = Data->InventoryExtensions;
+    ResetFeatureEnabled = (Data->FeatureFlags & SERVER_FEATURE_RESET) != 0;
     CharacterAttribute->Resets = Data->Resets;
     CharacterAttribute->AttackSpeed = Data->AttackSpeed;
     CharacterAttribute->MagicSpeed = Data->MagicSpeed;
@@ -8934,7 +8941,7 @@ void ReceiveSetAttribute(const BYTE* ReceiveBuffer)
 {
     auto Data = (LPPRECEIVE_SET_MAPATTRIBUTE)ReceiveBuffer;
 
-    g_ErrorReport.Write(L"Type:%d \r\n", Data->m_byType);
+    g_ErrorReport.WriteInfo(L"Type:%d \r\n", Data->m_byType);
 
     switch (Data->m_byType)
     {
@@ -8950,7 +8957,7 @@ void ReceiveSetAttribute(const BYTE* ReceiveBuffer)
             int dx = Data->m_vAttribute[(k * 2) + 1].m_byX - Data->m_vAttribute[(k * 2)].m_byX + 1;
             int dy = Data->m_vAttribute[(k * 2) + 1].m_byY - Data->m_vAttribute[(k * 2)].m_byY + 1;
 
-            g_ErrorReport.Write(L"count:%d, x:%d, y:%d \r\n", Data->m_byCount, dx, dy);
+            g_ErrorReport.WriteInfo(L"count:%d, x:%d, y:%d \r\n", Data->m_byCount, dx, dy);
 
             AddTerrainAttributeRange(Data->m_vAttribute[(k * 2)].m_byX, Data->m_vAttribute[(k * 2)].m_byY, dx, dy,
                                      Data->m_byMapAttr, 1 - Data->m_byMapSetType);
@@ -8963,14 +8970,14 @@ void ReceiveSetAttribute(const BYTE* ReceiveBuffer)
         {
             if (Data->m_byMapSetType)
             {
-                g_ErrorReport.Write(L"SubTerrainAttribute - count:%d, x:%d, y:%d \r\n", Data->m_byCount,
-                                    Data->m_vAttribute[i].m_byX, Data->m_vAttribute[i].m_byY);
+                g_ErrorReport.WriteInfo(L"SubTerrainAttribute - count:%d, x:%d, y:%d \r\n", Data->m_byCount,
+                                        Data->m_vAttribute[i].m_byX, Data->m_vAttribute[i].m_byY);
                 SubTerrainAttribute(Data->m_vAttribute[i].m_byX, Data->m_vAttribute[i].m_byY, Data->m_byMapAttr);
             }
             else
             {
-                g_ErrorReport.Write(L"AddTerrainAttribute - count:%d, x:%d, y:%d \r\n", Data->m_byCount,
-                                    Data->m_vAttribute[i].m_byX, Data->m_vAttribute[i].m_byY);
+                g_ErrorReport.WriteInfo(L"AddTerrainAttribute - count:%d, x:%d, y:%d \r\n", Data->m_byCount,
+                                        Data->m_vAttribute[i].m_byX, Data->m_vAttribute[i].m_byY);
                 AddTerrainAttribute(Data->m_vAttribute[i].m_byX, Data->m_vAttribute[i].m_byY, Data->m_byMapAttr);
             }
         }
@@ -9510,7 +9517,7 @@ void ReceiveRefreshItemList(std::span<const BYTE> ReceiveBuffer)
             auto pCurrentInvenCtrl = g_pPurchaseShopInventory->GetInventoryCtrl();
 
             size_t uiCntInvenCtrl = pCurrentInvenCtrl->GetNumberOfItems();
-            g_ErrorReport.Write(L"@ [Notice] ReceiveRefreshItemList (InventoryCtrl Count Items(%d))\n", uiCntInvenCtrl);
+            g_ErrorReport.WriteInfo(L"@ [Notice] ReceiveRefreshItemList (InventoryCtrl Count Items(%d))\n", uiCntInvenCtrl);
         }
         else
         {

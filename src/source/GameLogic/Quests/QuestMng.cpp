@@ -50,28 +50,34 @@ void CQuestMng::LoadQuestScript()
         return true;
     };
 
-    bool useOfficialChinese = isChineseLocale && fileExists(officialQuestFile) && fileExists(officialQuestWordsFile);
+    const bool useChineseOverlay = isChineseLocale && fileExists(chineseQuestFile) && fileExists(chineseQuestWordsFile);
+    const bool useOfficialChinese = isChineseLocale && !useChineseOverlay && fileExists(officialQuestFile) &&
+                                    fileExists(officialQuestWordsFile);
     const std::wstring defaultQuestFile = L"Data\\Local\\" + g_strSelectedML + L"\\Quest_" + g_strSelectedML + L".bmd";
     const std::wstring defaultQuestWordsFile =
         L"Data\\Local\\" + g_strSelectedML + L"\\QuestWords_" + g_strSelectedML + L".bmd";
 
-    const std::wstring questFile = useOfficialChinese ? officialQuestFile
-                                                       : (isChineseLocale && fileExists(chineseQuestFile)
-                                                              ? chineseQuestFile
-                                                              : defaultQuestFile);
-    const std::wstring questWordsFile = useOfficialChinese ? officialQuestWordsFile
-                                                           : (isChineseLocale && fileExists(chineseQuestWordsFile)
-                                                                  ? chineseQuestWordsFile
-                                                                  : defaultQuestWordsFile);
+    const std::wstring questFile = useChineseOverlay ? chineseQuestFile
+                                                     : (useOfficialChinese ? officialQuestFile : defaultQuestFile);
+    const std::wstring questWordsFile = useChineseOverlay
+                                            ? chineseQuestWordsFile
+                                            : (useOfficialChinese ? officialQuestWordsFile : defaultQuestWordsFile);
     const unsigned int sourceCodePage = useOfficialChinese ? 54936u : CP_UTF8;
 
-    if (!g_csQuest.OpenQuestScript(questFile.c_str(), sourceCodePage) ||
-        !LoadQuestWordsScript(questWordsFile, sourceCodePage))
+    bool questLoaded = g_csQuest.OpenQuestScript(questFile.c_str(), sourceCodePage);
+    bool questWordsLoaded = LoadQuestWordsScript(questWordsFile, sourceCodePage);
+    if (!questLoaded || !questWordsLoaded)
     {
-        if (useOfficialChinese)
+        if (useChineseOverlay && fileExists(officialQuestFile) && fileExists(officialQuestWordsFile))
         {
-            g_csQuest.OpenQuestScript(chineseQuestFile.c_str(), CP_UTF8);
-            LoadQuestWordsScript(chineseQuestWordsFile, CP_UTF8);
+            questLoaded = g_csQuest.OpenQuestScript(officialQuestFile.c_str(), 54936u);
+            questWordsLoaded = LoadQuestWordsScript(officialQuestWordsFile, 54936u);
+        }
+
+        if (!questLoaded || !questWordsLoaded)
+        {
+            g_csQuest.OpenQuestScript(defaultQuestFile.c_str(), CP_UTF8);
+            LoadQuestWordsScript(defaultQuestWordsFile, CP_UTF8);
         }
     }
 

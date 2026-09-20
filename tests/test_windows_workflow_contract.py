@@ -68,7 +68,6 @@ EXPECTED_WINDOWS_OS_DLLS = {
     "comdlg32.dll",
     "crypt32.dll",
     "d3d12.dll",
-    "dbghelp.dll",
     "dinput8.dll",
     "dnsapi.dll",
     "dwmapi.dll",

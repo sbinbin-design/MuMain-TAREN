@@ -176,8 +176,7 @@ static void InitializeMainScene()
 
     SetFocus(g_hWnd);
 
-    g_ErrorReport.Write(L"> Main Scene init success. ");
-    g_ErrorReport.WriteCurrentTime();
+    g_ErrorReport.WriteInfo(L"> Main Scene init success.");
 
     g_ConsoleDebug->Write(MCD_NORMAL, L"MainScene Init Success");
 }

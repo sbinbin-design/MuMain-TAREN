@@ -327,6 +327,7 @@ void CMapManager::Load() // OK
         LoadWaveFile(SOUND_BC_EROHIM_DIE, L"Data\\Sound\\w31\\mELOdeath.wav", 1);
         break;
     case WD_33AIDA:
+    {
         gLoadData.AccessModel(MODEL_BUTTERFLY01, L"Data\\Object1\\", L"Butterfly", 1);
         gLoadData.OpenTexture(MODEL_BUTTERFLY01, L"Object1\\");
         gLoadData.AccessModel(MODEL_TREE_ATTACK, L"Data\\Object34\\", L"tree_eff");
@@ -342,7 +343,23 @@ void CMapManager::Load() // OK
         LoadWaveFile(SOUND_AIDA_BLUEGOLEM_ATTACK1, L"Data\\Sound\\w34\\bg_attack1.wav", 1);
         LoadWaveFile(SOUND_AIDA_BLUEGOLEM_ATTACK2, L"Data\\Sound\\w34\\bg_attack2.wav", 1);
         LoadWaveFile(SOUND_AIDA_BLUEGOLEM_DIE, L"Data\\Sound\\w34\\bg_death.wav", 1);
-        LoadWaveFile(SOUND_AIDA_DEATHRAIDER_MOVE1, L"Data\\Sound\\w34\\dr_idle1.wav", 1);
+        const wchar_t* deathRaiderMove1Path = L"Data\\Sound\\w34\\dr_idle1.wav";
+        const DWORD deathRaiderMove1Attributes = GetFileAttributesW(deathRaiderMove1Path);
+        if (deathRaiderMove1Attributes != INVALID_FILE_ATTRIBUTES &&
+            (deathRaiderMove1Attributes & FILE_ATTRIBUTE_DIRECTORY) == 0)
+        {
+            LoadWaveFile(SOUND_AIDA_DEATHRAIDER_MOVE1, deathRaiderMove1Path, 1);
+        }
+        else
+        {
+            deathRaiderMove1Path = L"Data\\Sound\\w34\\dr_idle01.wav";
+            const DWORD fallbackAttributes = GetFileAttributesW(deathRaiderMove1Path);
+            if (fallbackAttributes != INVALID_FILE_ATTRIBUTES &&
+                (fallbackAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0)
+            {
+                LoadWaveFile(SOUND_AIDA_DEATHRAIDER_MOVE1, deathRaiderMove1Path, 1);
+            }
+        }
         LoadWaveFile(SOUND_AIDA_DEATHRAIDER_MOVE2, L"Data\\Sound\\w34\\dr_idle2.wav", 1);
         LoadWaveFile(SOUND_AIDA_DEATHRAIDER_ATTACK1, L"Data\\Sound\\w34\\dr_attack1.wav", 1);
         LoadWaveFile(SOUND_AIDA_DEATHRAIDER_ATTACK2, L"Data\\Sound\\w34\\dr_attack2.wav", 1);
@@ -371,6 +388,7 @@ void CMapManager::Load() // OK
         LoadWaveFile(SOUND_CHAOS_THUNDER01, L"Data\\Sound\\eElec1.wav", 1);
         LoadWaveFile(SOUND_CHAOS_THUNDER02, L"Data\\Sound\\eElec2.wav", 1);
         break;
+    }
     case WD_68DOPPLEGANGER4:
         LoadBitmap(L"Effect\\clouds.jpg", BITMAP_CLOUD, GL_LINEAR, GL_CLAMP_TO_EDGE);
         LoadBitmap(L"effect\\water.jpg", BITMAP_TWINTAIL_WATER, GL_LINEAR, GL_CLAMP_TO_EDGE);

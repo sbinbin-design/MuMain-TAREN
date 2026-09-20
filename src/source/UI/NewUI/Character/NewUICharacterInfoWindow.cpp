@@ -17,14 +17,13 @@
 #include "UI/Legacy/UIJewelHarmony.h"
 #include "UI/Legacy/UIManager.h"
 #include "Network/Server/ServerListManager.h"
+#include "Network/Server/WSclient.h"
 #include "I18N/All.h"
 
 using namespace SEASON3B;
 
 namespace
 {
-    constexpr int kTableTextFieldGap = 5;
-
     float GetMasterSkillValue(ActionSkillType skill)
     {
         return CharacterAttribute->MasterSkillInfo[skill].GetSkillValue();
@@ -260,11 +259,6 @@ void SEASON3B::CNewUICharacterInfoWindow::RenderFrame()
         RenderImage(IMAGE_CHAINFO_TABLE_BOTTOM_PIXEL, x, m_Pos.y + 119 - 14, 1, 14);
     }
 
-    for (int x = m_Pos.x + 14; x < m_Pos.x + 12 + 165 - 4; ++x)
-    {
-        RenderImage(IMAGE_CHAINFO_TABLE_BOTTOM_PIXEL, x, m_Pos.y + 48 + 12, 1, 14);
-    }
-
     for (int y = m_Pos.y + 48 + 14; y < m_Pos.y + 119 - 14; y++)
     {
         RenderImage(IMAGE_CHAINFO_TABLE_LEFT_PIXEL, m_Pos.x + 12, y, 14, 1);
@@ -326,15 +320,15 @@ void SEASON3B::CNewUICharacterInfoWindow::RenderSubjectTexts()
 
 void SEASON3B::CNewUICharacterInfoWindow::RenderTableTexts()
 {
+    const int summaryYOffset = ResetFeatureEnabled ? 0 : -6;
     wchar_t strLevel[128];
     wchar_t strExp[128];
     wchar_t strPoint[128];
 
-    mu_swprintf(strLevel, I18N::Game::LevelUResetsU, CharacterAttribute->Level, CharacterAttribute->Resets);
+    mu_swprintf(strLevel, I18N::Game::CharacterLevelU, static_cast<unsigned int>(CharacterAttribute->Level));
     mu_swprintf(strExp, I18N::Game::EXPI64dI64d, CharacterAttribute->Experience, CharacterAttribute->NextExperience);
 
     g_pRenderText->SetFont(g_hFontBold);
-    const SIZE levelTextSize = g_pRenderText->MeasureText(strLevel, static_cast<int>(wcslen(strLevel)));
 
     if (CharacterAttribute->Level > 9)
     {
@@ -361,31 +355,30 @@ void SEASON3B::CNewUICharacterInfoWindow::RenderTableTexts()
 
     g_pRenderText->SetTextColor(230, 230, 0, 255);
     g_pRenderText->SetBgColor(0, 0, 0, 0);
-    g_pRenderText->RenderText(m_Pos.x + 18, m_Pos.y + 58, strLevel);
+    g_pRenderText->RenderText(m_Pos.x + 18, m_Pos.y + 65 + summaryYOffset, strLevel);
 
-    if (CharacterAttribute->LevelUpPoint > 0)
+    wchar_t strLevelUpPoint[128];
+    mu_swprintf(strLevelUpPoint, I18N::Game::CharacterPointU,
+        static_cast<unsigned int>(CharacterAttribute->LevelUpPoint));
+    g_pRenderText->SetFont(g_hFontBold);
+    g_pRenderText->SetTextColor(255, 138, 0, 255);
+    g_pRenderText->SetBgColor(0, 0, 0, 0);
+    g_pRenderText->RenderText(m_Pos.x + 83, m_Pos.y + 65 + summaryYOffset, strLevelUpPoint, 86, 0, RT3_SORT_RIGHT);
+
+    if (ResetFeatureEnabled)
     {
-        wchar_t strLevelUpPoint[128];
-
-        if (gCharacterManager.IsMasterLevel(CharacterAttribute->Class) == false || CharacterAttribute->LevelUpPoint > 0)
-        {
-            mu_swprintf(strLevelUpPoint, I18N::Game::PointD, CharacterAttribute->LevelUpPoint);
-        }
-        else
-            mu_swprintf(strLevelUpPoint, L"");
+        wchar_t strResets[128];
+        mu_swprintf(strResets, I18N::Game::ResetsU, static_cast<unsigned int>(CharacterAttribute->Resets));
         g_pRenderText->SetFont(g_hFontBold);
-        g_pRenderText->SetTextColor(255, 138, 0, 255);
+        g_pRenderText->SetTextColor(230, 230, 0, 255);
         g_pRenderText->SetBgColor(0, 0, 0, 0);
-        const int originalPointX = m_Pos.x + 110;
-        const int measuredPointX = m_Pos.x + 18 + levelTextSize.cx + kTableTextFieldGap;
-        const int pointX = std::max(originalPointX, measuredPointX);
-        g_pRenderText->RenderText(pointX, m_Pos.y + 58, strLevelUpPoint);
+        g_pRenderText->RenderText(m_Pos.x + 83, m_Pos.y + 53, strResets, 86, 0, RT3_SORT_RIGHT);
     }
 
     g_pRenderText->SetFont(g_hFont);
     g_pRenderText->SetTextColor(255, 255, 255, 255);
     g_pRenderText->SetBgColor(0, 0, 0, 0);
-    g_pRenderText->RenderText(m_Pos.x + 18, m_Pos.y + 75, strExp);
+    g_pRenderText->RenderText(m_Pos.x + 18, m_Pos.y + 78 + summaryYOffset, strExp);
 
     int iAddPoint, iMinusPoint;
 
@@ -453,11 +446,11 @@ void SEASON3B::CNewUICharacterInfoWindow::RenderTableTexts()
     g_pRenderText->SetFont(g_hFont);
     g_pRenderText->SetTextColor(76, 197, 254, 255);
     g_pRenderText->SetBgColor(0, 0, 0, 0);
-    g_pRenderText->RenderText(m_Pos.x + 18, m_Pos.y + 88, strPointProbability);
+    g_pRenderText->RenderText(m_Pos.x + 18, m_Pos.y + 91 + summaryYOffset, strPointProbability);
 
     g_pRenderText->SetTextColor(76, 197, 254, 255);
     g_pRenderText->SetBgColor(0, 0, 0, 0);
-    g_pRenderText->RenderText(m_Pos.x + 18, m_Pos.y + 101, strPoint);
+    g_pRenderText->RenderText(m_Pos.x + 18, m_Pos.y + 104 + summaryYOffset, strPoint);
 }
 
 void SEASON3B::CNewUICharacterInfoWindow::RenderAttribute()

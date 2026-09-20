@@ -350,7 +350,7 @@ void NewMoveLogInScene()
     // ESC menu toggle is handled by CUIMng::Update()
     if (RECEIVE_LOG_IN_SUCCESS == CurrentProtocolState)
     {
-        g_ErrorReport.Write(L"> Request Character list\r\n");
+        g_ErrorReport.WriteInfo(L"> Request Character list\r\n");
 
         CCameraMove::GetInstancePtr()->SetTourMode(FALSE);
 

@@ -12991,6 +12991,15 @@
     <value>Level: %u | Resets: %u</value>
     <comment>legacy_id=3810</comment>
   </data>
+  <data name="Resets: %u" xml:space="preserve">
+    <value>Resets: %u</value>
+  </data>
+  <data name="CharacterLevelU" xml:space="preserve">
+    <value>Level: %u</value>
+  </data>
+  <data name="CharacterPointU" xml:space="preserve">
+    <value>Points: %u</value>
+  </data>
   <data name="BasicAttackFallback" xml:space="preserve">
     <value>Basic Attack Fallback</value>
   </data>

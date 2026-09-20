@@ -256,8 +256,8 @@ static void ConsumeDiagnosticFrameCapture()
         return;
     }
 
-    g_ErrorReport.Write(L"[capture] wrote frame %llu (%ux%u) to %hs\r\n",
-                        static_cast<unsigned long long>(capture.targetFrame), pixels.width, pixels.height, path);
+    g_ErrorReport.WriteInfo(L"[capture] wrote frame %llu (%ux%u) to %hs\r\n",
+                            static_cast<unsigned long long>(capture.targetFrame), pixels.width, pixels.height, path);
 }
 
 // Monitor refresh rate (Hz) for the display the window is on, via SDL instead

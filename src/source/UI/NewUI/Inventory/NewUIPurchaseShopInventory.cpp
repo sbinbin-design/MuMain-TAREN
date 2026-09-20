@@ -305,7 +305,7 @@ void SEASON3B::CNewUIPurchaseShopInventory::ClosingProcess()
     if (m_pNewInventoryCtrl)
     {
         m_pNewInventoryCtrl->RemoveAllItems();
-        g_ErrorReport.Write(L"@ [Notice] CNewUIPurchaseShopInventory::ClosingProcess():m_pNewInventoryCtrl->RemoveAllItems(); )\n");
+        g_ErrorReport.WriteInfo(L"@ [Notice] CNewUIPurchaseShopInventory::ClosingProcess():m_pNewInventoryCtrl->RemoveAllItems(); )\n");
     }
 
     m_ShopCharacterIndex = -1;

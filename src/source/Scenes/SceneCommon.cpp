@@ -66,7 +66,7 @@ extern ITEM PickItem;
 extern ITEM TargetItem;
 extern int ErrorMessage;
 extern bool MouseLButtonPush;
-extern int MouseUpdateTime;
+extern float MouseUpdateTime;
 extern int MouseUpdateTimeMax;
 extern SKILL_ATTRIBUTE* SkillAttribute;
 extern bool g_bEnterPressed;

@@ -143,7 +143,7 @@ void CreateCharacterScene()
     ImmReleaseContext(g_hWnd, hIMC);
     g_bIMEBlock = TRUE;
 
-    g_ErrorReport.Write(L"> Character scene init success.\r\n");
+    g_ErrorReport.WriteInfo(L"> Character scene init success.\r\n");
 }
 
 void NewMoveCharacterScene()

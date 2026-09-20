@@ -76,6 +76,10 @@
 #define EQUIPMENT_LENGTH_EXTENDED    25
 #define MAX_SPE_BUFFERSIZE_	( 2048)
 
+// Bit 0 advertises Reset; bits 1-7 are reserved for future server features.
+constexpr BYTE SERVER_FEATURE_RESET = 0x01;
+extern bool ResetFeatureEnabled;
+
 // English Protocol:
 #define PACKET_MOVE         0xD4
 #define PACKET_POSITION     0x15
@@ -394,7 +398,7 @@ typedef struct
     WORD         MagicSpeed;
     WORD         MaxAttackSpeed;
     BYTE		 InventoryExtensions;
-    BYTE         Spare;
+    BYTE         FeatureFlags;
     WORD         Resets;
 } PRECEIVE_JOIN_MAP_SERVER_EXTENDED, * LPPRECEIVE_JOIN_MAP_SERVER_EXTENDED;
 #pragma pack(pop)
@@ -3603,7 +3607,7 @@ struct PacketInfo
 };
 void ProcessPacketCallback(const PacketInfo* Packet);
 
-void InitGame();
+void InitGame(bool sendCloseNpcRequest = true);
 void InitGuildWar();
 
 bool Check_Switch(PRECEIVE_CROWN_SWITCH_INFO* Data);

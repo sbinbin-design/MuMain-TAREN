@@ -98,7 +98,7 @@ DWORD g_dwLatestMagicTick;
 const   float   AutoMouseLimitTime = (1.f * 60.f * 60.f);
 int   LoadingWorld = 0;
 int   ItemHelp = 0;
-int   MouseUpdateTime = 0;
+float MouseUpdateTime = 0;
 int   MouseUpdateTimeMax = 6;
 // Latched when a click opens an NPC conversation while the button is still held.
 // The world click handler ignores the held button until it is physically released, so the
@@ -208,9 +208,9 @@ void PrintPKLog(CHARACTER* pCha)
     {
         if (pCha->PK >= PVP_MURDERER2 && pCha->Object.Kind == KIND_PLAYER)
         {
-            g_ErrorReport.Write(L"!!!!!!!!!!!!!!!!! PK !!!!!!!!!!!!!!!\n");
-            g_ErrorReport.WriteCurrentTime();
-            g_ErrorReport.Write(L" ID(%ls) PK(%d) GuildName(%ls)\n", pCha->ID, pCha->PK, GuildMark[pCha->GuildMarkIndex].GuildName);
+            g_ErrorReport.WriteInfo(L"!!!!!!!!!!!!!!!!! PK !!!!!!!!!!!!!!!\n");
+            g_ErrorReport.WriteInfoCurrentTime();
+            g_ErrorReport.WriteInfo(L" ID(%ls) PK(%d) GuildName(%ls)\n", pCha->ID, pCha->PK, GuildMark[pCha->GuildMarkIndex].GuildName);
 #ifdef CONSOLE_DEBUG
             g_ConsoleDebug->Write(MCD_ERROR, L"[!!! PK !!! : ID(%ls) PK(%d) GuildName(%ls)\n]", pCha->ID, pCha->PK, GuildMark[pCha->GuildMarkIndex].GuildName);
 #endif // CONSOLE_DEBUG
@@ -1858,7 +1858,7 @@ void SendMove(CHARACTER* c, OBJECT* o)
 
     if (c->Path.PathNum <= 2)
     {
-        MouseUpdateTimeMax = 0;
+        MouseUpdateTimeMax = 6;
     }
     else if (c->Path.PathNum == 3)
     {
@@ -3307,7 +3307,7 @@ void MoveHero()
                 }
             }
         }
-        MouseUpdateTime++;
+        MouseUpdateTime += FPS_ANIMATION_FACTOR;
     }
 
     Attack(Hero);

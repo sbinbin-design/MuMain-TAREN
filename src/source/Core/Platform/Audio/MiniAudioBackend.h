@@ -66,7 +66,6 @@ public:
 private:
     // Convert DirectSound volume (dB * 100, range -10000..0) to linear 0.0..1.0
     static float DbToLinear(long dsVol);
-
     ma_engine m_engine{};
 
     // Per-sound polyphonic slots: [ESound index][channel index]

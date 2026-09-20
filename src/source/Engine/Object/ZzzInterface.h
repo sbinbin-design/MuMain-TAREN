@@ -37,7 +37,7 @@ extern int  SelectModel;
 extern int  SelectMapping;
 extern bool DebugEnable;
 extern bool MouseOnWindow;
-extern int  MouseUpdateTime;
+extern float MouseUpdateTime;
 extern int  MouseUpdateTimeMax;
 extern int  TalkNPC;
 extern int  SelectedItem;

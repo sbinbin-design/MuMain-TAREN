@@ -415,8 +415,8 @@ void CLoginWin::RequestLogin()
         {
             g_ConsoleDebug->Write(MCD_NORMAL, L"Login with the following account: %ls", m_Username);
 
-            g_ErrorReport.Write(L"> Login Request.\r\n");
-            g_ErrorReport.Write(L"> Try to Login \"%ls\"\r\n", m_Username);
+            g_ErrorReport.WriteInfo(L"> Login Request.\r\n");
+            g_ErrorReport.WriteInfo(L"> Try to Login \"%ls\"\r\n", m_Username);
 
             LogIn = 1;
             wcscpy(LogInID, (m_Username));

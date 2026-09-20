@@ -12991,6 +12991,15 @@
     <value>等级: %u | 重置次数: %u</value>
     <comment>legacy_id=3810</comment>
   </data>
+  <data name="Resets: %u" xml:space="preserve">
+    <value>转生：%u</value>
+  </data>
+  <data name="CharacterLevelU" xml:space="preserve">
+    <value>等级：%u</value>
+  </data>
+  <data name="CharacterPointU" xml:space="preserve">
+    <value>点数：%u</value>
+  </data>
   <data name="BasicAttackFallback" xml:space="preserve">
     <value>Basic Attack Fallback</value>
   </data>

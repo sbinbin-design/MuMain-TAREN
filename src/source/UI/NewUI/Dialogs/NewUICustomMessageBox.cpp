@@ -2359,8 +2359,7 @@ CALLBACK_RESULT SEASON3B::CSystemMenuMsgBox::ChooseServerBtnDown(class CNewUIMes
     Suc_Or_Fail = -1;
     M34CryWolf1st::CryWolfMVPInit();
 
-    g_ErrorReport.Write(L"> Menu - Join another server. ");
-    g_ErrorReport.WriteCurrentTime();
+    g_ErrorReport.WriteInfo(L"> Menu - Join another server.");
 
     SaveOptions();
     SaveMacro(L"Data\\Macro.txt");
@@ -2390,8 +2389,7 @@ CALLBACK_RESULT SEASON3B::CSystemMenuMsgBox::ChooseCharacterBtnDown(class CNewUI
     Suc_Or_Fail = -1;
     M34CryWolf1st::CryWolfMVPInit();
 
-    g_ErrorReport.Write(L"> Menu - Join with another character. ");
-    g_ErrorReport.WriteCurrentTime();
+    g_ErrorReport.WriteInfo(L"> Menu - Join with another character.");
 
     //  게임내에서 설정한 데이터 저장.
     SaveOptions();

@@ -123,8 +123,7 @@ void CSysMenuWin::UpdateWhileActive(double dDeltaTick)
     }
     else if (m_aBtn[SMW_BTN_SERVER_SEL].IsClick())
     {
-        g_ErrorReport.Write(L"> Menu - Join another server.");
-        g_ErrorReport.WriteCurrentTime();
+        g_ErrorReport.WriteInfo(L"> Menu - Join another server.");
         LogOut = true;
         SocketClient->ToGameServer()->SendLogOut(LogOutType::BackToServerSelection);
         g_ConsoleDebug->Write(MCD_SEND, L"0xF1 [SendRequestLogOut] 2");
