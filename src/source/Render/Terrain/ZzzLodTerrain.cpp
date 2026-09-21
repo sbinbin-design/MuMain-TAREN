@@ -1860,6 +1860,61 @@ void RenderTerrainAlphaBitmap(int Texture, float xf, float yf, float SizeX, floa
     }
 }
 
+namespace
+{
+    void RenderFenrirFootprintTile(int Texture, float x0, float x1, float y0, float y1,
+                                   float minX, float maxX, float minY, float maxY,
+                                   vec3_t Light, float Alpha, float Height)
+    {
+        if (x0 >= x1 || y0 >= y1)
+            return;
+
+        const float u0 = (x0 - minX) / (maxX - minX);
+        const float u1 = (x1 - minX) / (maxX - minX);
+        const float v0 = (y0 - minY) / (maxY - minY);
+        const float v1 = (y1 - minY) / (maxY - minY);
+        const std::uint32_t color = mu::PackABGR(Light[0], Light[1], Light[2], Alpha);
+        mu::Vertex3D vertices[4] = {
+            {x0, y0, RequestTerrainHeight(x0, y0) + Height, 0.f, 0.f, 1.f, u0, v0, color},
+            {x1, y0, RequestTerrainHeight(x1, y0) + Height, 0.f, 0.f, 1.f, u1, v0, color},
+            {x1, y1, RequestTerrainHeight(x1, y1) + Height, 0.f, 0.f, 1.f, u1, v1, color},
+            {x0, y1, RequestTerrainHeight(x0, y1) + Height, 0.f, 0.f, 1.f, u0, v1, color},
+        };
+        mu::GetRenderer().RenderQuad3D(vertices, static_cast<std::uint32_t>(Texture));
+    }
+}
+
+void RenderFenrirFootprint(int Texture, float xf, float yf, float SizeX, float SizeY, vec3_t Light, float Alpha, float Height)
+{
+    if (SizeX <= 0.f || SizeY <= 0.f)
+        return;
+
+    const float minX = xf - SizeX * TERRAIN_SCALE * 0.5f;
+    const float maxX = xf + SizeX * TERRAIN_SCALE * 0.5f;
+    const float minY = yf - SizeY * TERRAIN_SCALE * 0.5f;
+    const float maxY = yf + SizeY * TERRAIN_SCALE * 0.5f;
+    const int minTileX = std::max(0, static_cast<int>(std::floor(minX / TERRAIN_SCALE)));
+    const int maxTileX = std::min(TERRAIN_SIZE_MASK - 1, static_cast<int>(std::floor(maxX / TERRAIN_SCALE)));
+    const int minTileY = std::max(0, static_cast<int>(std::floor(minY / TERRAIN_SCALE)));
+    const int maxTileY = std::min(TERRAIN_SIZE_MASK - 1, static_cast<int>(std::floor(maxY / TERRAIN_SCALE)));
+    for (int tileY = minTileY; tileY <= maxTileY; ++tileY)
+    {
+        for (int tileX = minTileX; tileX <= maxTileX; ++tileX)
+        {
+            const float tileMinX = tileX * TERRAIN_SCALE;
+            const float tileMaxX = (tileX + 1) * TERRAIN_SCALE;
+            const float tileMinY = tileY * TERRAIN_SCALE;
+            const float tileMaxY = (tileY + 1) * TERRAIN_SCALE;
+            const float x0 = std::max(minX, tileMinX);
+            const float x1 = std::min(maxX, tileMaxX);
+            const float y0 = std::max(minY, tileMinY);
+            const float y1 = std::min(maxY, tileMaxY);
+
+            RenderFenrirFootprintTile(Texture, x0, x1, y0, y1, minX, maxX, minY, maxY, Light, Alpha, Height);
+        }
+    }
+}
+
 // Terrain iteration bounds — limits which tiles are visited by rendering/lighting loops.
 int     FrustrumBoundMinX = 0;
 int     FrustrumBoundMinY = 0;

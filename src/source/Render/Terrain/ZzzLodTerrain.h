@@ -92,6 +92,7 @@ void RenderTerrain_After(bool EditFlag);
 
 void RenderTerrainBitmap(int Texture, int mxi, int myi, float Rotation);
 void RenderTerrainAlphaBitmap(int Texture, float xf, float yf, float SizeX, float SizeY, vec3_t Light, float Rotation = 0.f, float Alpha = 1.f, float Height = 5.f);
+void RenderFenrirFootprint(int Texture, float xf, float yf, float SizeX, float SizeY, vec3_t Light, float Alpha = 1.f, float Height = 5.f);
 
 void CreateSun();
 void RenderSky();

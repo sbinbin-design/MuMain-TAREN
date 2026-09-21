@@ -9065,7 +9065,14 @@ void RenderEffects(bool bRenderBlendMesh)
                 case MODEL_FENRIR_FOOT_THUNDER:
                 {
                     EnableAlphaBlend();
-                    RenderTerrainAlphaBitmap(BITMAP_FENRIR_FOOT_THUNDER1 + (o->m_iAnimation % 5), o->Position[0], o->Position[1], 0.6f, 0.6f, o->Light);
+                    if (o->Owner != nullptr && o->Owner->Type == MODEL_FENRIR_GOLD)
+                    {
+                        RenderFenrirFootprint(BITMAP_FENRIR_FOOT_THUNDER1 + (o->m_iAnimation % 5), o->Position[0], o->Position[1], 0.6f, 0.6f, o->Light);
+                    }
+                    else
+                    {
+                        RenderTerrainAlphaBitmap(BITMAP_FENRIR_FOOT_THUNDER1 + (o->m_iAnimation % 5), o->Position[0], o->Position[1], 0.6f, 0.6f, o->Light);
+                    }
                     DisableAlphaBlend();
                 }
                 break;
