@@ -7008,7 +7008,8 @@ void RenderLinkObject(float x, float y, float z, CHARACTER* c, PART_t* f, int Ty
         && Type != MODEL_WING + 135 // Small Cape of Fighter
         )
     {
-        RenderPartObjectEffect(Object, Type, c->Light, o->Alpha, Level, Option1, false, 0, RenderType | ((c->MonsterIndex == MONSTER_METAL_BALROG || c->MonsterIndex == MONSTER_ORC_ARCHER_OF_DOOM) ? (RENDER_EXTRA | RENDER_TEXTURE) : RENDER_TEXTURE));
+        RenderPartObjectEffect(Object, Type, c->Light, o->Alpha, Level, Option1, false, 0,
+            RenderType | ((c->MonsterIndex == MONSTER_METAL_BALROG || c->MonsterIndex == MONSTER_ORC_ARCHER_OF_DOOM) ? (RENDER_EXTRA | RENDER_TEXTURE) : RENDER_TEXTURE));
     }
 
     // Restore the caller's active bone transform — the linked item render above overwrote
@@ -8437,13 +8438,11 @@ void RenderLinkObject(float x, float y, float z, CHARACTER* c, PART_t* f, int Ty
         case MODEL_CAPE_OF_OVERRULE:        // Cape of Overrule
         case MODEL_WING + 130:        // Small Cape of Lord
         case MODEL_WING + 135:        // Little Warrior's Cloak
+        {
             b->RenderBodyShadow(-1, -1, -1, -1, o->m_pCloth, o->m_byNumCloth);
             break;
+        }
         default:
-            if (o->m_pCloth)
-            {
-                b->RenderBodyShadow(-1, -1, -1, -1, o->m_pCloth, o->m_byNumCloth);
-            }
             break;
         }
     }
@@ -8631,8 +8630,7 @@ void RenderCharacter(CHARACTER* c, OBJECT* o, int Select)
                 {
                     int Type = p->Type;
                     PART_t ShadowPart = *p;
-
-                    RenderLinkObject(0.f, 0.f, 0.f, c, &ShadowPart, Type, 0, 0, false, Translate);
+                    RenderLinkObject(0.f, 0.f, 0.f, c, &ShadowPart, Type, 0, 0, false, Translate, 0, true);
                 }
             }
             o->EnableShadow = false;
@@ -9245,6 +9243,7 @@ void RenderCharacter(CHARACTER* c, OBJECT* o, int Select)
             Vector(0.f, 0.2f, 1.f, CloakLight);
         }
     }
+
 
     if (SceneFlag == CHARACTER_SCENE)
     {
@@ -10168,7 +10167,10 @@ void RenderCharacter(CHARACTER* c, OBJECT* o, int Select)
                 if (g_CMonkSystem.IsSwordformGloves(w->Type))
                     g_CMonkSystem.RenderSwordformGloves(c, w->Type, i, o->Alpha, Translate, Select);
                 else
-                    RenderLinkObject(0.f, 0.f, 0.f, c, w, w->Type, w->Level, w->ExcellentFlags, false, Translate);
+                {
+                    RenderLinkObject(0.f, 0.f, 0.f, c, w, w->Type, w->Level, w->ExcellentFlags,
+                        false, Translate, 0, true);
+                }
 
                 if (w->Level >= 7)
                 {

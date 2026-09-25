@@ -5,7 +5,9 @@
 #include <cstdint>
 #include <cmath>
 #include <cassert>
-#include <set>
+#include <algorithm>
+#include <cstdlib>
+#include <unordered_map>
 #include <utility>
 #include "Render/Textures/ZzzOpenglUtil.h"
 
@@ -2739,7 +2741,6 @@ void BMD::AddMeshShadowTriangles(const int blendMesh, const int hiddenMesh, cons
                 target_vertex_index++;
 
                 VectorCopy(VertexTransform[i][source_vertex_index], vertices[target_vertex_index]);
-
                 CalcShadowPosition(&vertices[target_vertex_index], BodyOrigin, sx, sy);
             }
         }

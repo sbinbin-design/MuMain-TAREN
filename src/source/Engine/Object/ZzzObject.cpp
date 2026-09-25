@@ -9410,7 +9410,7 @@ void RenderPartObjectEffect(OBJECT* o, int Type, vec3_t Light, float Alpha, int 
                     iHiddenMesh = 0;
                 }
 
-                b->RenderBodyShadow(o->BlendMesh, iHiddenMesh);
+                b->RenderBodyShadow(o->BlendMesh, iHiddenMesh, -1, -1, nullptr, 0, 1.f);
             }
         }
         return;

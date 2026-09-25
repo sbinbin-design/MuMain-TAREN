@@ -192,6 +192,11 @@ public:
         return (m_oOwner);
     }
 
+    int GetBoneIndex() const { return m_iBone; }
+    float GetWidth() const { return m_fWidth; }
+    float GetHeight() const { return m_fHeight; }
+    DWORD GetCreateFlags() const { return m_dwType; }
+
 protected:
     float m_fUnitWidth, m_fUnitHeight;
 

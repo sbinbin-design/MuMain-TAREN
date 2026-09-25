@@ -326,6 +326,7 @@ BOOL CPhysicsCloth::Create(OBJECT* o, int iBone, float fxPos, float fyPos, float
 {
     assert(iNumHor > 1 && iNumVer > 1);
 
+
     m_oOwner = o;
     m_iBone = iBone;
     m_iTexFront = iTexFront;

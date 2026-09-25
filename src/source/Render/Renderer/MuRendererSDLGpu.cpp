@@ -803,10 +803,16 @@ static void ReplayDrawCommand(const RenderCmd& command, bool boneDataReady, cons
     BindReplayFragmentSampler(command, state);
     PushReplayFragmentUniforms(command.fogUniform, state);
 
-    if (command.type == RenderCmdType::DrawIndexedQuads || command.type == RenderCmdType::DrawIndexedStrip)
+    const bool indexed = command.type == RenderCmdType::DrawIndexedQuads ||
+                         command.type == RenderCmdType::DrawIndexedStrip;
+    if (indexed)
+    {
         SDL_DrawGPUIndexedPrimitives(s_renderPass, command.idxCount, 1, 0, 0, 0);
+    }
     else
+    {
         SDL_DrawGPUPrimitives(s_renderPass, command.vtxCount, 1, 0, 0);
+    }
     ++s_dbgGpuDrawCallsThisFrame;
 }
 
@@ -1347,11 +1353,12 @@ public:
         // Create GPU device with all supported shader formats.
         // SDL_gpu selects the platform backend automatically:
         //   Metal on macOS, Vulkan on Linux, D3D12 on Windows.
+        const bool gpuDebugMode = Render::kGpuValidationEnabled;
         mu::log::Get("render")->info("SDL_gpu -- validation: {}",
                                      Render::kGpuValidationEnabled ? "enabled" : "disabled");
         s_device =
             SDL_CreateGPUDevice(SDL_GPU_SHADERFORMAT_SPIRV | SDL_GPU_SHADERFORMAT_DXIL | SDL_GPU_SHADERFORMAT_MSL,
-                                Render::kGpuValidationEnabled, nullptr);
+                                gpuDebugMode, nullptr);
 
         if (!s_device)
         {
@@ -1981,8 +1988,9 @@ public:
             // Replay state and editor commands after texture invalidation, but skip
             // game draws because their deferred texture pointers may be dangling.
             Render::SdlGpuReplayState replayState;
-            for (const auto& cmd : s_renderCmds)
+            for (std::size_t commandIndex = 0; commandIndex < s_renderCmds.size(); ++commandIndex)
             {
+                const auto& cmd = s_renderCmds[commandIndex];
                 if (s_texturesInvalidated && IsUnsafeInvalidatedDrawCommand(cmd.type))
                 {
                     continue;
