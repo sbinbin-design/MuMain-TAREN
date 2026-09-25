@@ -4770,7 +4770,7 @@ void MoveParticles()
                 {
                     o->Gravity += (0.02f) * FPS_ANIMATION_FACTOR;
                     o->Scale += o->Gravity * FPS_ANIMATION_FACTOR;
-                    VectorScale(o->Velocity, 1.05f, o->Velocity);
+                    VectorScale(o->Velocity, powf(1.05f, FPS_ANIMATION_FACTOR), o->Velocity);
                     o->Position[2] += o->Gravity * 20.f * FPS_ANIMATION_FACTOR;
                     Luminosity = (float)(o->LifeTime) * 0.2f;
                     Vector(Luminosity, Luminosity, Luminosity, o->Light);
@@ -8855,7 +8855,7 @@ void MoveParticles()
             case BITMAP_DAMAGE1:
             {
                 o->Scale *= powf(1.2f, FPS_ANIMATION_FACTOR);
-                VectorScale(o->Light, 0.8f, o->Light);
+                VectorScale(o->Light, powf(0.8f, FPS_ANIMATION_FACTOR), o->Light);
             }
             break;
             case BITMAP_SWORD_EFFECT_MONO:

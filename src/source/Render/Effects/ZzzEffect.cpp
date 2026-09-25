@@ -3386,6 +3386,7 @@ void CreateEffect(int Type, vec3_t Position, vec3_t Angle, vec3_t Light, int Sub
             case MODEL_PIER_PART:
                 if (o->SubType == 0)
                 {
+                    o->Timer = 0.f;
                     o->LifeTime = 20;
                     o->Gravity = 2.f;
                     o->Velocity = 10.f;

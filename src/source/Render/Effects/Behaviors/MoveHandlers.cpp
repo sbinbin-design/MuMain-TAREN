@@ -5617,9 +5617,9 @@ namespace Render::Effects::Behaviors
                     if (rand_fps_check(2))
                     {
                         if (o->Angle[0] < -90)
-                            o->Angle[0] += (20.f) * FPS_ANIMATION_FACTOR;
+                            o->Angle[0] += 20.f;
                         else
-                            o->Angle[0] -= (20.f) * FPS_ANIMATION_FACTOR;
+                            o->Angle[0] -= 20.f;
                     }
                     Distance = MoveHumming(o->Position, o->Angle, p, o->Velocity);
                     o->Velocity += (0.4f) * FPS_ANIMATION_FACTOR;
@@ -5633,7 +5633,12 @@ namespace Render::Effects::Behaviors
                     VectorRotate(o->Direction, Matrix, Position);
                     VectorAddScaled(o->Position, Position, o->Position, FPS_ANIMATION_FACTOR);
 
-                    CreateEffectFpsChecked(MODEL_PIER_PART, o->Position, o->Angle, o->Light, 1, o);
+                    o->Timer += FPS_ANIMATION_FACTOR;
+                    if (o->Timer >= 1.f)
+                    {
+                        o->Timer -= 1.f;
+                        CreateEffect(MODEL_PIER_PART, o->Position, o->Angle, o->Light, 1, o);
+                    }
                 }
                 if (Distance < 40 && (int)o->LifeTime == 5)
                 {
@@ -5684,6 +5689,27 @@ namespace Render::Effects::Behaviors
     // MODEL_DARKLORD_SKILL
     bool Move_MODEL_DARKLORD_SKILL(OBJECT* o, int index, float Luminosity)
     {
+        o->Scale += o->Velocity * FPS_ANIMATION_FACTOR;
+
+        if (o->SubType <= 1)
+        {
+            o->Velocity += 0.02f * FPS_ANIMATION_FACTOR;
+            if (o->LifeTime < 7)
+                o->BlendMeshLight *= pow(1.0f / 1.8f, FPS_ANIMATION_FACTOR);
+        }
+        else if (o->SubType == 2)
+        {
+            o->Velocity -= 0.06f * FPS_ANIMATION_FACTOR;
+            if (o->LifeTime < 8)
+                o->BlendMeshLight *= pow(1.0f / 1.5f, FPS_ANIMATION_FACTOR);
+        }
+        else
+        {
+            o->Velocity += 0.04f * FPS_ANIMATION_FACTOR;
+            if (o->LifeTime < 8)
+                o->BlendMeshLight *= pow(1.0f / 1.8f, FPS_ANIMATION_FACTOR);
+        }
+
         return true;
     }
 
@@ -9445,12 +9471,20 @@ namespace Render::Effects::Behaviors
     // MODEL_SHOCKWAVE02
     bool Move_MODEL_SHOCKWAVE02(OBJECT* o, int index, float Luminosity)
     {
+        const float fAnimationFactor = FPS_ANIMATION_FACTOR;
+        const float startPositionDecay = powf(0.95f, fAnimationFactor);
+        const float displacementFactor = 0.95f * (1.0f - startPositionDecay) / (1.0f - 0.95f);
+        vec3_t startPosition;
+        vec3_t delta;
+
     {
         o->Alpha = 1.0f;
-        VectorScale(o->Light, 0.8f, o->Light);
+        VectorScale(o->Light, powf(0.8f, fAnimationFactor), o->Light);
         o->Scale += (0.1f) * FPS_ANIMATION_FACTOR;
-        VectorScale(o->StartPosition, 0.95f, o->StartPosition);
-        VectorSubtract(o->Position, o->StartPosition, o->Position);
+        VectorCopy(o->StartPosition, startPosition);
+        VectorScale(startPosition, displacementFactor, delta);
+        VectorSubtract(o->Position, delta, o->Position);
+        VectorScale(startPosition, startPositionDecay, o->StartPosition);
     }
         return true;
     }
