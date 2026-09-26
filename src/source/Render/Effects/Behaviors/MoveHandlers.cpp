@@ -5011,7 +5011,7 @@ namespace Render::Effects::Behaviors
             }
             else
                 if (o->SubType == 0)
-                    CreateJointFpsChecked(BITMAP_JOINT_FORCE, Position, Position, o->HeadAngle, 0, o->Owner, 150.f, o->PKKey, o->Skill);
+                    CreateJoint(BITMAP_JOINT_FORCE, Position, Position, o->HeadAngle, 0, o->Owner, 150.f, o->PKKey, o->Skill);
                 else
                     CreateJointFpsChecked(BITMAP_JOINT_FORCE, Position, Position, o->HeadAngle, 8, o->Owner, 150.f, o->PKKey, o->Skill);
         }
