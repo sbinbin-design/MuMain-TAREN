@@ -923,7 +923,7 @@ void CreateEffect(int Type, vec3_t Position, vec3_t Angle, vec3_t Light, int Sub
                 if (o->SubType == 0)
                 {
                     o->LifeTime = 20;
-                    o->Position[2] += (280.f) * FPS_ANIMATION_FACTOR;
+                    o->Position[2] += 280.f;
                     o->Velocity = 0.0f;
                     o->Gravity = 1.0f;
                 }

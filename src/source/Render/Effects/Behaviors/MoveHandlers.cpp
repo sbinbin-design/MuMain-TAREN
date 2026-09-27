@@ -2448,7 +2448,7 @@ namespace Render::Effects::Behaviors
             float Height = RequestTerrainHeight(o->Position[0], o->Position[1]);
             if (o->Position[2] < Height)
             {
-                CreateEffectFpsChecked(MODEL_LIGHTNING_SHOCK, o->Position, o->Angle, o->Light, 1, o);
+                CreateEffect(MODEL_LIGHTNING_SHOCK, o->Position, o->Angle, o->Light, 1, o);
                 EffectDestructor(o);
             }
         }
