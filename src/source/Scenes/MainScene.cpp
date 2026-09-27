@@ -129,8 +129,6 @@ static void InitializeMainScene()
 {
     g_pMainFrame->ResetSkillHotKey();
 
-    MU_LOG_INFO(mu::log::Get("scenes"), "Character selected: slot {}", SelectedHero + 1);
-
     InitMainScene = true;
 
     MU_LOG_DEBUG(mu::log::Get("network"), "SendRequestJoinMapServer");

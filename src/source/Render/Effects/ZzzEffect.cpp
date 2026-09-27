@@ -9066,7 +9066,9 @@ void RenderEffects(bool bRenderBlendMesh)
                 case MODEL_FENRIR_FOOT_THUNDER:
                 {
                     EnableAlphaBlend();
-                    if (o->Owner != nullptr && o->Owner->Type == MODEL_FENRIR_GOLD)
+                    if (o->Owner != nullptr
+                        && (o->Owner->Type == MODEL_FENRIR_BLACK || o->Owner->Type == MODEL_FENRIR_RED
+                            || o->Owner->Type == MODEL_FENRIR_BLUE || o->Owner->Type == MODEL_FENRIR_GOLD))
                     {
                         RenderFenrirFootprint(BITMAP_FENRIR_FOOT_THUNDER1 + (o->m_iAnimation % 5), o->Position[0], o->Position[1], 0.6f, 0.6f, o->Light);
                     }

@@ -17,6 +17,8 @@
 
 #include "Render/Sprites/GlobalBitmap.h"
 #include "Render/Textures/ZzzTexture.h"
+#include "Render/Models/ZzzBMD.h"
+#include "Engine/Physics/PhysicsManager.h"
 #include "Scenes/SceneCore.h"
 #include "Scenes/SceneManager.h"
 #include "Scenes/MainScene.h"

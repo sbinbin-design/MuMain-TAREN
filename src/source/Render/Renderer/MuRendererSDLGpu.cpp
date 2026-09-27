@@ -61,6 +61,16 @@
 #include <utility>
 #include <vector>
 
+#if defined(_WIN32)
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#include <Windows.h>
+#endif
+
 // GLM — matrix math for projection, view, and model transforms.
 // GLM_FORCE_DEPTH_ZERO_TO_ONE: Metal/Vulkan depth range [0,1] (not OpenGL [-1,1]).
 // Right-handed (GLM default): matches original OpenGL game code coordinate convention.
@@ -689,6 +699,7 @@ static Render::DrawCommandHistory s_previousDrawCommands;
     s_renderCmds[previousCommand].idxCount += command.idxCount;
     return true;
 }
+
 // True between BeginFrame/EndFrame — replaces s_renderPass as the "frame active" guard
 // during the collection phase (render pass is only opened in EndFrame now).
 static bool s_frameActive = false;

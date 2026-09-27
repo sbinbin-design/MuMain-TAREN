@@ -11,6 +11,8 @@
 #include "Engine/Object/ZzzObject.h"
 #include "Core/Utilities/BaseCls.h"
 
+// Temporary Wing of Ruin cloth A/B diagnostic.
+
 #define PVS_NORMAL (0x00)
 #define PVS_FIXEDPOS (0x01)
 

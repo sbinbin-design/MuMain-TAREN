@@ -15,6 +15,7 @@
 
 #define RATE_SHORT_SHOULDER		( 0.6f)
 
+
 float CPhysicsVertex::s_Gravity = 9.8f;
 float CPhysicsVertex::s_fMass = 0.0025f;
 float CPhysicsVertex::s_fInvOfMass = 400.0f;

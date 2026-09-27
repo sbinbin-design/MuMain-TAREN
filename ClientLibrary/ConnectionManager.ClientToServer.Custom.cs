@@ -78,7 +78,6 @@ public unsafe partial class ConnectionManager
 
                 return length;
             });
-            ManagedLog.Write(ManagedLog.Level.Info, $"NET: Login packet staged, handle={handle}, bytes={LoginLongPasswordRef.Length}");
         }
         catch (Exception ex)
         {

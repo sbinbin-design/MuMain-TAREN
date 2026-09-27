@@ -96,8 +96,6 @@ private:
 
     int32_t _handle;
     void (*_packetHandler)(int32_t, const BYTE*, int32_t);
-    bool _firstPacketLogged = false;
-
     void OnDisconnected();
     void OnPacketReceived(const BYTE* data, const int32_t length);
 

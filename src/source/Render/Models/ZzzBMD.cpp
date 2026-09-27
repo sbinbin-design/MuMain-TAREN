@@ -1252,6 +1252,7 @@ int BMD::AddToCoinHeap(int coinIndex, int target_vertex_index)
 
     constexpr auto alpha = 1.0f;
     constexpr int meshIndex = 0;
+    EnsureCpuVertices(meshIndex);
 
     Mesh_t* m = &Meshs[meshIndex];
 

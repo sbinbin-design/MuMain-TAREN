@@ -9978,15 +9978,14 @@ void RenderCharacter(CHARACTER* c, OBJECT* o, int Select)
                 {
                     continue;
                 }
+                else if (!pCloth[i].Move2(Flag, 5))
+                {
+                    DeleteCloth(c, o);
+                }
                 else
-                    if (!pCloth[i].Move2(Flag, 5))
-                    {
-                        DeleteCloth(c, o);
-                    }
-                    else
-                    {
-                        pCloth[i].Render(&CloakLight);
-                    }
+                {
+                    pCloth[i].Render(&CloakLight);
+                }
             }
         } // if( !g_isCharacterBuff(o, eBuff_Cloaking) )
     } //if ( bCloak )

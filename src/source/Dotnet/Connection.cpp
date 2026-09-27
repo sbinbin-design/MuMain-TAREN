@@ -228,16 +228,12 @@ Connection::Connection(const char16_t* host, int32_t port, bool isEncrypted,
 
     this->_handle = connect(host, port, isEncrypted ? 1 : 0, &OnPacketReceivedS, &OnDisconnectedS);
 
-    mu::log::Get("dotnet")->info("NET: dotnet_connect returned handle={} (encrypted={})",
-                                this->_handle, isEncrypted ? 1 : 0);
-
     if (IsConnected())
     {
         connections[this->_handle] = this;
         if (const auto beginReceive = GetBeginReceive())
         {
             beginReceive(this->_handle);
-            mu::log::Get("dotnet")->info("NET: BeginReceive started for handle={}", this->_handle);
         }
 
         // cppcheck-suppress [noCopyConstructor, noOperatorEq]
@@ -306,22 +302,14 @@ void Connection::OnDisconnected()
 {
     if (!IsConnected())
     {
-        mu::log::Get("dotnet")->info("NET: OnDisconnected called but already disconnected");
         return;
     }
 
-    mu::log::Get("dotnet")->info("NET: OnDisconnected -- handle={}, erasing from connection map", this->_handle);
     connections.erase(this->_handle);
     this->_handle = 0;
 }
 
 void Connection::OnPacketReceived(const BYTE* data, const int32_t size)
 {
-    if (!this->_firstPacketLogged)
-    {
-        mu::log::Get("dotnet")->info("NET: First packet received -- handle={} size={} (callback path working)",
-                                    this->_handle, size);
-        this->_firstPacketLogged = true;
-    }
     this->_packetHandler(this->_handle, data, size);
 }
