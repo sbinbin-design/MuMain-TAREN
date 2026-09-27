@@ -5860,7 +5860,7 @@ void MoveJoint(JOINT* o, int iIndex)
                         }
 
                         AngleMatrix(o->HeadAngle, Matrix);
-                        Vector(0.f, -o->Velocity * FPS_ANIMATION_FACTOR, 0.f, p);
+                        Vector(0.f, -o->Velocity, 0.f, p);
                         VectorRotate(p, Matrix, Position);
                         VectorAdd(o->StartPosition, Position, o->Position);
 

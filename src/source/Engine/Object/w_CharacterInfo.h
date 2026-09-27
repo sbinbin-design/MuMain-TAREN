@@ -202,6 +202,7 @@ public:
     float		JumpTime;
     float		StormTime;
     float		AttackTime;
+    BYTE        m_bySpiralSlashEffectStage;
 
     float		ProtectGuildMarkWorldTime;
     float		AttackRange;

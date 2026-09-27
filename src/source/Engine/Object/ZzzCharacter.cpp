@@ -2584,6 +2584,9 @@ int GetHandOfWeapon(OBJECT* o)
 
 namespace
 {
+    constexpr BYTE SPIRAL_SLASH_EFFECT_STAGE_A_CONSUMED = 1 << 0;
+    constexpr BYTE SPIRAL_SLASH_EFFECT_STAGE_B_CONSUMED = 1 << 1;
+
     // The frame at which an attack animation lands its hit; before this the swing
     // is still winding up.
     constexpr float ATTACK_IMPACT_FRAME = 5.f;
@@ -2959,7 +2962,17 @@ bool AttackStage(CHARACTER* c, OBJECT* o)
         }
         break;
     case    AT_SKILL_SPIRAL_SLASH:
-        if (o->AnimationFrame > 5.f && rand_fps_check(1))
+        if ((c->m_bySpiralSlashEffectStage & SPIRAL_SLASH_EFFECT_STAGE_A_CONSUMED) == 0
+            && o->AnimationFrame > 2.3f)
+        {
+            CreateJoint(BITMAP_FLARE, o->Position, o->Position, o->Angle, 23, NULL, 40.f, 2);
+            CreateJoint(BITMAP_FLARE, o->Position, o->Position, o->Angle, 23, NULL, 40.f, 3);
+            PlayBuffer(SOUND_BCS_ONE_FLASH);
+            c->m_bySpiralSlashEffectStage |= SPIRAL_SLASH_EFFECT_STAGE_A_CONSUMED;
+        }
+
+        if ((c->m_bySpiralSlashEffectStage & SPIRAL_SLASH_EFFECT_STAGE_B_CONSUMED) == 0
+            && o->AnimationFrame > 5.f)
         {
             CreateJoint(BITMAP_FLARE, o->Position, o->Position, o->Angle, 23, NULL, 40.f, 0);
             CreateJoint(BITMAP_FLARE, o->Position, o->Position, o->Angle, 23, NULL, 40.f, 1);
@@ -2967,13 +2980,7 @@ bool AttackStage(CHARACTER* c, OBJECT* o)
             c->AttackTime = 15;
 
             PlayBuffer(SOUND_BCS_ONE_FLASH);
-        }
-        else if (o->AnimationFrame > 2.3f && o->AnimationFrame < 2.6f && rand_fps_check(1))
-        {
-            CreateJoint(BITMAP_FLARE, o->Position, o->Position, o->Angle, 23, NULL, 40.f, 2);
-            CreateJoint(BITMAP_FLARE, o->Position, o->Position, o->Angle, 23, NULL, 40.f, 3);
-
-            PlayBuffer(SOUND_BCS_ONE_FLASH);
+            c->m_bySpiralSlashEffectStage |= SPIRAL_SLASH_EFFECT_STAGE_B_CONSUMED;
         }
         g_iLimitAttackTime = 15;
         break;

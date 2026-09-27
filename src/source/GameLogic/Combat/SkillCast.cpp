@@ -286,6 +286,11 @@ bool SkillWarrior(CHARACTER* c, ITEM* p)
 void UseSkillWarrior(CHARACTER* c, OBJECT* o)
 {
     auto Skill = g_MovementSkill.m_bMagic ? CharacterAttribute->Skill[g_MovementSkill.m_iSkill] : static_cast<ActionSkillType>(g_MovementSkill.m_iSkill);
+    if (Skill == AT_SKILL_SPIRAL_SLASH && c == Hero)
+    {
+        c->m_bySpiralSlashEffectStage = 0;
+    }
+
     LetHeroStop();
     c->Movement = false;
     if (o->Type == MODEL_PLAYER)

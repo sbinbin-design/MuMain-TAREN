@@ -4571,6 +4571,10 @@ BOOL ReceiveMagic(const BYTE* ReceiveBuffer, int Size, BOOL bEncrypted)
         break;
 
     case AT_SKILL_SPIRAL_SLASH:
+        if (sc != Hero)
+        {
+            sc->m_bySpiralSlashEffectStage = 0;
+        }
         SetAction(so, PLAYER_ATTACK_ONE_FLASH);
         sc->AttackTime = 1;
         PlayBuffer(SOUND_SKILL_SWORD2);
