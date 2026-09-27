@@ -37,7 +37,6 @@ public sealed class ConnectionWrapper : IDisposable
 
     private volatile bool _isDisposed;
     private int _isDisconnecting;
-    private long _lastOutboundDiagnosticTimestamp;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ConnectionWrapper"/> class.
@@ -140,36 +139,8 @@ public sealed class ConnectionWrapper : IDisposable
 
     private async ValueTask FlushOutputAsync()
     {
-        var lockStarted = Stopwatch.GetTimestamp();
         using var outputLock = await this._connection.OutputLock.LockAsync().ConfigureAwait(false);
-        var lockElapsed = Stopwatch.GetElapsedTime(lockStarted);
-        var flushStarted = Stopwatch.GetTimestamp();
         await this._connection.Output.FlushAsync().ConfigureAwait(false);
-        var flushElapsed = Stopwatch.GetElapsedTime(flushStarted);
-        this.WriteOutboundDiagnostic(lockElapsed, flushElapsed);
-    }
-
-    private void WriteOutboundDiagnostic(TimeSpan lockElapsed, TimeSpan flushElapsed)
-    {
-        if (!this._networkDiagnosticsEnabled)
-        {
-            return;
-        }
-
-        var now = Stopwatch.GetTimestamp();
-        var previous = Volatile.Read(ref this._lastOutboundDiagnosticTimestamp);
-        if (lockElapsed < TimeSpan.FromMilliseconds(100)
-            && flushElapsed < TimeSpan.FromMilliseconds(100)
-            && previous != 0
-            && Stopwatch.GetElapsedTime(previous, now) < TimeSpan.FromSeconds(5))
-        {
-            return;
-        }
-
-        Volatile.Write(ref this._lastOutboundDiagnosticTimestamp, now);
-        ManagedLog.Write(
-            ManagedLog.Level.Info,
-            $"NET: Outbound flush handle={this._handle} lock={lockElapsed.TotalMilliseconds:F1}ms flush={flushElapsed.TotalMilliseconds:F1}ms");
     }
 
     private void OnSendFailed(Exception exception)

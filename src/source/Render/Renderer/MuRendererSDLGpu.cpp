@@ -480,14 +480,6 @@ static void ConfigureD3D12Diagnostics(const char* driverName)
     s_disableD3D12TriangleMerging =
         Render::D3D12DiagnosticEnabled(driverName, std::getenv("MU_D3D12_DISABLE_TRIANGLE_MERGING"));
 
-    if (s_disableD3D12Culling)
-    {
-        mu::log::Get("render")->info("SDL_gpu -- D3D12 culling diagnostic: disabled");
-    }
-    if (s_disableD3D12TriangleMerging)
-    {
-        mu::log::Get("render")->info("SDL_gpu -- D3D12 triangle merging diagnostic: disabled");
-    }
 }
 
 // Story 4.3.2 (AC-8): Separate pipeline sets for 2D (Vertex2D) and 3D (Vertex3D) geometry.

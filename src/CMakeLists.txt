@@ -552,6 +552,8 @@ if (DOTNET_EXECUTABLE)
   set(DOTNET_DLL_PATH "${CMAKE_CURRENT_BINARY_DIR}/${DOTNET_LIB_NAME}")
   set(DOTNET_PROJ "${CMAKE_CURRENT_SOURCE_DIR}/../ClientLibrary/MUnique.Client.Library.csproj")
 
+  # TODO: If OpenMU moves/renames Network.Packets, Network, or PlugIns, or changes their ProjectReferences, recheck ClientLibrary's OpenMuPacketsRoot/ProjectReference, this publish trigger, and staged Network/Packets assemblies. Do not hard-code the full OpenMU source tree in CMake DEPENDS.
+
   # Create temp directories for Native AOT build.
   set(DOTNET_TEMP_OUTPUT "${CMAKE_BINARY_DIR}/dotnet_out")
   set(DOTNET_TEMP_DIR "${CMAKE_BINARY_DIR}/.dotnet_temp")
@@ -610,6 +612,7 @@ if (DOTNET_EXECUTABLE)
       "DOTNET_CLI_HOME=${DOTNET_TEMP_DIR_NATIVE}"
       "TEMP=${DOTNET_TEMP_DIR_NATIVE}"
       "TMP=${DOTNET_TEMP_DIR_NATIVE}"
+      "DOTNET_CLI_UI_LANGUAGE=en-US"
     )
 
     if (UNIX)
@@ -646,10 +649,10 @@ if (DOTNET_EXECUTABLE)
 
     add_custom_command(
             OUTPUT "${DOTNET_DLL_PATH}"
-            COMMAND ${CMAKE_COMMAND} -E echo "--- C# Changes Detected: Rebuilding Client Library ---"
+            COMMAND ${CMAKE_COMMAND} -E echo "--- Publishing .NET Client Library ---"
             COMMAND ${CMAKE_COMMAND} -E env
                     ${DOTNET_PUBLISH_ENV}
-                    "${DOTNET_EXECUTABLE}" publish "${DOTNET_PROJ_NATIVE}" -c $<CONFIG> -r ${DOTNET_RID} -p:PlatformTarget=${DOTNET_PLATFORM} ${DOTNET_EXTRA_ARGS} -o "${DOTNET_TEMP_OUTPUT_NATIVE}" --nologo
+                    "${DOTNET_EXECUTABLE}" publish "${DOTNET_PROJ_NATIVE}" -c $<CONFIG> -r ${DOTNET_RID} -p:PlatformTarget=${DOTNET_PLATFORM} ${DOTNET_EXTRA_ARGS} -p:NuGetAudit=false -o "${DOTNET_TEMP_OUTPUT_NATIVE}" --nologo
             COMMAND ${CMAKE_COMMAND} -E copy_if_different "${DOTNET_TEMP_OUTPUT}/${DOTNET_LIB_NAME}" "${DOTNET_DLL_PATH}"
             DEPENDS "${DOTNET_PROJ}" ${DOTNET_SOURCES}
             COMMENT "Checking for .NET Client Library updates..."
