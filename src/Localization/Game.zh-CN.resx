@@ -1902,7 +1902,7 @@
     <comment>legacy_id=493</comment>
   </data>
   <data name="These items cannot be traded." xml:space="preserve">
-    <value>These items cannot be traded.</value>
+    <value>这些物品无法交易。</value>
     <comment>legacy_id=494,668</comment>
   </data>
   <data name="Your trade has been canceled because your inventory is full." xml:space="preserve">

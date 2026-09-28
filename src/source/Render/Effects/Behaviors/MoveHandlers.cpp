@@ -1271,11 +1271,11 @@ namespace Render::Effects::Behaviors
         if (o->AnimationFrame > 8 && o->Skill == 0)
         {
             o->Skill = 1;
-            CreateEffectFpsChecked(MODEL_SUMMONER_SUMMON_NEIL_NIFE1, o->HeadTargetAngle, o->Angle, o->Light, o->SubType);
+            CreateEffect(MODEL_SUMMONER_SUMMON_NEIL_NIFE1, o->HeadTargetAngle, o->Angle, o->Light, o->SubType);
             if (o->SubType >= 1)
-                CreateEffectFpsChecked(MODEL_SUMMONER_SUMMON_NEIL_NIFE2, o->HeadTargetAngle, o->Angle, o->Light, o->SubType);
+                CreateEffect(MODEL_SUMMONER_SUMMON_NEIL_NIFE2, o->HeadTargetAngle, o->Angle, o->Light, o->SubType);
             if (o->SubType >= 2)
-                CreateEffectFpsChecked(MODEL_SUMMONER_SUMMON_NEIL_NIFE3, o->HeadTargetAngle, o->Angle, o->Light, o->SubType);
+                CreateEffect(MODEL_SUMMONER_SUMMON_NEIL_NIFE3, o->HeadTargetAngle, o->Angle, o->Light, o->SubType);
         }
         if (o->AnimationFrame > 10 && o->Skill == 1)
         {
@@ -1286,13 +1286,13 @@ namespace Render::Effects::Behaviors
             Vector(0, -60.0f, 0, vMoveDir);
             VectorRotate(vMoveDir, Matrix, vPosition);
             VectorAdd(o->Position, vPosition, vPosition);
-            CreateEffectFpsChecked(MODEL_SUMMONER_SUMMON_NEIL_GROUND1, vPosition, o->Angle, o->Light, o->SubType, o);
+            CreateEffect(MODEL_SUMMONER_SUMMON_NEIL_GROUND1, vPosition, o->Angle, o->Light, o->SubType, o);
 
-            CreateEffectFpsChecked(MODEL_SUMMONER_SUMMON_NEIL_GROUND1, o->HeadTargetAngle, o->Angle, o->Light, o->SubType);
+            CreateEffect(MODEL_SUMMONER_SUMMON_NEIL_GROUND1, o->HeadTargetAngle, o->Angle, o->Light, o->SubType);
             if (o->SubType >= 1)
-                CreateEffectFpsChecked(MODEL_SUMMONER_SUMMON_NEIL_GROUND2, o->HeadTargetAngle, o->Angle, o->Light, o->SubType);
+                CreateEffect(MODEL_SUMMONER_SUMMON_NEIL_GROUND2, o->HeadTargetAngle, o->Angle, o->Light, o->SubType);
             if (o->SubType >= 2)
-                CreateEffectFpsChecked(MODEL_SUMMONER_SUMMON_NEIL_GROUND3, o->HeadTargetAngle, o->Angle, o->Light, o->SubType);
+                CreateEffect(MODEL_SUMMONER_SUMMON_NEIL_GROUND3, o->HeadTargetAngle, o->Angle, o->Light, o->SubType);
 
             PlayBuffer(SOUND_SUMMON_REQUIEM);
         }
@@ -2562,13 +2562,10 @@ namespace Render::Effects::Behaviors
             Vector(o->Position[0], o->Position[1], o->Position[2] + 80.f, Position);
             for (int j = 0; j < 6; j++)
             {
-                if (rand_fps_check(1))
-                {
-                    CreateEffectFpsChecked(MODEL_STONE1 + rand() % 2, o->Position, o->Angle, o->Light);
-                }
+                CreateEffect(MODEL_STONE1 + rand() % 2, o->Position, o->Angle, o->Light);
             }
-            CreateParticleFpsChecked(BITMAP_SHINY + 4, Position, o->Angle, Light);
-            CreateParticleFpsChecked(BITMAP_EXPLOTION, Position, o->Angle, Light);
+            CreateParticle(BITMAP_SHINY + 4, Position, o->Angle, Light);
+            CreateParticle(BITMAP_EXPLOTION, Position, o->Angle, Light);
             if (o->Owner == &Hero->Object)
                 AttackCharacterRange(o->Skill, o->Position, 150.f, o->Weapon, o->PKKey);
             o->Live = false;
@@ -2888,8 +2885,8 @@ namespace Render::Effects::Behaviors
         else if ((int)o->LifeTime == 2)
         {
             Vector(0.f, 0.f, rand() % 360, Angle);
-            CreateEffectFpsChecked(MODEL_FISSURE, o->Position, Angle, o->Light, 0, o);
-            CreateEffectFpsChecked(MODEL_FISSURE_LIGHT, o->Position, Angle, o->Light, 0, o);
+            CreateEffect(MODEL_FISSURE, o->Position, Angle, o->Light, 0, o);
+            CreateEffect(MODEL_FISSURE_LIGHT, o->Position, Angle, o->Light, 0, o);
             o->Live = false;
         }
     }
@@ -3099,8 +3096,8 @@ namespace Render::Effects::Behaviors
                             Pos[i][2] = RequestTerrainHeight(Pos[i][0], Pos[i][1]) + 3;
                         Angle[2] += 270.f;
 
-                        CreateEffectFpsChecked(MODEL_SKILL_FURY_STRIKE + 7, Pos[i], Angle, o->Light, 0, o->Owner, 100);
-                        CreateEffectFpsChecked(MODEL_SKILL_FURY_STRIKE + 8, Pos[i], Angle, o->Light, 0, o->Owner, 100);
+                        CreateEffect(MODEL_SKILL_FURY_STRIKE + 7, Pos[i], Angle, o->Light, 0, o->Owner, 100);
+                        CreateEffect(MODEL_SKILL_FURY_STRIKE + 8, Pos[i], Angle, o->Light, 0, o->Owner, 100);
                     }
                 }
 
@@ -5171,14 +5168,14 @@ namespace Render::Effects::Behaviors
                 Vector(0.24f, 0.28f, 0.8f, Light);
                 VectorCopy(o->Position, Position);
                 Position[2] += 50.f;
-                CreateParticleFpsChecked(BITMAP_SMOKE, Position, o->Angle, Light, 11, (float)(rand() % 32 + 80) * 0.025f);
+                CreateParticle(BITMAP_SMOKE, Position, o->Angle, Light, 11, (float)(rand() % 32 + 80) * 0.025f);
 
-                if (rand_fps_check(5))
+                if (rand() % 5 == 0)
                 {
-                    CreateEffectFpsChecked(MODEL_ICE_SMALL, Position, o->Angle, o->Light);
+                    CreateEffect(MODEL_ICE_SMALL, Position, o->Angle, o->Light);
                 }
 
-                CreateEffectFpsChecked(MODEL_BLIZZARD, Position, o->Angle, o->Light, 1, NULL, o->PKKey);
+                CreateEffect(MODEL_BLIZZARD, Position, o->Angle, o->Light, 1, NULL, o->PKKey);
 
                 o->Live = false;
             }
@@ -9304,7 +9301,7 @@ namespace Render::Effects::Behaviors
             if (o->AnimationFrame >= 6.0f || !o->Owner->Live)
             {
                 o->Live = false;
-                CreateEffectFpsChecked(MODEL_DOWN_ATTACK_DUMMY_L, o->Owner->Position, o->Owner->Angle, o->Owner->Light, 0, o->Owner);
+                CreateEffect(MODEL_DOWN_ATTACK_DUMMY_L, o->Owner->Position, o->Owner->Angle, o->Owner->Light, 0, o->Owner);
             }
 
             if (o->AnimationFrame >= 3.0f && o->LifeTime > 50)
@@ -10194,7 +10191,7 @@ namespace Render::Effects::Behaviors
 
             if ((int)o->LifeTime == 2)
             {
-                CreateEffectFpsChecked(MODEL_VOLCANO_OF_MONK, o->Position, o->Angle, o->Light, 1, o, -1, 0, 0, 0, 1.0f);
+                CreateEffect(MODEL_VOLCANO_OF_MONK, o->Position, o->Angle, o->Light, 1, o, -1, 0, 0, 0, 1.0f);
                 o->LifeTime = 0;
                 o->Live = false;
             }
