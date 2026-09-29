@@ -758,9 +758,8 @@ CHARACTER_ENABLE g_CharCardEnable;
 void ReceiveCharacterCard_New(const BYTE* ReceiveBuffer)
 {
     auto Data = (LPPHEADER_CHARACTERCARD)ReceiveBuffer;
-    g_CharCardEnable.bCharacterEnable[0] = false;
-    g_CharCardEnable.bCharacterEnable[1] = false;
-    g_CharCardEnable.bCharacterEnable[2] = false;
+    for (int i = 0; i < CLASS_CHARACTERCARD_TOTALCNT; ++i)
+        g_CharCardEnable.bCharacterEnable[i] = false;
 
     if ((Data->CharacterCard & CLASS_DARK_CARD) == CLASS_DARK_CARD)
         g_CharCardEnable.bCharacterEnable[0] = true;
@@ -771,9 +770,12 @@ void ReceiveCharacterCard_New(const BYTE* ReceiveBuffer)
     if ((Data->CharacterCard & CLASS_SUMMONER_CARD) == CLASS_SUMMONER_CARD)
         g_CharCardEnable.bCharacterEnable[2] = true;
 
-    g_ConsoleDebug->Write(MCD_NORMAL, L"[BOTH MESSAGE] CharacterCard Recv %d = %d %d %d", Data->CharacterCard,
+    if ((Data->CharacterCard & CLASS_RAGEFIGHTER_CARD) == CLASS_RAGEFIGHTER_CARD)
+        g_CharCardEnable.bCharacterEnable[3] = true;
+
+    g_ConsoleDebug->Write(MCD_NORMAL, L"[BOTH MESSAGE] CharacterCard Recv %d = %d %d %d %d", Data->CharacterCard,
                           g_CharCardEnable.bCharacterEnable[0], g_CharCardEnable.bCharacterEnable[1],
-                          g_CharCardEnable.bCharacterEnable[2]);
+                          g_CharCardEnable.bCharacterEnable[2], g_CharCardEnable.bCharacterEnable[3]);
 }
 
 void ReceiveCreateCharacter(const BYTE* ReceiveBuffer)

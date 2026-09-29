@@ -2323,7 +2323,7 @@
     <comment>legacy_id=600</comment>
   </data>
   <data name="Improper items for combination" xml:space="preserve">
-    <value>Improper items for combination</value>
+    <value>合成材料不符合要求</value>
     <comment>legacy_id=601,3609</comment>
   </data>
   <data name="Chaos combination" xml:space="preserve">
