@@ -4419,7 +4419,10 @@ BOOL ReceiveMagic(const BYTE* ReceiveBuffer, int Size, BOOL bEncrypted)
         break;
     case AT_SKILL_POWER_SLASH:
     case AT_SKILL_POWER_SLASH_STR:
-        SetAction(so, PLAYER_ATTACK_TWO_HAND_SWORD_TWO);
+        if (sc->Helper.Type == MODEL_HORN_OF_FENRIR && !sc->SafeZone)
+            SetAction(so, PLAYER_FENRIR_ATTACK_MAGIC);
+        else
+            SetAction(so, PLAYER_ATTACK_TWO_HAND_SWORD_TWO);
         sc->AttackTime = 1;
         PlayBuffer(SOUND_SKILL_SWORD4);
         break;
@@ -5229,25 +5232,7 @@ BOOL ReceiveMagicContinue(const BYTE* ReceiveBuffer, int Size, BOOL bEncrypted)
             case AT_SKILL_TWISTING_SLASH_STR:
             case AT_SKILL_TWISTING_SLASH_MASTERY:
             case AT_SKILL_TWISTING_SLASH_STR_MG:
-#ifdef YDG_ADD_SKILL_RIDING_ANIMATIONS
-                switch (sc->Helper.Type)
-                {
-                case MODEL_HORN_OF_UNIRIA:
-                    SetAction(so, PLAYER_ATTACK_SKILL_WHEEL_UNI);
-                    break;
-                case MODEL_HORN_OF_DINORANT:
-                    SetAction(so, PLAYER_ATTACK_SKILL_WHEEL_DINO);
-                    break;
-                case MODEL_HORN_OF_FENRIR:
-                    SetAction(so, PLAYER_ATTACK_SKILL_WHEEL_FENRIR);
-                    break;
-                default:
-                    SetAction(so, PLAYER_ATTACK_SKILL_WHEEL);
-                    break;
-                }
-#else  // YDG_ADD_SKILL_RIDING_ANIMATIONS
                 SetAction(so, PLAYER_ATTACK_SKILL_WHEEL);
-#endif // YDG_ADD_SKILL_RIDING_ANIMATIONS
                 break;
 
             case AT_SKILL_FIRE_SCREAM:
@@ -5299,29 +5284,14 @@ BOOL ReceiveMagicContinue(const BYTE* ReceiveBuffer, int Size, BOOL bEncrypted)
                 break;
             case AT_SKILL_FIRE_SLASH:
             case AT_SKILL_FIRE_SLASH_STR:
-#ifdef YDG_ADD_SKILL_RIDING_ANIMATIONS
-                switch (sc->Helper.Type)
-                {
-                case MODEL_HORN_OF_UNIRIA:
-                    SetAction(so, PLAYER_ATTACK_SKILL_WHEEL_UNI);
-                    break;
-                case MODEL_HORN_OF_DINORANT:
-                    SetAction(so, PLAYER_ATTACK_SKILL_WHEEL_DINO);
-                    break;
-                case MODEL_HORN_OF_FENRIR:
-                    SetAction(so, PLAYER_ATTACK_SKILL_WHEEL_FENRIR);
-                    break;
-                default:
-                    SetAction(so, PLAYER_ATTACK_SKILL_WHEEL);
-                    break;
-                }
-#else  // YDG_ADD_SKILL_RIDING_ANIMATIONS
                 SetAction(so, PLAYER_ATTACK_SKILL_WHEEL);
-#endif // YDG_ADD_SKILL_RIDING_ANIMATIONS
                 break;
             case AT_SKILL_POWER_SLASH:
             case AT_SKILL_POWER_SLASH_STR:
-                SetAction(so, PLAYER_ATTACK_TWO_HAND_SWORD_TWO);
+                if (sc->Helper.Type == MODEL_HORN_OF_FENRIR && !sc->SafeZone)
+                    SetAction(so, PLAYER_FENRIR_ATTACK_MAGIC);
+                else
+                    SetAction(so, PLAYER_ATTACK_TWO_HAND_SWORD_TWO);
                 break;
             case AT_SKILL_DEATHSTAB:
             case AT_SKILL_DEATHSTAB_STR:
@@ -5329,11 +5299,17 @@ BOOL ReceiveMagicContinue(const BYTE* ReceiveBuffer, int Size, BOOL bEncrypted)
                 break;
 
             case AT_SKILL_STUN:
-                SetAction(so, PLAYER_SKILL_VITALITY);
+                if (sc->Helper.Type == MODEL_HORN_OF_FENRIR && !sc->SafeZone)
+                    SetAction(so, PLAYER_FENRIR_ATTACK_MAGIC);
+                else
+                    SetAction(so, PLAYER_SKILL_VITALITY);
                 break;
 
             case AT_SKILL_INVISIBLE:
-                SetAction(so, PLAYER_SKILL_VITALITY);
+                if (sc->Helper.Type == MODEL_HORN_OF_FENRIR && !sc->SafeZone)
+                    SetAction(so, PLAYER_FENRIR_ATTACK_MAGIC);
+                else
+                    SetAction(so, PLAYER_SKILL_VITALITY);
                 break;
 
             case AT_SKILL_PLASMA_STORM_FENRIR:

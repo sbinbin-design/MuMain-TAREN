@@ -10292,7 +10292,7 @@
     <comment>legacy_id=2922</comment>
   </data>
   <data name="DoYouWishToUseS" xml:space="preserve">
-    <value>确定要使用%s吗? ##*印章类与卷轴类除外其他物品都将移动到物品栏.##从储存箱/礼物箱取出的物品无法退款或恢复.</value>
+    <value>确定要使用 %s 吗？#使用后物品将移入背包。#取出后无法恢复或退回。</value>
     <comment>legacy_id=2923</comment>
   </data>
   <data name="Item Used" xml:space="preserve">

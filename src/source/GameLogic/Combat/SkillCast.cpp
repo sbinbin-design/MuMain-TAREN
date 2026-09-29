@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "GameLogic/Combat/SkillCast.h"
+#include "GameLogic/Combat/SkillExecution.h"
 #include "Character/CharacterManager.h" // gCharacterManager
 #include "GameLogic/Social/MonkSystem.h" // g_CMonkSystem
 
@@ -356,6 +357,7 @@ void UseSkillWarrior(CHARACTER* c, OBJECT* o)
     {
         SetPlayerAttack(c);
     }
+
 
     vec3_t Light;
     Vector(1.f, 1.f, 1.f, Light);

@@ -2,6 +2,7 @@
 #include "GameLogic/Combat/ClassAttack.h"
 #include "GameLogic/Combat/CombatTarget.h"
 #include "GameLogic/Combat/SkillCast.h"
+#include "GameLogic/Combat/SkillExecution.h"
 #include "Character/CharacterManager.h" // gCharacterManager
 #include "GameLogic/Buffs/w_Buff.h"     // UnRegisterBuff
 
@@ -471,6 +472,7 @@ void AttackElf(CHARACTER* c, int Skill, float Distance)
     }
 
     c->SkillSuccess = true;
+
 }
 
 void AttackKnight(CHARACTER* c, ActionSkillType Skill, float Distance)
@@ -684,14 +686,7 @@ void AttackKnight(CHARACTER* c, ActionSkillType Skill, float Distance)
                         SendRequestMagicContinue(Skill, (c->PositionX),
                             (c->PositionY), ((o->Angle[2] / 360.f) * 255), byValue, angle, TKey, 0);
                         SetAttackSpeed();
-                        if (c->Helper.Type == MODEL_HORN_OF_FENRIR && !c->SafeZone)
-                        {
-                            SetAction(o, PLAYER_FENRIR_ATTACK_MAGIC);
-                        }
-                        else
-                        {
-                            SetAction(o, PLAYER_ATTACK_TWO_HAND_SWORD_TWO);
-                        }
+                        SetAction(o, PLAYER_ATTACK_TWO_HAND_SWORD_TWO);
                         c->Movement = 0;
                     }
                 }
@@ -1069,6 +1064,7 @@ void AttackKnight(CHARACTER* c, ActionSkillType Skill, float Distance)
     }
 
     c->SkillSuccess = true;
+
 }
 
 void AttackWizard(CHARACTER* c, int Skill, float Distance)
@@ -1992,5 +1988,6 @@ void AttackCommon(CHARACTER* c, int Skill, float Distance)
         }
     }
     c->SkillSuccess = true;
+
 }
 }
