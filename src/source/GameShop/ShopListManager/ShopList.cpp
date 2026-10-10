@@ -17,6 +17,24 @@
 #include <fstream>
 #include <vector>
 
+namespace
+{
+constexpr std::streamsize kUtf8ByteOrderMarkLength = 3;
+constexpr std::streamsize kUtf16LeByteOrderMarkLength = 2;
+
+void SkipDetectedByteOrderMark(std::ifstream& file, FILE_ENCODE encoding)
+{
+    if (encoding == FE_UTF8)
+    {
+        file.ignore(kUtf8ByteOrderMarkLength);
+    }
+    else if (encoding == FE_UNICODE)
+    {
+        file.ignore(kUtf16LeByteOrderMarkLength);
+    }
+}
+} // namespace
+
 CShopList::CShopList() // OK
 {
     this->m_CategoryListPtr = new CShopCategoryList;
@@ -55,6 +73,7 @@ WZResult CShopList::LoadCategroy(const wchar_t* szFilePath) // OK
 
     if (ifs.is_open())
     {
+        SkipDetectedByteOrderMark(ifs, enc);
         this->GetCategoryListPtr()->Clear();
 
         int linesRead = 0;
@@ -122,6 +141,7 @@ WZResult CShopList::LoadPackage(const wchar_t* szFilePath) // OK
 
     if (ifs.is_open())
     {
+        SkipDetectedByteOrderMark(ifs, enc);
         this->GetPackageListPtr()->Clear();
 
         while (true)
@@ -174,6 +194,7 @@ WZResult CShopList::LoadProduct(const wchar_t* szFilePath) // OK
 
     if (ifs.is_open())
     {
+        SkipDetectedByteOrderMark(ifs, enc);
         this->GetProductListPtr()->Clear();
 
         while (true)
@@ -240,12 +261,14 @@ FILE_ENCODE CShopList::IsFileEncodingUtf8(const wchar_t* szFilePath) // OK
         return FE_ANSI;
     }
 
-    if (buff[0] == 0xEF && buff[1] == 0xBB && buff[2] == 0xBF)
+    const auto* bytes = reinterpret_cast<const unsigned char*>(buff);
+
+    if (bytes[0] == 0xEF && bytes[1] == 0xBB && bytes[2] == 0xBF)
     {
         return FE_UTF8;
     }
 
-    if (buff[0] == 0xFF && buff[1] == 0xFE)
+    if (bytes[0] == 0xFF && bytes[1] == 0xFE)
     {
         return FE_UNICODE;
     }
